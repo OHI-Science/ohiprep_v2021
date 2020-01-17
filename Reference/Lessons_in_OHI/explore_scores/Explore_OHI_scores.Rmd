@@ -16,7 +16,7 @@ While you are working at your computer at NCEAS, you receive a frantic call from
 
 THEY NEED HELP!
 
-"No problem" you say, "I'll get Julie or Melanie"...but they are no where to be found!
+"No problem" you say, "I'll get Julie or Melanie or Gage"...but they are no where to be found!
 
 "Hold on, I'll get Jamie or Casey or Courtney"...but they are also gone.
 
@@ -26,9 +26,7 @@ It is clearly going to be up to you to save the day!!
 
 Please help them answer the following questions.  You will work from this document, using the code chunks as a work space to work explore the data. Do NOT bother keeping the code chunks neat and organized, we want to see your work process in all its messy glory.  However, I DO recommend including plenty of comments, mostly because I have found this helps me organize my thoughts.   
 
-You will work together to check answers, discuss code, troubleshoot.  But write your own code.  
-
-You can also ask us any questions along the way (slack or issues)!
+You can ask us any questions along the way (slack or issues)!
 
 Good luck!
 
@@ -107,9 +105,9 @@ table(scores$region_id, scores$dimension)
 
 ### Missing data
 
-*Question* Figure out which goals/subgoals have the most NA values for scores in 2018.  Which ones have the least?  Can you discern any reason why some goals have lots of missing values and others do not?
+*Question* Figure out which goals/subgoals have the most NA values for scores in 2019.  Which ones have the least?  Can you discern any reason why some goals have lots of missing values and others do not?
 
-*Hint* Include only dimension = score, and year = 2018, and cut region_id = 0.
+*Hint* Include only dimension = score, and year = 2019, and cut region_id = 0.
 
 *Answer* Write your answer here!
 
@@ -119,13 +117,10 @@ table(scores$region_id, scores$dimension)
 na_data <- scores %>% 
   filter(dimension == "score") %>%
   filter(region_id != 0) %>%
-  filter(year == 2018)
+  filter(year == 2019)
 
 ```
 
-*Question* Artisanal opportunities has no missing data (except for region 213, which is Antarctica).  Look over the description of the artisanal opportunities goal (http://ohi-science.org/ohi-global/goals#artisanal_fishing_opportunity).  Based on this description, in your opinion, should uninhabited islands be given an NA value? 
-
-*Answer* Write your answer here!
 
 ### Scores
 
@@ -167,7 +162,7 @@ summary(scores)
 
 ### Plot
 
-*Project* Create a scatterplot that compares 2012 and 2018 *scores* for each region for the artisanal opportunities goal. Based on this, do scores for the artisanal opportunities goal appear to have increased or decreased over time? 
+*Project* Create a scatterplot that compares 2012 and 2019 *scores* for each region for the artisanal opportunities goal. Based on this, do scores for the artisanal opportunities goal appear to have increased or decreased over time? 
 
 *Answer* Write your answer here!
 
