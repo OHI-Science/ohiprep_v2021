@@ -82,7 +82,7 @@ Note: When using spatial polygons (e.g. **regions**) in `extract`, the extract m
 
 Extract values to create raster (this may take a while)
 ```{r}
-#regions_shape() # run this to obtain shapefile named "regions"
+regions_shape() # run this to obtain shapefile named "regions"
 
 ## associate each cell value with ohi and fao regions
 ohi_to_wats_raster <- raster::extract(cells_raster, regions, weights = TRUE, normalizeWeights = FALSE, progress = 'text')
@@ -97,10 +97,11 @@ region_prop_df <- plyr::ldply(ohi_to_wats_raster, rbind)
 cells_raw <- region_prop_df %>%
   separate(.id, c('rgn_typ', 'rgn_id'), sep = '_') %>%
   rename(wat_cell_id = value, 
-         proportionArea = weight)
+         proportionArea = weight) %>%
+  mutate(rgn_id = as.numeric(rgn_id))
 
 ## save all the cell associations
-write.csv(cells_raw, file.path(dir_M, "git-annex/globalprep/fis/v2019/raw/watson_rasters_to_ohi_rgns.csv"), row.names=FALSE)
+write.csv(cells_raw, file.path(dir_M, "git-annex/globalprep/fis/v2020/raw/watson_rasters_to_ohi_rgns.csv"), row.names=FALSE)
 
 ```
 
@@ -109,17 +110,16 @@ write.csv(cells_raw, file.path(dir_M, "git-annex/globalprep/fis/v2019/raw/watson
 Check this year's ohi-cellID match with last year's to see what changed.
 ```{r}
 ## Check raw file
-cells_raw <- read.csv(file.path(dir_M, "git-annex/globalprep/fis/v2019/raw/watson_rasters_to_ohi_rgns.csv")) %>%
+cells_raw <- read.csv(file.path(dir_M, "git-annex/globalprep/fis/v2020/raw/watson_rasters_to_ohi_rgns.csv")) %>%
   arrange(rgn_id)
 
-old_cells_raw <- read.csv(file.path(dir_M, "git-annex/globalprep/fis/v2018/raw/watson_rasters_to_ohi_rgns.csv")) %>% 
+old_cells_raw <- read.csv(file.path(dir_M, "git-annex/globalprep/fis/v2019/raw/watson_rasters_to_ohi_rgns.csv")) %>% 
   arrange(rgn_id)
 
-# new all_df has 446 more rows
 dim(cells_raw) # 282519 rows
-dim(old_cells_raw) # 291209 rows
-length(setdiff(cells_raw$wat_cell_id, old_cells_raw$saup_cell_id)) #149929 differences
-
+dim(old_cells_raw) # 282519 rows
+length(setdiff(cells_raw$wat_cell_id, old_cells_raw$wat_cell_id)) #0 differences
+anti_join(cells_raw, old_cells_raw)
 ```
 
 ## A few modifications to the data
@@ -129,7 +129,7 @@ Originally, we included only water areas, but some rasters were excluded because
 
 ```{r}
 
-ohi_cells <- read.csv(file.path(dir_M, "git-annex/globalprep/fis/v2019/raw/watson_rasters_to_ohi_rgns.csv")) %>%
+ohi_cells <- read.csv(file.path(dir_M, "git-annex/globalprep/fis/v2020/raw/watson_rasters_to_ohi_rgns.csv")) %>%
   rename(CellID = wat_cell_id) %>%
   group_by(CellID, rgn_id) %>%   # groups land and eez data (that way the cell catch is fully applied to the region...rather than cutting the portion that overlaps land) 
   dplyr::summarise(area = sum(proportionArea)) %>%
@@ -181,7 +181,7 @@ sum(duplicated(tmp$CellID))
 ohi_cells <- ohi_cells %>%
   mutate(area = ifelse(CellID %in% nodups & area < 1, 1, area))
 
-write.csv(ohi_cells, file.path(dir_M, "git-annex/globalprep/fis/v2019/raw/watson_rasters_to_ohi_rgns_v2.csv"), 
+write.csv(ohi_cells, file.path(dir_M, "git-annex/globalprep/fis/v2020/raw/watson_rasters_to_ohi_rgns_v2.csv"), 
           row.names=FALSE)
 
 ```
@@ -189,7 +189,7 @@ write.csv(ohi_cells, file.path(dir_M, "git-annex/globalprep/fis/v2019/raw/watson
 
 ## Match Cell IDs with FAO Regions
 
-Similar steps were used for extracting cell values for FAO regions as the OHI shapefile. This is already done in [saup_rasters_to_ohi_rgns.R](https://github.com/OHI-Science/ohiprep_v2019/globalprep/fis/v2016/saup_rasters_to_ohi_rgns.R)
+Similar steps were used for extracting cell values for FAO regions as the OHI shapefile. This is already done in [saup_rasters_to_ohi_rgns.R](https://github.com/OHI-Science/ohiprep_v2020/globalprep/fis/v2016/saup_rasters_to_ohi_rgns.R)
 
 Since data source is the same, just read in the FAO raster - check with the new dataframe I created above.
 ```{r}
@@ -213,7 +213,7 @@ fao_cells <- read.csv(file.path(dir_M, "git-annex/globalprep/fis/v2015/raw/saup_
   rename(CellID = saup_cell_id)
 sum(duplicated(fao_cells$CellID)) # good: no duplicates
 
-ohi_cells <- read.csv(file.path(dir_M, "git-annex/globalprep/fis/v2019/raw/watson_rasters_to_ohi_rgns_v2.csv")) 
+ohi_cells <- read.csv(file.path(dir_M, "git-annex/globalprep/fis/v2020/raw/watson_rasters_to_ohi_rgns_v2.csv")) 
 
 ohi_fao_cells <- ohi_cells %>%
   full_join(fao_cells, by="CellID") %>%
@@ -223,6 +223,7 @@ ohi_fao_cells <- ohi_cells %>%
 
 summary(ohi_fao_cells) # 84,218 NAs in fao_id - v2018
                        # 758 NAs in fao_id - v2019; probably due changes in watson data
+                       # 758 NAs in fao_id - v2020; probably due changes in watson data
 
 fao_id_na <- ohi_fao_cells %>%
   filter(is.na(fao_id))
@@ -258,15 +259,15 @@ cells <- read.csv('int/cells.csv')  %>%
   mutate(cell_fao_ohi = paste(CellID, fao_id, rgn_id, sep="_"))
 
 ## checking old cells.csv files
-old_cells <- read.csv('../v2018/int/cells.csv') %>%
+old_cells <- read.csv('../v2019/int/cells.csv') %>%
   arrange(CellID) %>% 
   mutate(cell_fao_ohi = paste(CellID, fao_id, rgn_id, sep="_"))
 
-old_2017_cells <- read.csv('../v2017/cells.csv') %>%
+old_2018_cells <- read.csv('../v2018/int/cells.csv') %>%
   arrange(CellID) %>%
   mutate(cell_fao_ohi = paste(CellID, fao_id, rgn_id, sep = "_"))
 
-dim(cells)[1]-dim(old_cells)[1] # there are 83743 less rows due to deleting land
+dim(cells)[1]-dim(old_cells)[1] # 0 cells - we didn't change any of the analysis and the data didn't change 
 
 ## Diff in IDs in new cells csv versus old
 new_old <- setdiff(cells$cell_fao_ohi, old_cells$cell_fao_ohi)
