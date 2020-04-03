@@ -8,7 +8,9 @@ output: html_document
 ## loading packages
 library(dplyr)
 library(tidyr)
+library(tidyverse)
 
+source("http://ohi-science.org/ohiprep_v2020/workflow/R/common.R")
 ```
 
 
@@ -55,16 +57,25 @@ scores <- read.csv("https://raw.githubusercontent.com/OHI-Science/ohi-global/dra
 
 *Hint 2* Which region has all NA values for scores?
 
-*Answer* Write your answer here!
+*Answer* One of the regions has an ID of 0, which isn't listed as an official region on the region list. Region 213, Antarctica, has all NA values for scores because it is not included in the global assessment.  
 
 ```{r, include=FALSE}
 ## Working space
 
 length(unique(scores$region_id))
 
+# Find which region has NA values for every score:
+find_na <- scores %>% 
+  filter(is.na(score)) %>% 
+  group_by(region_id) %>% 
+  summarize(number_na = length(region_id)) %>% #find how many NA values each region has
+  arrange(number_na) #arrange by highest number of NAs
+
+#Region 213 has all NA values - this is Antarctica which is not included in the global assessment
 ```
 
-*Question* Which region id corresponds to the United States?
+*Question* Which region id corresponds to the United States?  
+*Answer* The United States is region 163  
 
 ### Goal explore
 
@@ -72,7 +83,32 @@ length(unique(scores$region_id))
 
 *Hint 1* Review the methods doc here: https://raw.githack.com/OHI-Science/ohi-global/published/documents/methods/Supplement.html
 
-*Answer* Write your answer here!
+*Answer* The 10 main goals have 2 letter abbreviations and the subgoals have 3 letter abbreviations. The 10 main goals plus 8 subgoals are:  
+ 
+ - AO: Artisinal Fishing Opportunity    
+ - BD: Biodiversity  
+   *Subgoals*  
+   - HAB: Habitat  
+   - SPP: Species  
+ - CS: Carbon Storage  
+ - CW: Clean Water  
+ - LE: Coastal Livelihoods and Economies  
+    *Subgoals*  
+   - LIV: Livelihoods    
+   - ECO: Economies  
+ - CP: Coastal Protection  
+ - FP: Food Provision  
+    *Subgoals* 
+   - FIS: Fisheries    
+   - MAR: Mariculture  
+ - NP: Natural Products  
+ - SP: Sense of Place  
+    *Subgoals*  
+   - ICO: Iconic Species   
+   - LSP: Lasting Special Places  
+ - TR: Tourism and Recreation  
+ 
+Index is the 19th goal. This isn't actually a goal, but rather reflects the overall average of all the goals for a specific region.    
 
 ```{r, include=FALSE}
 ## Working space
@@ -86,15 +122,15 @@ unique(scores$goal)
 
 *Question* There are 6 dimensions reported in this dataset (future, pressures, resilience, score, status, and trend).  When I look at the number of records in each of these categories, I notice that there are more "score" values reported than "status" values (see working space below). Given that scores are calculated using status, it seems like these should have the same number of records. Can you figure out what is going on here. Is something going wrong?  
 
-*Answer* Write your answer here!
+*Answer* Region 0 is included in the future and score because it reflects the global average of status, likely future status, and the scores for all the regions. However, it doesn't have any records for pressures, resilience or status because those are the factors that are used to calculate the likely future status and they are country specific. Since there are no global averages for these categories, there are no records in Region 0.   
 
 ```{r, include=FALSE}
 ## Working space
 
-unique(scores$dimension)
-table(scores$dimension)
+unique(scores$dimension) #there are 6 unique dimensions
+table(scores$dimension) #pressure/resilience/trend all have same records, future and score have same (but more)
 
-table(scores$goal)
+table(scores$goal) #all the goals and subgoals have the same records except the index
 table(scores$goal, scores$dimension)
 
 # ok...but why are the different values for pressures/resilience/trend and future?
@@ -110,15 +146,20 @@ table(scores$region_id, scores$dimension)
 
 *Hint* Include only dimension = score, and year = 2019, and cut region_id = 0.
 
-*Answer* Write your answer here!
+*Answer* Natural Products (NP) has the highest number of NA values. This may be because the products OHI includes within this goal aren't produced everywhere in the world or countries produced some other commodities that are not included within the six commodity categories included in this goal.   
 
 ```{r, include=FALSE}
 ## Working space
 
+# Find number of NAs for each goal - include only scores from year 2019 and exclude region 0
 na_data <- scores %>% 
   filter(dimension == "score") %>%
   filter(region_id != 0) %>%
-  filter(year == 2019)
+  filter(year == 2019) %>% 
+  group_by(goal) %>% 
+  summarize(number_na = length(score[is.na(score)])) %>% #find the number of NAs
+  arrange(-number_na) #arrange from high to low
+
 
 ```
 
@@ -129,12 +170,18 @@ na_data <- scores %>%
 
 *Hint* Isolate the future, status, and score values for one region and one goal and see if you can identify a pattern.
 
-*Answer* Write your answer here!
+*Answer* The score would be 85. The score is the average of the future status and the current status.  
 
 ```{r, include=FALSE}
 ## Working space
-
-
+pattern_score <- scores %>% 
+  filter(goal == "AO") %>% #isolate one goal
+  filter(region_id == 18) %>%  #choose a region Fiji
+  filter(dimension == "future" | dimension == "status" | dimension == "score") %>% #isolate dimensions
+  filter(year == 2018) #score is the average
+  
+# Find the score using the average of status and future
+score <- (80 + 90)/2
 ```
 
 
@@ -146,11 +193,11 @@ Write it in the following table.  NOTE: Knit the document to see if the table is
 
 Variable   | Description                  | Values
 ---------- | ---------------------------- | ------------------------------
-goal       |                              |
-dimension  |                              | 
-region_id  |                              | 
-score      |                              |          
-year       |  Scenario year               | 2012 to 2019 
+goal       |  Abbreviation for goal (2 letter) or subgoal (3 letter) | AO, BD (HAB, SPP), CS, CW, LE (LIV, ECO), CP, FP (FIS, MAR), NP, SP (ICO, LSP), TR
+dimension  |  Variables used to calculate goal and subgoal scores | resilience, pressures, trend (all used to calculate future), future (likely future status), status (current status), score (overall score)
+region_id  |  Unique numeric region code   | 0 - 250
+score      |  Score corresponding to each dimension for each goal | trend scores -1 to 1; all others 0-100          
+year       |  Scenario year               | 2012 to 2020 
 
 
 ```{r, include=FALSE}
@@ -165,11 +212,39 @@ summary(scores)
 
 *Project* Create a scatterplot that compares 2012 and 2019 *scores* for each region for the artisanal opportunities goal. Based on this, do scores for the artisanal opportunities goal appear to have increased or decreased over time? 
 
-*Answer* Write your answer here!
+*Answer* In general, it appears the AO scores have increased from 2012 to 2019. While there were a number of regions exhibiting lower scores in 2019 compared to 2012, a majority of regions had better scores in 2019 compared to 2012. About 8 regions exhibited no change in score from 2012 to 2019.  
 
 ```{r, include=FALSE}
 ## Working space
 
+#wrangle the data:
+ao <- scores %>% 
+  filter(goal == "AO") %>% #isolate artisinal opportunities goal
+  filter(year == 2012 | year == 2019) %>% #compare year 2012 to 2019
+  filter(region_id != 0) %>% #filter out region 0 (global average)
+  filter(dimension == "score") %>%  #isolate the score dimension
+  select(-goal, -dimension) %>% 
+  spread(year,score) %>% #get each year as a different column so scores can be compared
+  rename("score_2012" = "2012",
+         "score_2019" = "2019") %>% #rename so numbers aren't the column name
+  mutate(ao_diff = score_2019 - score_2012) #find the difference in scores between 2019 and 2012
+
+
+#plot:
+ao_plot <- ggplot(ao, aes(x = ao_diff, y = region_id)) +
+  geom_point(color = case_when(ao$ao_diff > 0 ~ "forestgreen",
+                               ao$ao_diff < 0 ~ "firebrick4",
+                               ao$ao_diff == 0 ~ "grey12"), alpha = 0.8) + 
+  geom_vline(xintercept = 0, color = "black") +
+  scale_x_continuous(expand = c(0,0), limits = c(-10,15)) + 
+  scale_y_continuous(expand = c(0.01,0.01), limits = c(0,251)) + 
+  labs(x = "Score Difference", y = "Region ID",
+       title = "Difference in Artisinal Fishing Opportunity Scores",
+       subtitle = "2012 to 2019") +
+  theme_bw()
+  
+
+ao_plot
 
 
 ```
