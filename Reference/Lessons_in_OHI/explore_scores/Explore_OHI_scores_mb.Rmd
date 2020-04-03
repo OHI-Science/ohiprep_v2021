@@ -4,9 +4,13 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+#call ohi specific functions
+
+
 ## loading packages
 library(dplyr)
 library(tidyr)
+library(tidyverse)
 
 ```
 
@@ -56,7 +60,7 @@ scores <- read.csv("https://raw.githubusercontent.com/OHI-Science/ohi-global/dra
 
 *Answer* Write your answer here!
 
-
+There are two extra, one is region zero and one is 213, which is Antartica. Region zero is the overall aggregated score, and region 213 is not included in the global assessment. 
 
 ```{r, include=FALSE}
 ## Working space
@@ -64,13 +68,20 @@ scores <- read.csv("https://raw.githubusercontent.com/OHI-Science/ohi-global/dra
 length(unique(scores$region_id))
 
 scores_na <- scores %>% 
-  filter(region_id == 4)
+  group_by(region_id) %>% 
+  summarize(
+    na = length(is.na(score))
+  ) %>% 
+  arrange(-na)
+
 
 scores_na
 
 ```
 
 *Question* Which region id corresponds to the United States?
+
+163
 
 ### Goal explore
 
@@ -79,6 +90,8 @@ scores_na
 *Hint 1* Review the methods doc here: https://raw.githack.com/OHI-Science/ohi-global/published/documents/methods/Supplement.html
 
 *Answer* Write your answer here!
+
+There are 10 goals, however for four of those goals there are 2 subgoals that are also calculated. The subgoals have three letter abbreviations, while the larger goals have two letter abbreviations. The last goal listed here, index, is the overall weighted score of all the goals for that region. 
 
 ```{r, include=FALSE}
 ## Working space
@@ -94,6 +107,9 @@ unique(scores$goal)
 
 *Answer* Write your answer here!
 
+The six levels of the dimension variable represent different layres of caluclating the overall goal score. `trend`, `pressures` and resilience all go into calculating the number shown in future. The `future` score is then combined with `status` to then find the over all `score`. 
+
+
 ```{r, include=FALSE}
 ## Working space
 
@@ -104,11 +120,14 @@ table(scores$goal)
 table(scores$goal, scores$dimension)
 
 # ok...but why are the different values for pressures/resilience/trend and future?
+#pressures, resilience, trend all go into calculating 
+
 # addition of region 0!
 ao <- filter(scores, goal=="AO")
 table(scores$region_id, scores$dimension)
 ```
 
+This table is showing that there are more future values than there are status values bevcause of the "index" goal which is the global average, which does not have a pressure, resilience or future score. 
 
 ### Missing data
 
@@ -118,13 +137,24 @@ table(scores$region_id, scores$dimension)
 
 *Answer* Write your answer here!
 
+The goal with the most NAs are natural products - this may be because certain regions have more species that are commercially valuable than others. For example, tropical regions tend to have more shells and other species that people value as decorative pieces. 
+
+Carbon storage also has a lot of NAs, which seems difficult to calculate and would need detailed global data.
+
 ```{r, include=FALSE}
 ## Working space
 
 na_data <- scores %>% 
   filter(dimension == "score") %>%
   filter(region_id != 0) %>%
-  filter(year == 2019)
+  filter(year == 2019) %>% 
+  group_by(goal) %>% 
+  summarise(
+    na = length(score[is.na(score)])
+  ) %>% 
+  arrange(na)
+
+na_data
 
 ```
 
@@ -137,9 +167,14 @@ na_data <- scores %>%
 
 *Answer* Write your answer here!
 
+The number in `score` is the average between the status and the future scores. 
 ```{r, include=FALSE}
 ## Working space
 
+future_score <- scores %>% 
+  filter(region_id == 1) %>% 
+  filter(goal == "BD") %>%
+  filter(dimension == "future" | dimension == "status" | dimension == "score")
 
 ```
 
@@ -152,10 +187,10 @@ Write it in the following table.  NOTE: Knit the document to see if the table is
 
 Variable   | Description                  | Values
 ---------- | ---------------------------- | ------------------------------
-goal       |                              |
-dimension  |                              | 
-region_id  |                              | 
-score      |                              |          
+goal       | The characters in the goal column indicate all the goals and subgoals from the OHI framework. The 10 main goals are abbreviated in with two letters, while subgoals are abbreviated in three letters                              | AO, BD, CS, CW, LE, CP, FP, NP, SP, TR, HAB, SPP, LIV, ECO, FIS, MAR, ICO, LSP
+dimension  |  A character string indicating which dimension has been calculated. Trends, pressure and resilience scores are all aggregated to calculate the future. Future and status are then averaged to find the total score                            | trend, pressure, future, resilience, status, score
+region_id  | An integer corresponding to a specific coastal region for which scores are calculated.                             | 0 to 222
+score      | A numeric value indicating the calculated score, which are all on a scale of 0 to 100, except the trend dimension, which is scored on a scale of -1 to 1                               | -1 to 1 for trend, all else 0 to 100,          
 year       |  Scenario year               | 2012 to 2019 
 
 
@@ -173,10 +208,26 @@ summary(scores)
 
 *Answer* Write your answer here!
 
+There appears to be more positive points than negative points on the graph, suggesting that the scores for AO have generally increased rather than decreased between 2012 and 2019.  
+
 ```{r, include=FALSE}
 ## Working space
 
+scatter_data <- scores %>% 
+  filter(goal == "AO") %>% 
+  filter(dimension == "score") %>% 
+  filter(year == 2012 | year == 2019) %>% 
+  spread(year, score) %>% 
+  mutate(
+    diff = `2019` - `2012`
+  )
 
+scatter_12_19 <- ggplot(scatter_data, aes(x = region_id, y = diff))+ 
+  geom_point(color = ifelse(scatter_data$diff > 0, "aquamarine3", "tomato"))+
+  theme_bw()+
+  geom_hline(yintercept = 0)+
+  labs(x = "Region", y = "Difference in scores between 2012 and 2019")
 
+scatter_12_19
 ```
 
