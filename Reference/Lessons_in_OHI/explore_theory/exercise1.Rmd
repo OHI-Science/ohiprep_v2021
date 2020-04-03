@@ -5,7 +5,7 @@ output: html_document
 
 Work together to answer these questions.  
 
-All the information you need should be in the OHI Methods [document](https://raw.githack.com/OHI-Science/ohi-global/published/global_supplement/Supplement.html).
+All the information you need should be in the OHI Methods [document](https://raw.githack.com/OHI-Science/ohi-global/published/documents/methods/Supplement.html#2_the_theory_of_ohi).
 
 I will be around to answer any questions...so don't hesitate to get clarification, extra guidance, or request hints!
 

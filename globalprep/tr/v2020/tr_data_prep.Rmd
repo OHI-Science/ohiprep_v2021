@@ -94,6 +94,160 @@ source(here("globalprep/tr/v2019/R/tr_fxns.R"))
 ```
 
 
+# Ep: Proportion of workforce directly employed in tourism
+
+These data are from the [World Travel & Tourism Council](http://www.wttc.org/datagateway).  We use "direct" employment data (see mazu: git-annex/globalprep/_raw_data/WTTC/d2019/README.md for instructions on obtaining data). The data extend to 2029, which includes 10 years of projections. The actual data goes to 2019 (projected/real data are differentiated on the data gateway chart).
+
+These data are cleaned and formatted using the R/process_WTTC.R script. Missing values are gapfilled using the UN georegion information.
+
+```{r wttc prop tourism, message=FALSE, warning=FALSE, echo=FALSE, results="hide"}
+
+## describe where the raw data are located:
+scenario_yr <- "v2019"
+dir_wttc <- file.path(dir_M, 'git-annex/globalprep/_raw_data/WTTC/d2019/raw')
+dir_github <- here("globalprep/tr", scenario_yr)
+
+## processing script that formats the WTTC for OHI, saves the following: intermediate/wttc_empd_rgn.csv
+source(here("globalprep/tr/v2019/R/process_WTTC.R"))
+##### v2019: Duplicates = Guadeloupe/Martinique, PR/VI, China (accounted for in the script)
+
+## read in the dataset created by above function:
+tr_jobs_pct_tour <- read_csv(here('globalprep/tr/v2019/intermediate/wttc_empd_rgn.csv')) %>% 
+ dplyr::select(rgn_id, year, jobs_pct)
+
+## format data to have complete years/regions and convert percentage of jobs to proportion of jobs
+rgn_names <- read_csv('https://raw.githubusercontent.com/OHI-Science/ohi-global/draft/eez/spatial/regions_list.csv') %>%
+    dplyr::select(rgn_id)
+
+# create data frame with a row for each combination of region id and year
+rgn_names <- expand.grid(rgn_id = rgn_names$rgn_id, 
+                             year= min(tr_jobs_pct_tour$year):max(tr_jobs_pct_tour$year)) 
+      
+tr_data_raw <- rgn_names %>%
+  full_join(tr_jobs_pct_tour %>%
+                rename(Ep = jobs_pct) %>%
+                mutate(Ep = Ep/100) %>%
+                mutate(Ep = ifelse(Ep > 1, NA, Ep)),
+              by = c('rgn_id', 'year')) %>%
+  filter(!rgn_id == 213) %>% 
+  filter(!rgn_id == 255) # ditch disputed regions and Antarctica
+
+## v2019: >2500 NAs in Ep column
+# summary(tr_data_raw)
+
+
+## gapfill missing data using UN georegion data:
+georegions       <- georegions
+georegion_labels <- georegion_labels
+
+tr_data_raw <- tr_data_raw %>%
+  left_join(georegions, by = 'rgn_id') %>%
+  left_join(georegion_labels, by = 'rgn_id') %>%
+  select(-r0)
+
+# Calculate two different gapfill columns using r2 and r1
+tr_data_raw_gf <- tr_data_raw %>%
+  group_by(year, r2) %>%
+  mutate(Ep_pred_r2 = mean(Ep, na.rm=TRUE)) %>%
+  ungroup() %>%
+  group_by(year, r1) %>%
+  mutate(Ep_pred_r1 = mean(Ep, na.rm=TRUE)) %>%
+  ungroup()
+
+# first gapfill with r2, if no value available use r1; create column indicating whether value was gapfilled and if so, by what method.
+tr_data_raw_gf <- tr_data_raw_gf %>%
+  mutate(Ep_all = ifelse(is.na(Ep), Ep_pred_r2, Ep)) %>%
+  mutate(Ep_all = ifelse(is.na(Ep_all), Ep_pred_r1, Ep_all)) %>% 
+  mutate(gapfilled = ifelse(is.na(Ep) & !is.na(Ep_all), "gapfilled", NA)) %>%
+  mutate(method = ifelse(is.na(Ep) & !is.na(Ep_pred_r2), "UN georegion (r2)", NA)) %>%
+  mutate(method = ifelse(is.na(Ep) & is.na(Ep_pred_r2) & !is.na(Ep_pred_r1), "UN georegion (r1)", method)) 
+
+######################################
+
+### After gap-filling, make sure low/uninhabited regions are NA
+# Create df for unpopulated/low populated regions
+low_pop()
+low_pop <- low_pop %>%
+  filter(est_population < 3000 | is.na(est_population)) %>%  #filter out regions that have populations > 3000 and keep NA values 
+  rename(rgn_label = rgn_nam)
+
+
+# make sure all the NAs are uninhabited regions
+tr_data_nas <- tr_data_raw_gf %>% 
+  filter(is.na(Ep_all)) %>% 
+  select(rgn_id, year, r1_label, r2_label, rgn_label) %>% 
+  left_join(low_pop, by = c("rgn_id", "rgn_label"))
+#  filter(!duplicated(rgn_id))
+
+max(tr_data_nas$est_population, na.rm=TRUE)<3000 # should be true
+
+# make sure all the uninhabited regions are NA (along with gapfill and method if they were gapfilled above)
+tr_data_raw_gf <- tr_data_raw_gf %>% 
+  mutate(Ep_all = ifelse(rgn_id %in% low_pop$rgn_id, NA, Ep_all)) %>% 
+  mutate(gapfilled = ifelse(is.na(Ep_all), NA, gapfilled)) %>% 
+  mutate(method = ifelse(is.na(Ep_all), NA, method))
+
+
+# check NAs once more 
+# summary(tr_data_raw_gf)
+# v2019: Adding the low pop df identifies 13 additional regions that should be NA instead of gapfilled, taking the total number of NAs in the data set from 245 to 700
+
+
+# save the gapfill report data
+tr_data_gf <- tr_data_raw_gf %>%
+  select(rgn_id, year, gapfilled, method) 
+
+write_csv(tr_data_gf, here("globalprep/tr/v2019/output/tr_jobs_pct_tourism_gf.csv"))
+
+tr_data <- tr_data_raw_gf %>%
+  select(rgn_id, year, Ep=Ep_all) 
+
+
+
+# Save gap-filled data
+write_csv(tr_data, here("globalprep/tr/v2019/output/tr_jobs_pct_tourism.csv"))
+
+```
+
+## Data check and outlier investigation
+```{r data check, message=FALSE, echo=FALSE}
+
+
+## A quick check to make sure last year's values aren't too crazy different
+## (NOTE: the source data has been updated, so there are some changes, but they shouldn't be super different)
+
+old <- read_csv(here('globalprep/tr/v2018/output/tr_jobs_pct_tourism.csv')) %>%
+  select(rgn_id, year, ep_old=Ep)
+
+new <- read_csv(here('globalprep/tr/v2019/output/tr_jobs_pct_tourism.csv')) %>%
+  left_join(old) %>%
+  filter(year==2018) %>%
+  arrange(ep_old)
+
+# Visualize data comparison 
+ggplotly(ggplot(new, aes(x = Ep, y = ep_old, labels = rgn_id)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0, color = "red"))
+
+
+######## investigate outliers (if applicable)
+
+new_diff <- new %>%
+  mutate(difference = ep_old-Ep) %>% 
+  filter(!is.na(ep_old)) %>% 
+  filter(!is.na(Ep))
+
+outliers <- tr_data_raw %>% 
+  filter(rgn_id %in% c(15,116,117,118,119,122,125,127,173,250)) %>% 
+  filter(year == 2018) %>% 
+  select(rgn_id, rgn_label) %>% 
+  left_join(new, by = "rgn_id", "year") %>% 
+  mutate(difference = Ep-ep_old) %>% 
+  mutate(avg_diff = mean(new_diff$difference))
+
+### v2019: These outliers can be explained by changes in the source data. Compared raw data from v2018 and all of these regions have large changes in the % share of total employment reported for the year 2018. WTTC likely backfills and adjusts their data on a yearly basis.  
+```
+
 # Ts: Tourism sustainability
 
 These data are from the World Economic Forum's "Travel and Tourism Competitiveness Report" (http://reports.weforum.org/travel-and-tourism-competitiveness-report-2017/downloads/) See mazu: _raw_data/WEF-Economics/ for more details and the raw data.
@@ -420,163 +574,6 @@ abline(0, 1, col="red")
 #looks reasonable 
 
 ```
-
-
-# Ep: Proportion of workforce directly employed in tourism
-
-These data are from the [World Travel & Tourism Council](http://www.wttc.org/datagateway).  We use "direct" employment data (see mazu: git-annex/globalprep/_raw_data/WTTC/d2019/README.md for instructions on obtaining data). The data extend to 2029, which includes 10 years of projections. The actual data goes to 2019 (projected/real data are differentiated on the data gateway chart).
-
-These data are cleaned and formatted using the R/process_WTTC.R script. Missing values are gapfilled using the UN georegion information.
-
-```{r wttc prop tourism, message=FALSE, warning=FALSE, echo=FALSE, results="hide"}
-
-## describe where the raw data are located:
-scenario_yr <- "v2019"
-dir_wttc <- file.path(dir_M, 'git-annex/globalprep/_raw_data/WTTC/d2019/raw')
-dir_github <- here("globalprep/tr", scenario_yr)
-
-## processing script that formats the WTTC for OHI, saves the following: intermediate/wttc_empd_rgn.csv
-source(here("globalprep/tr/v2019/R/process_WTTC.R"))
-##### v2019: Duplicates = Guadeloupe/Martinique, PR/VI, China (accounted for in the script)
-
-## read in the dataset created by above function:
-tr_jobs_pct_tour <- read_csv(here('globalprep/tr/v2019/intermediate/wttc_empd_rgn.csv')) %>% 
- dplyr::select(rgn_id, year, jobs_pct)
-
-## format data to have complete years/regions and convert percentage of jobs to proportion of jobs
-rgn_names <- read_csv('https://raw.githubusercontent.com/OHI-Science/ohi-global/draft/eez/spatial/regions_list.csv') %>%
-    dplyr::select(rgn_id)
-
-# create data frame with a row for each combination of region id and year
-rgn_names <- expand.grid(rgn_id = rgn_names$rgn_id, 
-                             year= min(tr_jobs_pct_tour$year):max(tr_jobs_pct_tour$year)) 
-      
-tr_data_raw <- rgn_names %>%
-  full_join(tr_jobs_pct_tour %>%
-                rename(Ep = jobs_pct) %>%
-                mutate(Ep = Ep/100) %>%
-                mutate(Ep = ifelse(Ep > 1, NA, Ep)),
-              by = c('rgn_id', 'year')) %>%
-  filter(!rgn_id == 213) %>% 
-  filter(!rgn_id == 255) # ditch disputed regions and Antarctica
-
-## v2019: >2500 NAs in Ep column
-# summary(tr_data_raw)
-
-
-## gapfill missing data using UN georegion data:
-georegions       <- georegions
-georegion_labels <- georegion_labels
-
-tr_data_raw <- tr_data_raw %>%
-  left_join(georegions, by = 'rgn_id') %>%
-  left_join(georegion_labels, by = 'rgn_id') %>%
-  select(-r0)
-
-# Calculate two different gapfill columns using r2 and r1
-tr_data_raw_gf <- tr_data_raw %>%
-  group_by(year, r2) %>%
-  mutate(Ep_pred_r2 = mean(Ep, na.rm=TRUE)) %>%
-  ungroup() %>%
-  group_by(year, r1) %>%
-  mutate(Ep_pred_r1 = mean(Ep, na.rm=TRUE)) %>%
-  ungroup()
-
-# first gapfill with r2, if no value available use r1; create column indicating whether value was gapfilled and if so, by what method.
-tr_data_raw_gf <- tr_data_raw_gf %>%
-  mutate(Ep_all = ifelse(is.na(Ep), Ep_pred_r2, Ep)) %>%
-  mutate(Ep_all = ifelse(is.na(Ep_all), Ep_pred_r1, Ep_all)) %>% 
-  mutate(gapfilled = ifelse(is.na(Ep) & !is.na(Ep_all), "gapfilled", NA)) %>%
-  mutate(method = ifelse(is.na(Ep) & !is.na(Ep_pred_r2), "UN georegion (r2)", NA)) %>%
-  mutate(method = ifelse(is.na(Ep) & is.na(Ep_pred_r2) & !is.na(Ep_pred_r1), "UN georegion (r1)", method)) 
-
-######################################
-
-### After gap-filling, make sure low/uninhabited regions are NA
-# Create df for unpopulated/low populated regions
-low_pop()
-low_pop <- low_pop %>%
-  filter(est_population < 3000 | is.na(est_population)) %>%  #filter out regions that have populations > 3000 and keep NA values 
-  rename(rgn_label = rgn_nam)
-
-
-# make sure all the NAs are uninhabited regions
-tr_data_nas <- tr_data_raw_gf %>% 
-  filter(is.na(Ep_all)) %>% 
-  select(rgn_id, year, r1_label, r2_label, rgn_label) %>% 
-  left_join(low_pop, by = c("rgn_id", "rgn_label"))
-#  filter(!duplicated(rgn_id))
-
-max(tr_data_nas$est_population, na.rm=TRUE)<3000 # should be true
-
-# make sure all the uninhabited regions are NA (along with gapfill and method if they were gapfilled above)
-tr_data_raw_gf <- tr_data_raw_gf %>% 
-  mutate(Ep_all = ifelse(rgn_id %in% low_pop$rgn_id, NA, Ep_all)) %>% 
-  mutate(gapfilled = ifelse(is.na(Ep_all), NA, gapfilled)) %>% 
-  mutate(method = ifelse(is.na(Ep_all), NA, method))
-
-
-# check NAs once more 
-# summary(tr_data_raw_gf)
-# v2019: Adding the low pop df identifies 13 additional regions that should be NA instead of gapfilled, taking the total number of NAs in the data set from 245 to 700
-
-
-# save the gapfill report data
-tr_data_gf <- tr_data_raw_gf %>%
-  select(rgn_id, year, gapfilled, method) 
-
-write_csv(tr_data_gf, here("globalprep/tr/v2019/output/tr_jobs_pct_tourism_gf.csv"))
-
-tr_data <- tr_data_raw_gf %>%
-  select(rgn_id, year, Ep=Ep_all) 
-
-
-
-# Save gap-filled data
-write_csv(tr_data, here("globalprep/tr/v2019/output/tr_jobs_pct_tourism.csv"))
-
-```
-
-## Data check and outlier investigation
-```{r data check, message=FALSE, echo=FALSE}
-
-
-## A quick check to make sure last year's values aren't too crazy different
-## (NOTE: the source data has been updated, so there are some changes, but they shouldn't be super different)
-
-old <- read_csv(here('globalprep/tr/v2018/output/tr_jobs_pct_tourism.csv')) %>%
-  select(rgn_id, year, ep_old=Ep)
-
-new <- read_csv(here('globalprep/tr/v2019/output/tr_jobs_pct_tourism.csv')) %>%
-  left_join(old) %>%
-  filter(year==2018) %>%
-  arrange(ep_old)
-
-# Visualize data comparison 
-ggplotly(ggplot(new, aes(x = Ep, y = ep_old, labels = rgn_id)) +
-  geom_point() +
-  geom_abline(slope = 1, intercept = 0, color = "red"))
-
-
-######## investigate outliers (if applicable)
-
-new_diff <- new %>%
-  mutate(difference = ep_old-Ep) %>% 
-  filter(!is.na(ep_old)) %>% 
-  filter(!is.na(Ep))
-
-outliers <- tr_data_raw %>% 
-  filter(rgn_id %in% c(15,116,117,118,119,122,125,127,173,250)) %>% 
-  filter(year == 2018) %>% 
-  select(rgn_id, rgn_label) %>% 
-  left_join(new, by = "rgn_id", "year") %>% 
-  mutate(difference = Ep-ep_old) %>% 
-  mutate(avg_diff = mean(new_diff$difference))
-
-### v2019: These outliers can be explained by changes in the source data. Compared raw data from v2018 and all of these regions have large changes in the % share of total employment reported for the year 2018. WTTC likely backfills and adjusts their data on a yearly basis.  
-```
-
-
 
 # Tw: Travel warnings
 
