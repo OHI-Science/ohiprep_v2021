@@ -69,7 +69,7 @@ length(unique(scores$region_id))
 
 *Question * When I look at the number of goals, N=19 show up....I thought there were supposed to be 10 goals!!! Can you explain what all these are? Also, why do some of the goal abbreviations have 2 letters and others 3 letters?  
 
-*Hint 1* Review the methods doc here: https://raw.githack.com/OHI-Science/ohi-global/published/global2018/Results/Supplement_Results.html
+*Hint 1* Review the methods doc here: https://raw.githack.com/OHI-Science/ohi-global/published/documents/methods/Supplement.html
 
 *Answer* Write your answer here!
 
