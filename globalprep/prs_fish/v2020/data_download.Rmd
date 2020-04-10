@@ -23,9 +23,8 @@ library(xlsx)
 
 # New Global Fisheries Catch Data
 
-* Industrial Catch (1950 - 2019) - reported, iuu, and discard catch data for each cell location and unique identifier
-* Non-Industrial Catch (1950 - 2015) - reported, iuu, and discard catch data for each cell location and unique identifier
-* Master Index File (Index.csv) - information associated with the unique identifiers. This is split into two files, "IndexInd" (industrial) and "IndexNInd" (non-industrial).
+* Industrial Catch (1950 - 2017) - reported, iuu, and discard catch data for each cell location and unique identifier
+* Non-Industrial Catch (1950 - 2017) - reported, iuu, and discard catch data for each cell location and unique identifier
 * DATA CODE DEFINITIONS (gear/taxa/country codes and cell lat/lon references)
 
 ```{r}
@@ -33,13 +32,6 @@ library(xlsx)
 source("https://raw.githubusercontent.com/OHI-Science/ohiprep_v2019/gh-pages/workflow/R/common.R")
   
 ## Save download url suffixes 
-# web_years <- c("Ind1950_1954", "Ind1955_1959", "Ind1960_1964", "Ind1965_1969", 
-#                "Ind1970_1974", "Ind1975_1979", "Ind1980_1984", "Ind1985_1989",
-#                "Ind1990_1994", "Ind1995_1999", "Ind2000_2004", "Ind2005_2009", 
-#                "Ind2010_2014", "Ind2015_2015", "NInd1950_1954", "NInd1955_1959",
-#                "NInd1960_1964", "NInd1965_1969", "NInd1970_1974", "NInd1975_1979",
-#                "NInd1980_1984", "NInd1985_1989", "NInd1990_1994", "NInd1995_1999", 
-#                "NInd2000_2004", "NInd2005_2009", "NInd2010_2014", "NInd2015_2015")
 
 web_years <- c("Catch1950_1954", "Catch1955_1959", "Catch1960_1964", "Catch1965_1969", 
                "Catch1970_1974", "Catch1975_1979", "Catch1980_1984", "Catch1985_1989",
