@@ -13,6 +13,8 @@ I will be around to answer any questions...so don't hesitate to get clarificatio
 1. What is the difference between a goal's "status" and "score"?
 
 <br>
+The current status indicates the scores for the most recent data, where as the overall score includes both the "status" and the "future" trends calculated for each score. 
+
 <br>
 
 2. If a region's food provision goal has the following values, what would its food provision score be?
@@ -22,6 +24,8 @@ Predicted future status: 80
 Current status: 60
 
 <br>
+It would be the average of the the predicted future status and current status, or in this case 70
+
 <br>
 
 3. Given the following data, what would this region's Index score be?
@@ -44,6 +48,15 @@ Tourism and Recreation | TR | 50
 NOTE: The abbreviations for subgoals have 3 letters and goals have 2 letters.
 
 <br>
+```{r}
+
+biod <- (50 + 30)/2
+
+index <- (40 + 90 + 20 + 95 + 60 + 80 + 85 + 100 + 10 + 50)/10
+
+```
+
+The index score would be 63
 <br>
 
 4. Fill in the missing values.  
@@ -53,9 +66,9 @@ NOTE: Pressure and resilience must be multiplied by 0.01.  Trend and status are 
 
 Dimension | Scenario 1 | Scenario 2
 ---------- | ---------- | ---------
-Score      |            | 
+Score      |  83.75  | 77.5
 Current status |  75 | 75
-Predicted future status |  |  80
+Predicted future status | 92.5 |  80
 Trend | 0.10 | 0.10
 Pressure | 100 | 50
 Resilience | 50 | 50
@@ -63,7 +76,19 @@ Resilience | 50 | 50
 
 QUESTION: How did a pressure change from 100 to 50 affect the final score?  Was this a larger or smaller effect than you would have expected?
 
+The pressure change brought the final score down by about 6 points - this was less than I expected given the pressure score decreased by 50%, which seems like a pretty intense drop off. 
+
 <br>
+
+```{r}
+#using the trends weight as 0.67
+T = (75*(1.10))
+xf1 = (1 + 0.67*0.10 + (1-0.67)* (1-.50))*75
+
+score_1 = (92.5 + 75)/2
+score_2 = (80 + 75)/2
+```
+
 <br>
 
 
@@ -82,6 +107,7 @@ c. Take some sort of average of the stock status scores within each region (for 
 QUESTION: B/Bmsy scores greater than 1 indicate the stock is doing well!  Given this, why are B/Bmsy scores > 1.05 penalized (i.e., stock status score is less than 1)? 
 
 <br>
+They are penalized because a score that high suggests that that region is not maximizing the benefits the ocean can provide people, which is what the OHI really aims to measure.
 <br>
 
 ### Gapfilling
@@ -104,6 +130,9 @@ QUESTION: Should the missing values (NA is a missing value in R) remain missing?
 
 Or, should you try to estimate the missing values?  If so, how might you go about estimating them?
 <br>
+
+Ideally, these gaps and data would be filled rather than remain as NA for a region. There exist various ways to do so, including averaging existing data from neighboring or similar regions, spatial and temporal interpolation, or using predictive models if there exists other helpful data related to the missing data. 
+
 <br>
 
 ### Goal status and trend
@@ -115,6 +144,8 @@ The information in this section describes how status and trend are calculated fo
 
 QUESTION: What is the reference point for this subgoal?
 
+- 30%
+
 Explore the links to the pressures and resilience data layers.
 
 Follow this link to the functions.R file in ohi-global: https://github.com/OHI-Science/ohi-global/blob/draft/eez/conf/functions.R
@@ -122,11 +153,13 @@ Follow this link to the functions.R file in ohi-global: https://github.com/OHI-S
 Find the Lasting Special Places function.  See if you can reconcile the model described in the Methods with the code. (NOTE: Just aim for a large picture overview...at this point you do not need to understand every step….or even most of this)
 
 <br>
+
 <br>
 
 8. The trend for the Tourism and Recreation goal for the United States is -0.15.  Describe what this means.
 
 <br>
+It means that the tourism and recreation goal is expected to decrease by about 15% over the next5 years. 
 <br>
 
 9. We are going to walk through a trend calculation.  If R is installed on your computer, follow along.
@@ -170,6 +203,7 @@ QUESTION: What assumptions are we making by using this formulation of trend to c
 QUESTION: Can you think of any scenarios when we would not use 5 years of data to estimate trend?
 
 <br>
+By using a linear model, the assumption is that there will be no major disruptions to that goal in the next five years. We may want to adjust that if past data, which we used to create the proportional change, as outliers as a results of shock events. 
 <br>
 
 ### Goal pressure and resilience
@@ -185,11 +219,19 @@ b. Classifying the pressure category for each data layer. The pressure dimension
 
 QUESTION: How many climate change pressures are there? 
 
+- There are 4 climate change pressures
+
 c. Pressure x goal weighting. Pressures have little or no effect on some goals, but huge effects on others.  The relationship between the goals and the pressure variables is described here: https://github.com/OHI-Science/ohi-global/blob/draft/eez/conf/pressures_matrix.csv
 
 QUESTION: Which pressure layers affect the FIS  subgoal?  How many regulatory pressure layers are there?  How many social layers are there?  Which is more important: Ecological or Social pressures? 
 
+- the pressures that affect the FIS subgoal are: chemicals, nutrients, invasive species, genetic escapes, all the habitat destruction pressures, all by catch pressures, targeted harvests, and both governance pressures. 
+- There are two social layers
+- Neither are more important, as the weighting for economic and social pressures is 0.5
+
 QUESTION: Some goals, like Coastal Protection, have multiple “elements”.  Why? 
+
+- A broad goal like coastal protection may have several things that are trying to be protected, and therefore must all be included. In this example, fisheries protection is included in addition to habitat protection. 
 
 NOTE: It is convention to add a superscript to the pressure name that describes its category:
 * po=pollution
