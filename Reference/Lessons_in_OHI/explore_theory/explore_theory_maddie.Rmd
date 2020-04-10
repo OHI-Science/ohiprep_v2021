@@ -144,6 +144,8 @@ The information in this section describes how status and trend are calculated fo
 
 QUESTION: What is the reference point for this subgoal?
 
+- 30%
+
 Explore the links to the pressures and resilience data layers.
 
 Follow this link to the functions.R file in ohi-global: https://github.com/OHI-Science/ohi-global/blob/draft/eez/conf/functions.R
@@ -157,6 +159,7 @@ Find the Lasting Special Places function.  See if you can reconcile the model de
 8. The trend for the Tourism and Recreation goal for the United States is -0.15.  Describe what this means.
 
 <br>
+It means that the tourism and recreation goal is expected to decrease by about 15% over the next5 years. 
 <br>
 
 9. We are going to walk through a trend calculation.  If R is installed on your computer, follow along.
