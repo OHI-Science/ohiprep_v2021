@@ -33,6 +33,8 @@ We create raster files of total annual global catch from the Watson data and cor
 
 * Previously we had to do extra data prep to match the index files with the raw catch data. In version 5, this prep has been done for us. Now we just need to combine the raw data with geospatial information (sheet name Cells in Codes.xlsx), taxon information (sheet name Taxa in Codes.xlsx), gear (sheet name Gear in Codes.xlsx), and country information (sheet name Country in Codes.xlsx).
 
+* Version 5 of the data includes years through 2017 (which was previously only 2015). For this assessment we are including the years through 2017 in the fisheries data, as well as the NPP data (which we only previously included through 2015 for). 
+
 # Data Source
 
 **Reference**: 
@@ -93,7 +95,7 @@ df <- readRDS(file.path(dir_M,"/git-annex/globalprep/prs_fish/v2019/int/annual_c
 
 # indexNInd <- read.csv(file.path(dir_M,"git-annex/globalprep/_raw_data/IMAS_GlobalFisheriesLandings/d2019/IndexNInd.csv"))
 
-data <- readRDS(file.path(dir_M, "git-annex/globalprep/_raw_data/IMAS_GlobalFisheriesLandings/d2020/Catch1950_1954.rds"))
+data <- readRDS(file.path(dir_M, "git-annex/globalprep/_raw_data/IMAS_GlobalFisheriesLandings/d2020/Catch2015_2019.rds"))
 
 test <- data %>%
   dplyr::filter(Cell == 39098, CNumber == 124, ReportedIND ==0 , IUUIND == 0, DiscardsIND == 0, FGearCode == 11, IYear == 1950, Taxonkey == 602674) %>%
@@ -439,7 +441,7 @@ commercial <- commercial[!(str_detect(commercial, "corr"))] # remove files with 
 
 
 ## Plot one year of data
-catch <- raster(commercial[17])
+catch <- raster(commercial[19])
 plot(catch)
 res(catch) # 0.5 degree cells
 
@@ -454,11 +456,11 @@ tot_Catch <- sum(allRasters)
 
 ## apply log to adjust for really large values
 log_Catch <- raster::calc(tot_Catch, function(x){log(x+1)},
-             filename = paste0(rastFolder,"datacheck/commLand_2000_2015_log.tif"), overwrite=TRUE)
+             filename = paste0(rastFolder,"datacheck/commLand_2000_2017_log.tif"), overwrite=TRUE)
 
 
 ## Plot & Save raster
-png(filename="figs/log_IndCatch_2000_2015.png")
+png(filename="figs/log_IndCatch_2000_2017.png")
 plot(log_Catch, col=cols, alpha=1)
 dev.off()
 
@@ -468,14 +470,14 @@ click(log_Catch)
 zoom(log_Catch)
 
 
-## Read in rasters for artisanal landings between 2000 and 2015
+## Read in rasters for artisanal landings between 2000 and 2017
 artisanal <- list.files(paste0(rastFolder,"artisanal_landings"),full.names = TRUE)
 artisanal <- artisanal[!(str_detect(artisanal, "mean_catch"))] # remove files with 'mean_catch' in file path
 artisanal <- artisanal[!(str_detect(artisanal, "corr"))] # remove files with 'corr' in file path
 
 
 ## Plot one year of data
-catch <- raster(artisanal[17])
+catch <- raster(artisanal[19])
 plot(catch)
 res(catch) # 0.5 degree cells
 
@@ -490,11 +492,11 @@ tot_Catch <- sum(allRasters)
 
 ## apply log to adjust for really large values
 log_Catch <- raster::calc(tot_Catch, function(x){log(x+1)},
-             filename = paste0(rastFolder,"datacheck/artisanalLand_2000_2015_log.tif"), overwrite=TRUE)
+             filename = paste0(rastFolder,"datacheck/artisanalLand_2000_2017_log.tif"), overwrite=TRUE)
 
 
 ## Plot & Save raster
-png(filename="figs/log_NIndCatch_2000_2015.png")
+png(filename="figs/log_NIndCatch_2000_2017.png")
 plot(log_Catch, col=cols, alpha=1)
 dev.off()
 
@@ -509,16 +511,16 @@ zoom(log_Catch)
 
 Use **net primary production** (NPP) data to correct global fisheries catch for spatial differences in ecosystem impact
 
-* Prepare and gapfill NPP data in [**npp.Rmd**](https://mazu.nceas.ucsb.edu/rstudio/files/github/ohiprep_v2018/globalprep/prs_fish/v2019/npp.html); NOTE: We did not update the NPP data for OHI 2019 since the source data did not change. 
+* Prepare and gapfill NPP data in [**npp.Rmd**](https://mazu.nceas.ucsb.edu/rstudio/files/github/ohiprep_v2020/globalprep/prs_fish/v2020/npp.html); 
 * Resample NPP and fish catch rasters to ocean raster
 * Correct fish catch with NPP (catch divided by NPP)
 
 Read in gapfilled NPP rasters
 ```{r gapfill, eval = FALSE}
 
-npp_files_gf <- list.files(file.path(dir_M,"git-annex/globalprep/prs_fish/v2018/VGPM_primary_productivity/int/annual_npp"), full.names=TRUE, pattern = "gf")
+npp_files_gf <- list.files(file.path(dir_M,"git-annex/globalprep/prs_fish/v2020/VGPM_primary_productivity/int/annual_npp"), full.names=TRUE, pattern = "gf")
 
-plot(raster(npp_files_gf[13]), col=cols, axes=FALSE, main = 'Net Primary Production (mg C/m2/day) \n 2015')
+plot(raster(npp_files_gf[13]), col=cols, axes=FALSE, main = 'Net Primary Production (mg C/m2/day) \n 2017')
 
 ```
 
@@ -542,11 +544,11 @@ catch_npp_fun <- function(file, layer){ # file = dem_d_files[1]  layer = 'dem_de
   npp <- npp_files_gf[str_detect(npp_files_gf, yr)] %>% 
     raster()
 
-  projectRaster(catch, npp, method = 'ngb', over=TRUE, filename = file.path(dir_M,"git-annex/globalprep/prs_fish/v2019/tmp/temp_resample2-1.tif"), overwrite=TRUE) 
+  projectRaster(catch, npp, method = 'ngb', over=TRUE, filename = file.path(dir_M,"git-annex/globalprep/prs_fish/v2020/tmp/temp_resample2-1.tif"), overwrite=TRUE) 
   
-  catch_resmp <- raster(file.path(dir_M,"git-annex/globalprep/prs_fish/v2019/tmp/temp_resample2-1.tif"))
+  catch_resmp <- raster(file.path(dir_M,"git-annex/globalprep/prs_fish/v2020/tmp/temp_resample2-1.tif"))
     
-  overlay(catch_resmp, npp, fun=function(x,y){x/y}, filename = file.path(dir_M, sprintf("git-annex/globalprep/prs_fish/v2019/int/%s/annual_catch_corr_%s.tif",layer,yr)), overwrite=TRUE)
+  overlay(catch_resmp, npp, fun=function(x,y){x/y}, filename = file.path(dir_M, sprintf("git-annex/globalprep/prs_fish/v2020/int/%s/annual_catch_corr_%s.tif",layer,yr)), overwrite=TRUE)
   
 }
 
@@ -558,7 +560,7 @@ Create corrected catch rasters - apply `catch_npp_fun` function. Resolution and 
 ```{r corrCatch, eval=FALSE}
 
 ## Specify years of catch data that match with years available in NPP data
-years_of_data <- 2003:2015
+years_of_data <- 2003:2017
 years_filter <-  paste(years_of_data, collapse="|")
 
 ## Get file names in each of the four catch categories
@@ -598,7 +600,7 @@ commD_corr <- list.files(paste0(rastFolder,'comm_discards'), pattern="corr", ful
 artL_corr <- list.files(paste0(rastFolder,'artisanal_landings'), pattern="corr", full.names=TRUE)
 artD_corr <- list.files(paste0(rastFolder,'artisanal_discards'), pattern="corr", full.names=TRUE)
 
-num <- 13 # change to check different raster file in the list
+num <- 10 # change to check different raster file in the list
 all <- stack(raster(commL_corr[num]), raster(commD_corr[num]), raster(artL_corr[num]),raster(artD_corr[num]))
 plot(all, col=cols)
 
@@ -610,12 +612,13 @@ Calculate 5-year means for commercial and artisanal landings & discards. Set up 
 
 ```{r catchmeans, eval=FALSE}
 
+
 registerDoParallel(5)
 
 ## check to see which years of data to run in the foreach() loop
-# years_of_data[[1]]:years_of_data[[length(years_of_data)-4]]
+# years_of_data[[1]]:years_of_data[[length(years_of_data)-4]] # goes until 2013
 
-foreach (i = 2003:2011) %dopar%{ # i = 2010
+foreach (i = 2003:2013) %dopar%{  #i = 2010
   
   yrs <- c(i:(i+4))
   
@@ -624,6 +627,11 @@ foreach (i = 2003:2011) %dopar%{ # i = 2010
             calc(fun=function(x){mean(x, na.rm=TRUE)}) %>%
             calc(fun=function(x){log(x+1)}, filename = paste0(rastFolder, 'comm_landings/mean_catch_',yrs[1],'_',yrs[5],'.tif'), overwrite=TRUE)
 
+  ## spot check some of the data... looks like a lot more activity in Greenland last year.. 
+ # plot(raster(file.path(rastFolder, "comm_landings/mean_catch_2010_2014.tif")))
+ #    plot(raster(file.path("/home/shares/ohi/git-annex/globalprep/prs_fish/v2019/int/", "comm_landings/mean_catch_2010_2014.tif")))
+  
+  
   commD_corr[which(str_detect(commD_corr, pattern = paste(yrs,collapse = '|')))] %>%
             stack() %>%
             calc(fun=function(x){mean(x,na.rm=TRUE)}) %>%
@@ -659,7 +667,7 @@ mean_AL <- mean_AL[!(str_detect(mean_AL, "1km"))] # remove files with '1km' in f
 mean_AD <- list.files(paste0(rastFolder,'artisanal_discards'), pattern="mean_catch", full.names=TRUE)
 mean_AD <- mean_AD[!(str_detect(mean_AD, "1km"))] # remove files with '1km' in file path
 
-num <- 9 # change to check different raster file year
+num <- 11 # change to check different raster file year
 all <- stack(raster(mean_CL[num]), raster(mean_CD[num]), raster(mean_AL[num]),raster(mean_AD[num]))
 plot(all, col=cols)
 ```
@@ -681,7 +689,7 @@ Get industrial landings catch values across all years 2003-2015.
 
 vals <- c()
 
-for(i in 2007:2015){ # i = 2015
+for(i in 2007:2017){ # i = 2015
 #print(i)
   m <- mean_CL[which(str_detect(mean_CL, pattern = paste0("_",i,".tif")))] %>%
     raster()%>%
@@ -693,7 +701,7 @@ for(i in 2007:2015){ # i = 2015
 
 }
 
-ref_clb <- quantile(vals, prob = 0.9999, na.rm=T)  # 10.64 - 2018; 11.80793 - 2019
+ref_clb <- quantile(vals, prob = 0.9999, na.rm=T)  # 10.64 - 2018; 11.80793 - 2019, 12.1 - 2020
   
 ```
 
@@ -705,7 +713,7 @@ Get industrial discards values across all years 2003-2015.
 
 vals <- c()
 
-for(i in 2007:2015){ # i = 2007
+for(i in 2007:2017){ # i = 2007
 #print(i)
   m <- mean_CD[which(str_detect(mean_CD, pattern = paste0("_",i,".tif")))] %>%
     raster()%>%
@@ -717,7 +725,7 @@ for(i in 2007:2015){ # i = 2007
 
 }
 
-ref_chb <- quantile(vals, prob = 0.9999, na.rm=T)  # 9.88 - 2018; 9.480187 - 2019
+ref_chb <- quantile(vals, prob = 0.9999, na.rm=T)  # 9.88 - 2018; 9.480187 - 2019, 10.1 - 2020
 
 ```
 
@@ -729,7 +737,7 @@ Get artisanal landings values across all years 2003-2015.
 
 vals <- c()
 
-for(i in 2007:2015){ # i = 2007
+for(i in 2007:2017){ # i = 2007
 #print(i)
   m <- mean_AL[which(str_detect(mean_AL, pattern = paste0("_",i,".tif")))] %>%
     raster()%>%
@@ -741,7 +749,7 @@ for(i in 2007:2015){ # i = 2007
 
 }
 
-ref_alb <- quantile(vals, prob = 0.9999, na.rm=T)  # 10.72 - 2018; 12.38605 - 2019
+ref_alb <- quantile(vals, prob = 0.9999, na.rm=T)  # 10.72 - 2018; 12.38605 - 2019, 11.3 - 2020
 ```
 
 ### Artisanal High Bycatch
@@ -752,7 +760,7 @@ Get artisanal discards values across all years 2003-2015.
 
 vals <- c()
 
-for(i in 2007:2015){ # i = 2007
+for(i in 2007:2017){ # i = 2007
 #print(i)
   m <- mean_AD[which(str_detect(mean_AD, pattern = paste0("_",i,".tif")))] %>%
     raster()%>%
@@ -764,7 +772,7 @@ for(i in 2007:2015){ # i = 2007
 
 }
 
-ref_ahb <- quantile(vals, prob = 0.9999, na.rm=T)  # 7.45 - 2018; 9.303356 - 2019
+ref_ahb <- quantile(vals, prob = 0.9999, na.rm=T)  # 7.45 - 2018; 9.303356 - 2019, 7.67 - 2020
 
 ```
 
@@ -778,7 +786,7 @@ write.csv(ref_df, "int/fish_ref_points.csv", row.names=FALSE)
 
 ```
 
-Note: all quantiles except for commercial high bycatch increased slightly from last year's assessment (see [v2018 prep](https://github.com/OHI-Science/ohiprep_v2019/blob/master/globalprep/prs_fish/v2018/fishing_pressure_layers.Rmd)).
+Note: all quantiles except for commercial high bycatch increased slightly from last year's assessment (see [v2020 prep](https://github.com/OHI-Science/ohiprep_v2020/blob/master/globalprep/prs_fish/v2020/fishing_pressure_layers.Rmd)).
 
 
 ## Rescale (0-1) & Resample (1-km res)
@@ -798,7 +806,7 @@ mean_AL <- list.files(paste0(rastFolder, 'artisanal_landings'), pattern = "mean_
 mean_AD <- list.files(paste0(rastFolder, 'artisanal_discards'), pattern = "mean_catch", full.names=TRUE); mean_AD <- mean_AD[!(str_detect(mean_AD, "1km"))]
 
 
-foreach (i = 2003:2011) %dopar%{ # i = 2011
+foreach (i = 2003:2013) %dopar%{ # i = 2011
   
   yrs <- c(i:(i+4))
 
@@ -844,6 +852,15 @@ ad <- raster(file.path(rastFolder, 'artisanal_discards/mean_catch_1km_2011_2015.
 all <- stack(cl,cd,al,ad)
 plot(all, col=cols, axes=FALSE ,box=FALSE)
 
+# compare to v2019 -- mostly looks the same. It seems there is a lot more artisanal fishing in the new data (2020 data that is)
+# cl <- raster(file.path('/home/shares/ohi/git-annex/globalprep/prs_fish/v2019/int/', 'comm_landings/mean_catch_1km_2011_2015.tif'))
+# cd <- raster(file.path('/home/shares/ohi/git-annex/globalprep/prs_fish/v2019/int/', 'comm_discards/mean_catch_1km_2011_2015.tif'))
+# al <- raster(file.path('/home/shares/ohi/git-annex/globalprep/prs_fish/v2019/int/', 'artisanal_landings/mean_catch_1km_2011_2015.tif'))
+# ad <- raster(file.path('/home/shares/ohi/git-annex/globalprep/prs_fish/v2019/int/', 'artisanal_discards/mean_catch_1km_2011_2015.tif'))
+# 
+# all <- stack(cl,cd,al,ad)
+# plot(all, col=cols, axes=FALSE ,box=FALSE)
+
 ```
 
 ## Mask with Ocean Raster
@@ -852,26 +869,26 @@ Note: Might be able to skip masking with ocean raster if there were no wrapping 
 
 ```{r, eval = FALSE}
 
-foreach (i = 2003:2011) %dopar%{ # i = 2011
+foreach (i = 2003:2013) %dopar%{ # i = 2011
   
   yrs <- c(i:(i+4))
   
   ## Commercial Low Bycatch (Landings)
   cl_mask <- raster(paste0(rastFolder, 'comm_landings/mean_catch_1km_', yrs[1], '_', yrs[5], '.tif'))
-  mask(cl_mask, ocean, filename = paste0(dir_M, '/git-annex/globalprep/prs_fish/v2019/output/comm_low_bycatch/lb_fish_pressure_', yrs[1], '_', yrs[5], '.tif'), overwrite = TRUE)
+  mask(cl_mask, ocean, filename = paste0(dir_M, '/git-annex/globalprep/prs_fish/v2020/output/comm_low_bycatch/lb_fish_pressure_', yrs[1], '_', yrs[5], '.tif'), overwrite = TRUE)
 
   ## Commercial High Bycatch (Discards)
   cd_mask <- raster(paste0(rastFolder, 'comm_discards/mean_catch_1km_', yrs[1], '_', yrs[5], '.tif'))
-  mask(cd_mask, ocean, filename = paste0(dir_M, '/git-annex/globalprep/prs_fish/v2019/output/comm_high_bycatch/hb_fish_pressure_', yrs[1], '_', yrs[5], '.tif'), overwrite = TRUE)
+  mask(cd_mask, ocean, filename = paste0(dir_M, '/git-annex/globalprep/prs_fish/v2020/output/comm_high_bycatch/hb_fish_pressure_', yrs[1], '_', yrs[5], '.tif'), overwrite = TRUE)
 
 
   ## Artisanal Low Bycatch (Landings)
   alb_mask <- raster(paste0(rastFolder, 'artisanal_landings/mean_catch_1km_', yrs[1], '_', yrs[5], '.tif'))
-  mask(alb_mask, ocean, filename = paste0(dir_M, '/git-annex/globalprep/prs_fish/v2019/output/art_low_bycatch/alb_fish_pressure_', yrs[1], '_', yrs[5], '.tif'), overwrite = TRUE)
+  mask(alb_mask, ocean, filename = paste0(dir_M, '/git-annex/globalprep/prs_fish/v2020/output/art_low_bycatch/alb_fish_pressure_', yrs[1], '_', yrs[5], '.tif'), overwrite = TRUE)
 
   ## Artisanal High Bycatch (Discards)
   ahb_mask <- raster(paste0(rastFolder, 'artisanal_discards/mean_catch_1km_', yrs[1], '_', yrs[5], '.tif'))
-  mask(ahb_mask, ocean, filename = paste0(dir_M, '/git-annex/globalprep/prs_fish/v2019/output/art_high_bycatch/ahb_fish_pressure_', yrs[1], '_', yrs[5], '.tif'), overwrite = TRUE)
+  mask(ahb_mask, ocean, filename = paste0(dir_M, '/git-annex/globalprep/prs_fish/v2020/output/art_high_bycatch/ahb_fish_pressure_', yrs[1], '_', yrs[5], '.tif'), overwrite = TRUE)
   
 }
 
@@ -880,7 +897,7 @@ foreach (i = 2003:2011) %dopar%{ # i = 2011
 Check masked rasters!
 ```{r, eval = FALSE}
 
-outFolder <-  "/home/shares/ohi/git-annex/globalprep/prs_fish/v2019/output"
+outFolder <-  "/home/shares/ohi/git-annex/globalprep/prs_fish/v2020/output"
 cl <- raster(file.path(outFolder, 'comm_low_bycatch/lb_fish_pressure_2011_2015.tif'))
 cd <- raster(file.path(outFolder, 'comm_high_bycatch/hb_fish_pressure_2011_2015.tif'))
 al <- raster(file.path(outFolder, 'art_low_bycatch/alb_fish_pressure_2011_2015.tif'))
@@ -996,7 +1013,7 @@ hb_data <- data %>%
   dplyr::mutate(year = stringr::str_sub(year, -4, -1)) %>%
   dplyr::mutate(year = as.numeric(year)) %>%
   dplyr::filter(rgn_id <= 250) %>%
-  dplyr::select(rgn_id, year, pressure_score) # na values 71, 72, 74, 75, 188, 215
+  dplyr::select(rgn_id, year, pressure_score) 
 
 write.csv(hb_data, "output/comm_hb.csv", row.names=FALSE)
 
@@ -1080,7 +1097,7 @@ write.csv(art_data, "output/art_hb.csv", row.names=FALSE)
 
 Compare with previous year's data
 ```{r, eval = FALSE}
-
+#### STOPPED HERE APRIL 10 ####
 ## Commercial Low Bycatch pressure 
 new <- read.csv("output/comm_lb.csv") %>%
   filter(year == 2014) %>%
