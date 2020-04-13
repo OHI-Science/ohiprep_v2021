@@ -1,5 +1,5 @@
 ---
-title: 'OHI 2019 - Tourism and Recreation '
+title: 'OHI 2020 - Tourism and Recreation '
 author: "*Compiled on `r date()` by `r Sys.info()['user']`*"
 output: 
   html_document:
@@ -23,48 +23,39 @@ editor_options:
 
 
 # Summary
-This document describes the steps for obtaining the data used to calculate the tourism and recreation goal for the 2019 global assessment.
+This document describes the steps for obtaining the data used to calculate the tourism and recreation goal for the 2020 global assessment.
 
 The general calculation is:
-tr = Ep * Sr * Tw
+tr = Ep * Sr
 and
 Xtr = tr/90th quantile across regions
 
 * Ep = Proportion of workforce directly employed in tourism
 * Sr = (S-1)/5; Sustainability of tourism
-* Tw = A penalty applied to regions with travel warnings from the US State Department (or Canada's Government Travel Advise and Advisory)
 
 
 ## The following data are used:
 
 * Tourism sustainability: Travel and Tourism Competitiveness Index (TTCI) from World Economic Forum (WEF) (NOT updated for 2019)
 * Proportion of workforce directly employed in tourism: World Travel & Tourism Council ([WTTC](https://www.wttc.org/datagateway))
-* Travel warnings: ([U.S. State Department](https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html/) and [Canadian Government](https://travel.gc.ca/travelling/advisories))
 * Per capita GDP: (World Bank with gaps filled using CIA data), used to gapfill missing values in Tourism sustainability (in previous years)
 
 
 # Updates from previous assessment
 
 ## Tourism employment
-WTTC data includes projections 10 years in the future, and in 2018 it was unclear when these projections began, so they used 2017 as their maximum data year. When downloading data for the 2019 assessment it was clear from the WTTC data gateway where the real data ended and projections began, so 2019 was used as the maximum data year.
-
-We also updated the code to account for uninhabited/low population areas, as we did with the Artisanal Fishing Opportunities data prep script.
+No updates for this. 
 
 ## Travel warnings
-Previously, US state department data only were used to identify travel warnings for each country. In 2019 we incorporated advisories from the Canadian government to fill in data for countries the US did not establish warnings for (such as the US itself). The Canadian advisories were matched to the numeric scale used by the US State Department since 2018 (1-4, ranges from level 1 (normal precautions) to level 4 (do not travel)). 
+Travel warning will be excluded from the 2020 global assessment. 
 
-Data on the US State Dept website span 2018 and 2019, but all of these will be considered advisory data for 2019, regardless of when they were created.
-
-In 2019 we also gapfilled travel warnings for missing territorial regions, using administrative country data. In 2018 a multiplier of 1 was applied to each region with no data. In 2019 all of these regions also received a multiplier of 1 based on the admin country advisories.
-
+## Tourism Sustainability 
+There is new data available for this. 
 
 **We were able to update the following data:**
-* Tourism sustainability data from the WEC Travel and Tourism Competitiveness Report were not updated, as the 2019 report has not been released as of 15 July 2019. 
+* Tourism sustainability data from the WEC Travel and Tourism Competitiveness Report were updated for the 2020 assessment. 
 
-* Proportion of jobs in tourism - WTTC data reported until 2029, but 2019 is most recent year of real data (year_max) (downloaded from WTTC on 07/08/2019)
-
-* Travel warnings for 2019 (downloaded from U.S State Department and Canadian Government on 07/02/2019)
-
+* Proportion of jobs in tourism - WTTC data reported until 2030, but 2020 is most recent year of real data (year_max) (downloaded from WTTC on )
 
 
 ## Initial set-up code
@@ -83,12 +74,12 @@ library(plotly)
 library(here)
 
 #source common.R
-source('http://ohi-science.org/ohiprep_v2019/workflow/R/common.R')
+source('http://ohi-science.org/ohiprep_v2020/workflow/R/common.R')
 
 ## maximum year of wttc data:
-year_max <- 2019
+year_max <- 2020
 
-source(here("globalprep/tr/v2019/R/tr_fxns.R"))
+source(here("globalprep/tr/v2020/R/tr_fxns.R"))
 
 
 ```
@@ -103,16 +94,17 @@ These data are cleaned and formatted using the R/process_WTTC.R script. Missing 
 ```{r wttc prop tourism, message=FALSE, warning=FALSE, echo=FALSE, results="hide"}
 
 ## describe where the raw data are located:
-scenario_yr <- "v2019"
-dir_wttc <- file.path(dir_M, 'git-annex/globalprep/_raw_data/WTTC/d2019/raw')
+scenario_yr <- "v2020"
+dir_wttc <- file.path(dir_M, 'git-annex/globalprep/_raw_data/WTTC/d2020/raw')
 dir_github <- here("globalprep/tr", scenario_yr)
 
 ## processing script that formats the WTTC for OHI, saves the following: intermediate/wttc_empd_rgn.csv
-source(here("globalprep/tr/v2019/R/process_WTTC.R"))
+source(here("globalprep/tr/v2020/R/process_WTTC.R"))
 ##### v2019: Duplicates = Guadeloupe/Martinique, PR/VI, China (accounted for in the script)
+##### v2020: Duplicates = Guadeloupe/Martinique, PR/VI, China (accounted for in the script)
 
 ## read in the dataset created by above function:
-tr_jobs_pct_tour <- read_csv(here('globalprep/tr/v2019/intermediate/wttc_empd_rgn.csv')) %>% 
+tr_jobs_pct_tour <- read_csv(here('globalprep/tr/v2020/intermediate/wttc_empd_rgn.csv')) %>% 
  dplyr::select(rgn_id, year, jobs_pct)
 
 ## format data to have complete years/regions and convert percentage of jobs to proportion of jobs
@@ -133,7 +125,8 @@ tr_data_raw <- rgn_names %>%
   filter(!rgn_id == 255) # ditch disputed regions and Antarctica
 
 ## v2019: >2500 NAs in Ep column
-# summary(tr_data_raw)
+## v2020: 2738 NAs in Ep column
+ #summary(tr_data_raw)
 
 
 ## gapfill missing data using UN georegion data:
@@ -143,7 +136,7 @@ georegion_labels <- georegion_labels
 tr_data_raw <- tr_data_raw %>%
   left_join(georegions, by = 'rgn_id') %>%
   left_join(georegion_labels, by = 'rgn_id') %>%
-  select(-r0)
+  dplyr::select(-r0)
 
 # Calculate two different gapfill columns using r2 and r1
 tr_data_raw_gf <- tr_data_raw %>%
@@ -175,7 +168,7 @@ low_pop <- low_pop %>%
 # make sure all the NAs are uninhabited regions
 tr_data_nas <- tr_data_raw_gf %>% 
   filter(is.na(Ep_all)) %>% 
-  select(rgn_id, year, r1_label, r2_label, rgn_label) %>% 
+  dplyr::select(rgn_id, year, r1_label, r2_label, rgn_label) %>% 
   left_join(low_pop, by = c("rgn_id", "rgn_label"))
 #  filter(!duplicated(rgn_id))
 
@@ -189,23 +182,23 @@ tr_data_raw_gf <- tr_data_raw_gf %>%
 
 
 # check NAs once more 
-# summary(tr_data_raw_gf)
+ summary(tr_data_raw_gf)
 # v2019: Adding the low pop df identifies 13 additional regions that should be NA instead of gapfilled, taking the total number of NAs in the data set from 245 to 700
 
 
 # save the gapfill report data
 tr_data_gf <- tr_data_raw_gf %>%
-  select(rgn_id, year, gapfilled, method) 
+  dplyr::select(rgn_id, year, gapfilled, method) 
 
-write_csv(tr_data_gf, here("globalprep/tr/v2019/output/tr_jobs_pct_tourism_gf.csv"))
+write_csv(tr_data_gf, here("globalprep/tr/v2020/output/tr_jobs_pct_tourism_gf.csv"))
 
 tr_data <- tr_data_raw_gf %>%
-  select(rgn_id, year, Ep=Ep_all) 
+  dplyr::select(rgn_id, year, Ep=Ep_all) 
 
 
 
 # Save gap-filled data
-write_csv(tr_data, here("globalprep/tr/v2019/output/tr_jobs_pct_tourism.csv"))
+write_csv(tr_data, here("globalprep/tr/v2020/output/tr_jobs_pct_tourism.csv"))
 
 ```
 
@@ -216,12 +209,12 @@ write_csv(tr_data, here("globalprep/tr/v2019/output/tr_jobs_pct_tourism.csv"))
 ## A quick check to make sure last year's values aren't too crazy different
 ## (NOTE: the source data has been updated, so there are some changes, but they shouldn't be super different)
 
-old <- read_csv(here('globalprep/tr/v2018/output/tr_jobs_pct_tourism.csv')) %>%
-  select(rgn_id, year, ep_old=Ep)
+old <- read_csv(here('globalprep/tr/v2019/output/tr_jobs_pct_tourism.csv')) %>%
+  dplyr::select(rgn_id, year, ep_old=Ep)
 
-new <- read_csv(here('globalprep/tr/v2019/output/tr_jobs_pct_tourism.csv')) %>%
+new <- read_csv(here('globalprep/tr/v2020/output/tr_jobs_pct_tourism.csv')) %>%
   left_join(old) %>%
-  filter(year==2018) %>%
+  filter(year==2019) %>%
   arrange(ep_old)
 
 # Visualize data comparison 
