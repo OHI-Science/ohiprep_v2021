@@ -1,5 +1,5 @@
 ---
-title: 'OHI 2019 - Tourism and Recreation '
+title: 'OHI 2020 - Tourism and Recreation '
 author: "*Compiled on `r date()` by `r Sys.info()['user']`*"
 output: 
   html_document:
@@ -56,8 +56,8 @@ Travel warning will be deleted from the global calculations this year.
 
 **We were able to update the following data:**
 
-* Tourism sustainability data from the WEC Travel and Tourism Competitiveness Report were updated to include the September 2019 report update. 
-* Proportion of jobs in tourism - WTTC data reported until 2030, but 2020 is most recent year of real data (year_max) (downloaded from WTTC on 07/08/2019)
+* Tourism sustainability data from the WEC Travel and Tourism Competitiveness Report were updated to include the September 2019 report update. (downloaded on 03/11/2020)
+* Proportion of jobs in tourism - WTTC data reported until 2030, but 2020 is most recent year of real data (year_max) (downloaded from WTTC on 03/12/2020)
 
 ## Initial set-up code
 
@@ -124,7 +124,7 @@ tr_data_raw <- rgn_names %>%
   filter(!rgn_id == 255) # ditch disputed regions and Antarctica
 
 ## v2019: >2500 NAs in Ep column
-## v2020: >2500 NAs in Ep column
+## v2020: 2738 NAs in Ep column
 # summary(tr_data_raw)
 
 
@@ -163,6 +163,8 @@ low_pop <- low_pop %>%
   filter(est_population < 3000 | is.na(est_population)) %>%  #filter out regions that have populations > 3000 and keep NA values 
   rename(rgn_label = rgn_nam)
 
+#summary(tr_data_raw_gf)
+# v2020 371 NAs
 
 # make sure all the NAs are uninhabited regions
 tr_data_nas <- tr_data_raw_gf %>% 
@@ -181,9 +183,9 @@ tr_data_raw_gf <- tr_data_raw_gf %>%
 
 
 # check NAs once more 
-# summary(tr_data_raw_gf)
+ #summary(tr_data_raw_gf)
 # v2019: Adding the low pop df identifies 13 additional regions that should be NA instead of gapfilled, taking the total number of NAs in the data set from 245 to 700
-# v2020: Adding the low pop df identifies 13 additional regions that should be NA instead of gapfilled, taking the total number of NAs in the data set from xxx to 832
+# v2020: Adding the low pop df takes the total number of NAs in the data set from 371 to 832
 
 
 # save the gapfill report data
@@ -214,7 +216,7 @@ old <- read_csv(here('globalprep/tr/v2019/output/tr_jobs_pct_tourism.csv')) %>%
 
 new <- read_csv(here('globalprep/tr/v2020/output/tr_jobs_pct_tourism.csv')) %>%
   left_join(old) %>%
-  filter(year==2018) %>%
+  filter(year==2019) %>%
   arrange(ep_old)
 
 # Visualize data comparison 
@@ -225,20 +227,19 @@ ggplotly(ggplot(new, aes(x = Ep, y = ep_old, labels = rgn_id)) +
 
 ######## investigate outliers (if applicable)
 
-new_diff <- new %>%
-  mutate(difference = ep_old-Ep) %>% 
-  filter(!is.na(ep_old)) %>% 
-  filter(!is.na(Ep))
+# new_diff <- new %>%
+#   mutate(difference = ep_old-Ep) %>% 
+#   filter(!is.na(ep_old)) %>% 
+#   filter(!is.na(Ep))
+# 
+# outliers <- tr_data_raw %>% 
+#   filter(rgn_id %in% c(15,116,117,118,119,122,125,127,173,250)) %>% 
+#   filter(year == 2018) %>% 
+#   select(rgn_id, rgn_label) %>% 
+#   left_join(new, by = "rgn_id", "year") %>% 
+#   mutate(difference = Ep-ep_old) %>% 
+#   mutate(avg_diff = mean(new_diff$difference))
 
-outliers <- tr_data_raw %>% 
-  filter(rgn_id %in% c(15,116,117,118,119,122,125,127,173,250)) %>% 
-  filter(year == 2018) %>% 
-  select(rgn_id, rgn_label) %>% 
-  left_join(new, by = "rgn_id", "year") %>% 
-  mutate(difference = Ep-ep_old) %>% 
-  mutate(avg_diff = mean(new_diff$difference))
-
-### v2019: These outliers can be explained by changes in the source data. Compared raw data from v2018 and all of these regions have large changes in the % share of total employment reported for the year 2018. WTTC likely backfills and adjusts their data on a yearly basis.  
 ```
 
 
@@ -263,7 +264,7 @@ ttci_raw <- read.csv(file.path(dir_M, "git-annex/globalprep/_raw_data/WEF-Econom
   mutate(score = as.numeric(as.character(score))) %>% 
   mutate(country = as.character(country))
   
-#Checking the imported data is the same than in 2017! 
+#Checking the imported data vs 2017! 
 ttci_v2017 <-read.csv(file.path(dir_M, "git-annex/globalprep/_raw_data/WEF-Economics/d2017/wef_ttci.csv")) %>% 
   rename(score_old= score) %>%
   arrange(country) %>% 
@@ -315,10 +316,9 @@ wb <- read.csv("../../ao/v2019/intermediate/gdppcppp_ohi.csv") %>%
 
 CIA data are used to fill in missing gaps in the gdppcppp data (https://www.cia.gov/library/publications/the-world-factbook/rankorder/2004rank.html)
 
-Downloaded: 7/16/2018
+Downloaded: 04/01/2020
 
 See README on the raw folder for instructions on how to download this data. 
-Note: for next year assesment, evaluate the option of scraping directly from the source website.
 
 The following code is used to prepare these data for OHI:
 
@@ -439,7 +439,6 @@ write_csv(gdp_data, "intermediate/gdp.csv")
 The final step is gapfilling the Sustainability data using a linear model with gdppcppp and UN geopolitical regions as predictor variables.  
 
 ```{r, eval=FALSE}
-#### STOPPED HERE APRIL 1 ####
 
 sust  <- read.csv('intermediate/wef_ttci.csv', stringsAsFactors = FALSE)
 
@@ -453,7 +452,7 @@ ep_gf <- read.csv("output/tr_jobs_pct_tourism.csv") %>%
 
 # gdp dataframe prepared above (World Bank, CIA, and gapfilled gdp data)
 gdp_raw_gf <- read.csv("intermediate/gdp_raw_gf.csv", stringsAsFactors = FALSE) %>% 
-  filter(year == 2017) %>%
+  filter(year == 2018) %>%
   select(rgn_id, r0_label, r1_label, r2_label, rgn_label, pcgdp, pcgdp_cia, pcgdp2, gdp_all) 
 
 tr_sust <- gdp_raw_gf %>%
@@ -543,7 +542,7 @@ filter(tr_sust, is.na(S_score_pred_r1))
 tr_sust <- tr_sust %>%
   mutate(S_score_2 = ifelse(is.na(S_score), S_score_pred_r2, S_score)) %>%
   mutate(S_score_2 = ifelse(is.na(S_score_2), S_score_pred_r1, S_score_2)) %>%
-  mutate(year = '2018') %>%
+  mutate(year = '2020') %>%
 #  filter(!is.na(Ep)) %>%
   select(rgn_id, year, S_score=S_score_2)
 
@@ -572,264 +571,5 @@ abline(0, 1, col="red")
 
 # Tw: Travel warnings
 
-Primary source of information is from the [U.S. State Department](https://travel.state.gov/content/passports/en/alertswarnings.html), secondary source is the [Canadian Government](https://travel.gc.ca/travelling/advisories)
-
-
-**For future assessments** It would be worthwhile to see if data can be "scraped" directly from the government websites into R. This seems possible given the new format of the state department travel warning data.
-
-### Getting data for 2019 assessment
-The following code is used transform the warnings into a multiplier that is used to calculate tourism and recreation scores. Data from each country are copied from the US and Canada government travel websites, pasted into an excel file, and saved as a .csv in the raw folder (tr_travelwarning_20??_raw.csv)
-
-*Date downloaded*: 1 July 2019
-
-*Date range of warnings*: 18 June 2018 - 1 July 2019 (note: regardless of date of the warning, the advisory year will be the assessment year)
-
-
-## After raw data are uploaded, wrangle and clean the new data:
-
-```{r, eval=FALSE}
-##Reading and wrangling 2019 warning data
-
-warn_raw <- read.csv(here('globalprep/tr/v2019/raw/tr_travelwarning_2019_raw.csv'), na.strings = " ") %>% 
-  mutate(country = as.character(country)) 
-
-# Remove text information from level and filter out regional warnings
-warn_clean <- warn_raw %>% 
-  mutate(level = as.numeric(str_extract(level, '[1,2,3,4]'))) %>% 
-  filter(!(regional %in% 1)) %>% # remove regions that have regional warnings, as those are no longer considered in the assessment
-  select(assess_year, level, country) %>% 
-  rename(year = assess_year)
-
-
-## Correct regions that are reported together - check to make sure these are necessary and that everything is covered as data change from year to year. Also make sure level data is coming through for each. 
-
-
-french_indies <- data.frame(country="French West Indies", 
-                            country_new =c("Northern Saint-Martin")) %>%
-  left_join(filter(warn_clean, country=="French West Indies")) %>%
-  select(country=country_new, year, level)
-
-BES <- data.frame(country="Bonaire, Sint Eustatius and Saba", 
-                            country_new =c("Saba", "Sint Eustatius")) %>% # Bonaire already reported separately 
-  left_join(filter(warn_clean, country=="Bonaire, Sint Eustatius and Saba")) %>%
-    select(country=country_new, year, level)
-
-
-line <- data.frame(country="Line Islands (Kiribati)", 
-                            country_new =c("Line Group", "Phoenix Group")) %>%
-  left_join(filter(warn_clean, country=="Line Islands (Kiribati)")) %>%
-    select(country=country_new, year, level)
-# These are not the region names reported in OHI, but they are used in the name_2_rgn function
-  
-warn_improved <- filter(warn_clean, country != "French West Indies") %>%
-  bind_rows(french_indies) 
-
-warn_improved <- filter(warn_improved, country != "Bonaire, Sint Eustatius and Saba") %>%
-  bind_rows(BES)
-
-warn_improved <- filter(warn_improved, country != "Line Islands (Kiribati)") %>%
-  bind_rows(line)
-
-
-
-##Correct names for regions not identified by the name_2_region, based off of error messages after running function below
-# Change names to match those reported by OHI (not always necessary)
-warn_improved <- warn_improved %>%
-  dplyr::mutate(country = ifelse(stringr::str_detect(country,"Israel"), "Israel", country)) %>%
-  dplyr::mutate(country = ifelse(stringr::str_detect(country, "^Republic of the Congo"), "Republique du Congo", country)) %>% 
-  dplyr::mutate(country = ifelse(stringr::str_detect(country,"U.S. Virgin Islands"), "Puerto Rico and Virgin Islands of the United States", country)) %>% # creates duplicate of PR/VI with same warning level
-  dplyr::mutate(country = ifelse(stringr::str_detect(country,"Puerto Rico"), "Puerto Rico and Virgin Islands of the United States", country)) %>%
-  dplyr::mutate(country = ifelse(stringr::str_detect(country,"Guadeloupe"), "Guadeloupe and Martinique", country)) %>%
-  dplyr::mutate(country = ifelse(stringr::str_detect(country,"Saint Vincent and The Grenadines"), "Saint Vincent and the Grenadines", country)) %>% 
-  dplyr::mutate(country = ifelse(stringr::str_detect(country,"Burma"), "Myanmar", country)) %>%
-  dplyr::mutate(country = ifelse(stringr::str_detect(country,"North Korea"), "North Korea", country)) %>% 
-  dplyr::mutate(country = ifelse(stringr::str_detect(country,"Solomon Island"), "Solomon Islands", country)) %>% 
-  dplyr::mutate(country = ifelse(stringr::str_detect(country,"Guam"), "Northern Mariana Islands and Guam", country)) %>% 
-  dplyr::mutate(country = ifelse(stringr::str_detect(country,"Northern Mariana Islands"), "Northern Mariana Islands and Guam", country))
-  
-
-# Look at warn_improved and remove other regions that are duplicated or aren't reported in the OHI. Make sure there are no NAs. 
-get_dupes(warn_improved)
-
-warn_improved <- warn_improved %>% 
-  filter(!duplicated(country))
-
-write_csv(warn_improved, here("globalprep/tr/v2019/intermediate/warning_2019.csv"))
-
-
-```
-
-
-## Transform the warnings into a multiplier that is used to calculate tourism and recreation scores.
-
-Travel warning  | Multiplier   | Description
---------------- | ------------ | -------------------
-Level 1 | 1 (no penalty) | Exercise Normal Precautions: This is the lowest advisory level for safety and security risk. There is some risk in any international travel. 
-Level 2 | 1 (no penalty) | Exercise Increased Caution:  Be aware of heightened risks to safety and security. 
-Level 3 | 0.25  | Reconsider Travel: Avoid travel due to serious risks to safety and security.
-Level 4 | 0 (full penalty, results in zero scores) | Do Not Travel:  This is the highest advisory level due to greater likelihood of life-threatening risks. 
-
-```{r, eval=FALSE}
-warn_complete <- read_csv(here("globalprep/tr/v2019/intermediate/warning_2019.csv"))
-
-scores <-  data.frame(level = c(1, 2, 3, 4), multiplier = c(1, 1, 0.25, 0)) 
-
-
-warn_multiplier <-  warn_complete %>%  
-  left_join(scores, by="level") %>% 
-  group_by(year, country) %>%
-  mutate(warning_count = n()) %>%
-  ungroup()
-
-# Check to see if there are regions with more than one warning (in general there should be no regions with more than one advisory, but some are combined after being reported separately and may have different advisories) 
-
-warn_count <- filter(warn_multiplier, warning_count>1)
-
-# If warn_count >0, multipliers from duplicate regions will be averaged: 
-warn_multiplier <- warn_multiplier %>%
-  group_by(year, country) %>%
-  summarize(multiplier = mean(multiplier))
-
-#Save file with 2019 multiplier data
-write_csv(warn_multiplier, here("globalprep/tr/v2019/intermediate/warning.csv"))
-
-```
-
-
-## Convert names to OHI regions and clean. 
-
-```{r travel warnings, message=FALSE, echo=FALSE, results="hide"}
-warn <- read_csv(here("globalprep/tr/v2019/intermediate/warning.csv"))
-
-#Add rgn_id
-warn_rgn <- name_2_rgn(df_in = warn, 
-                       fld_name='country', 
-                       flds_unique=c('country','year'))
-# Double check error message to make sure all of the landlocked regions are indeed landlocked, and that everything not found in the lookup table is not a region reported by OHI. 
-                                                  
-# Check to see if any regions are duplicated:
-sort(table(paste(warn_rgn$year, warn_rgn$rgn_id)))
-# China has multiple warnings (rgn_id 209)
-
-# Average warnings for China, China Macao SAR and Hong Kong: 
-warn_rgn <- warn_rgn %>%
-  group_by(rgn_id, rgn_name, year) %>%
-  summarize(multiplier = mean(multiplier)) %>%
-  ungroup()
-
-# Check again to see if there are any duplicate multipliers
-sort(table(paste(warn_rgn$year, warn_rgn$rgn_id)))
-
-```
-
-
-## Final step: Compare with previous year's data
-
-Many European regions now have a travel warning due to increased terrorism (e.g., United Kingdom, Italy, Spain, Germany), although this doesn't show up in the following figure because previously, these regions had no travel warning (and were thus, NA).
-
-The change in not penalizing subregional warnings tended to reduce the penalty (i.e. increase the multiplier value).
-```{r, message=FALSE, echo=FALSE}
-# The following indicates changes over time as well as changes to the State Department's approach to quantifying risk
-
-tmp_old <- read_csv(here("globalprep/tr/v2018/output/tr_travelwarnings.csv")) %>% 
-  spread(year, multiplier) %>%
-  data.frame()
-  
-tmp <- warn_rgn %>%
-  spread(year, multiplier) %>%
-  data.frame() %>% 
-  left_join(tmp_old, by = "rgn_id")
-
-# Add noise to scatter to compare warnings between this year and last year (clustered points indicate where there are multiple observations of the same value)
-ggplotly(ggplot(tmp, aes(x = jitter(X2018), y = jitter(X2019), labels = rgn_id)) +
-  geom_point() +
-  geom_abline(slope = 1, intercept = 0, color = "red"))
-
-# Investigate outliers (will potentially change from year to year)
-outliers <- tmp %>% 
-  filter(rgn_id %in% c(49, 73, 112, 136, 139)) %>% 
-  select(rgn_id, rgn_name, X2018, X2019)
-
-# Makes sense; these regions have all experienced stability changes in the past year 
-
-```
-
-## Gapfill territorial regions with admin country data and save the travel warning data in the output folder
-
-```{r, eval=FALSE}
-georegions <- georegion_labels %>%
-  select(rgn_id)
-  
-warn_rgn_spread <- warn_rgn %>%
-  spread(year, multiplier) %>%
-  full_join(georegions, by=c("rgn_id")) %>%
-  data.frame() %>%
-  gather(year, multiplier, starts_with("X")) %>%
-  mutate(year = gsub("X", "", year)) %>%
-  filter(rgn_id <= 250) %>%
-  filter(rgn_id != 213) # Filter out Antarctica
-  
-# Check number of regions reported - should be 220 
-table(warn_rgn_spread$year) 
-
-
-# Identify territories without advisories and connect them with multipliers for admin regions 
-region_data() # reload common.R if this isn't working
-warn_rgn_nas <- warn_rgn_spread %>% 
-  filter(is.na(rgn_name)) %>% 
-  select(rgn_id) %>% 
-  left_join(rgns_eez, by = "rgn_id") %>% 
-  select(rgn_id, rgn_name, admin_rgn_id, admin_country_name)
-
-admin_rgn_multipliers <- warn_rgn_nas %>% 
-  select(rgn_id = admin_rgn_id) %>% 
-  left_join(warn_rgn_spread, by = "rgn_id") %>% 
-  rename(admin_rgn_id = rgn_id) %>% 
-  select(admin_rgn_id, year, multiplier) %>%
-  filter(!duplicated(admin_rgn_id))
-
-warn_rgn_nas <- warn_rgn_nas %>% 
-  left_join(admin_rgn_multipliers, by = "admin_rgn_id") %>% 
-  select(rgn_id, rgn_name, year, multiplier)
-
-
-### Finalize warnings data and save
-# Remove NAs from warn_rgn_spread, then add them back in
-
-warn_rgn_spread <- warn_rgn_spread %>%
-  filter(!is.na(rgn_name)) %>% 
-  bind_rows(warn_rgn_nas)
-  
-warn_rgn_all_rgns <- warn_rgn_spread %>%
-  select(rgn_id, year, multiplier) %>%
-  arrange(year, rgn_id) %>% 
-  mutate(year = as.numeric(year))
-
-# Check again that we have 220 regions reported
-table(warn_rgn_all_rgns$year) 
-
-
-# Save 2019 data
-write_csv(warn_rgn_all_rgns, here('globalprep/tr/v2019/output/tr_travelwarnings_2019only.csv'))
-
-
-## Create gapfill file
-# Add information about gapfill method to regions that were filled based on administrative country advisory above
-
-travelwarning_gf <- read_csv(here("globalprep/tr/v2019/output/tr_travelwarnings.csv")) %>% 
-  mutate(gapfilled = ifelse(rgn_id %in% warn_rgn_nas$rgn_id, 1, 0)) %>% 
-  mutate(method = ifelse(gapfilled == 1, "Gapfilled based on administrative country advisory", NA)) %>% 
-  select(-multiplier)
-
-write_csv(travelwarning_gf, here('globalprep/tr/v2019/output/tr_travelwarnings_gf.csv'))
-
-
-## Combine with previous years' data and save
-
-travel_warnings_all <- read_csv(here("globalprep/tr/v2018/output/tr_travelwarnings.csv")) %>%
-  bind_rows(warn_rgn_all_rgns)
-
-write_csv(travel_warnings_all, here('globalprep/tr/v2019/output/tr_travelwarnings.csv'))
-
-```
+ - Travel warnings were deleted from the v2020 assessment. 
 
