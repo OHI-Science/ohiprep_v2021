@@ -1103,16 +1103,18 @@ new <- read.csv("output/comm_lb.csv") %>%
   filter(year == 2014) %>%
   dplyr::select(rgn_id, new_pressure_score = pressure_score) 
 
-old_new <- read.csv("../v2018/output/comm_lb.csv") %>%
+old_new <- read.csv("../v2019/output/comm_lb.csv") %>%
   filter(year == 2014) %>% 
   left_join(new, by = 'rgn_id')
 
 plot(old_new$new_pressure_score, old_new$pressure_score)
 abline(0, 1, col="red")
 
-old_check1_comm_lb <- old %>%
-  filter(is.na(pressure_score), new_pressure_score >=0 ) # 1 new regions w data
-old_check2_comm_lb <- old %>%
+old <- read.csv("../v2019/output/comm_lb.csv")
+
+old_check1_comm_lb <- old_new %>%
+  filter(is.na(pressure_score), new_pressure_score >=0 ) # 0 new regions w data
+old_check2_comm_lb <- old_new %>%
   filter(pressure_score >= 0 , is.na(new_pressure_score)) # 0 regions now with NA that previously weren't
 
 ## Commercial High Bycatch pressure 
@@ -1120,7 +1122,7 @@ new <- read.csv("output/comm_hb.csv") %>%
   filter(year == 2014) %>%
   dplyr::select(rgn_id, new_pressure_score = pressure_score) 
 
-old <- read.csv("../v2018/output/comm_hb.csv") %>%
+old <- read.csv("../v2019/output/comm_hb.csv") %>%
   filter(year == 2014) %>% 
   left_join(new, by = 'rgn_id')
 
@@ -1128,7 +1130,7 @@ plot(old$new_pressure_score, old$pressure_score)
 abline(0, 1, col="red")
 
 old_check1_comm_hb <- old %>%
-  filter(is.na(pressure_score), new_pressure_score >=0 ) # 1 new regions w data
+  filter(is.na(pressure_score), new_pressure_score >=0 ) # 0 new regions w data
 old_check2_comm_hb <- old %>%
   filter(pressure_score >= 0 , is.na(new_pressure_score)) # 0 regions now with NA that previously weren't
 
@@ -1138,7 +1140,7 @@ new <- read.csv("output/art_lb.csv") %>%
   filter(year == 2014) %>%
   dplyr::select(rgn_id, new_pressure_score = pressure_score) 
 
-old <- read.csv("../v2018/output/art_lb.csv") %>%
+old <- read.csv("../v2019/output/art_lb.csv") %>%
   filter(year == 2014) %>% 
   left_join(new, by = 'rgn_id')
 
@@ -1146,16 +1148,16 @@ plot(old$new_pressure_score, old$pressure_score)
 abline(0, 1, col="red")
 
 old_check1_art_lb <- old %>%
-  filter(is.na(pressure_score), new_pressure_score >=0 ) # 10 new regions w data
+  filter(is.na(pressure_score), new_pressure_score >=0 ) # 2 new regions w data
 old_check2_art_lb <- old %>%
-  filter(pressure_score >= 0 , is.na(new_pressure_score)) # 2 regions now with NA that previously weren't
+  filter(pressure_score >= 0 , is.na(new_pressure_score)) # 10 regions now with NA that previously weren't
 
-## Artisanal High Bycatch pressure was calculated using different data before
+## Artisanal High Bycatch pressure 
 new <- read.csv("output/art_hb.csv") %>% 
   filter(year == 2014) %>% 
   dplyr::select(rgn_id, new_pressure_score = pressure_score) 
 
-old <- read.csv("../v2018/output/art_hb.csv") %>% 
+old <- read.csv("../v2019/output/art_hb.csv") %>% 
   dplyr::filter(year == 2014) %>% 
   left_join(new, by = 'rgn_id')
 
@@ -1164,12 +1166,12 @@ abline(0, 1, col="red")
 
 
 old_check1_art_hb <- old %>%
-  filter(is.na(pressure_score), new_pressure_score >=0 ) # 10 new regions w data
+  filter(is.na(pressure_score), new_pressure_score >=0 ) # 2 new regions w data
 old_check2_art_hb <- old %>%
-  filter(pressure_score >= 0 , is.na(new_pressure_score)) # 2 regions now with NA that previously weren't
+  filter(pressure_score >= 0 , is.na(new_pressure_score)) # 10 regions now with NA that previously weren't
 
 old_check3_art_hb <- old %>%
-  mutate(pressure_diff = pressure_score - new_pressure_score) # 35 regions with better scores, rest are worse. 
+  mutate(pressure_diff = pressure_score - new_pressure_score) 
 ```
 
 Check for variation in data years for 2019 AY
@@ -1178,6 +1180,7 @@ Check for variation in data years for 2019 AY
 
 ## Commercial Low Bycatch - 8/14/18 not much change from year to year within same assessment year
 ##                        - 8/14/19 not much change from year to year within same assessment year
+##                        - 4/15/20 not much change from year to year within same assessment year
 new <- read.csv("output/comm_lb.csv") %>%
   filter(year == 2014) %>%
   dplyr::select(rgn_id, new_pressure_score = pressure_score) 
@@ -1192,6 +1195,7 @@ abline(0,1, col="red")
 
 ## Commercial High Bycatch - 8/14/18 not much variation from year to year within same assessment year
 ##                         - 8/14/19 not much variation from year to year within same assessment year
+##                        - 4/15/20 not much change from year to year within same assessment year
 new <- read.csv("output/comm_hb.csv") %>%
   filter(year == 2014) %>%
   dplyr::select(rgn_id, new_pressure_score = pressure_score) 
@@ -1205,6 +1209,7 @@ abline(0,1, col="red")
 
 ## Artisanal Low Bycatch - 8/14/18 not much variation from year to year within same assessment year
 ##                       - 8/14/19 not much variation from year to year within same assessment year
+##                        - 4/15/20 not much change from year to year within same assessment year
 new <- read.csv("output/art_lb.csv") %>%
   filter(year == 2014) %>%
   dplyr::select(rgn_id, new_pressure_score = pressure_score) 
@@ -1218,6 +1223,7 @@ abline(0,1, col="red")
 
 ## Artisanal Low Bycatch - 8/14/18 not much variation from year to year within same assessment year
 ##                       - 8/14/19 not much variation from year to year within same assessment year
+##                        - 4/15/20 not much change from year to year within same assessment year
 new <- read.csv("output/art_lb.csv") %>%
   filter(year == 2014) %>%
   dplyr::select(rgn_id, new_pressure_score = pressure_score) 
