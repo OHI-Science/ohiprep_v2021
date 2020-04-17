@@ -539,7 +539,7 @@ filter(tr_sust, is.na(S_score_pred_r1))
 tr_sust <- tr_sust %>%
   mutate(S_score_2 = ifelse(is.na(S_score), S_score_pred_r2, S_score)) %>%
   mutate(S_score_2 = ifelse(is.na(S_score_2), S_score_pred_r1, S_score_2)) %>%
-  mutate(year = '2020') %>%
+  mutate(year = '2019') %>%
 #  filter(!is.na(Ep)) %>%
   select(rgn_id, year, S_score=S_score_2)
 
@@ -563,7 +563,6 @@ plot(compare$S_score, compare$old_S_score)
 abline(0, 1, col="red")
 #looks reasonable 
 
-## FINISHED ON APRIL 1 ##
 ```
 
 
