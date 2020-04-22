@@ -542,7 +542,7 @@ if(!file.exists(spp_timeseries_file) | reload) {
     
   ptm <- proc.time()
   spp_past_df <- mc_get_from_api(spp_hist_url, sid_list, api_key, delay = 1, cores = 16)
-  cat_msg('elapsed time: ', (proc.time() - ptm)[3]) #2019 elapsed time:  1115.739 
+  cat_msg('elapsed time: ', (proc.time() - ptm)[3]) #2020 elapsed time:  1339.143 
   
   
   ### Clean up the time series: reclassify old codes to current
@@ -603,8 +603,9 @@ if(!file.exists(spp_current_file) | reload) {
   spp_current_df <- mc_get_from_api(spp_curr_url, sid_list, api_key, delay = 1, cores = 16)
   cat_msg('elapsed time: ', (proc.time() - ptm)[3])
     #   user   system  elapsed 
-    # 74.756   23.032 1251.880
     # 2019:           1130.972 
+    # 2020:           1352.863
+  
   spp_current_df1 <- spp_current_df %>%
     dplyr::select(iucn_sid = name, sciname = scientific_name,
            main_common_name, 
