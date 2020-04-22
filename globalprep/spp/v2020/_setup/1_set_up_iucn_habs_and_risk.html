@@ -10,7 +10,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Thu Aug 29 15:34:13 2019 by sgclawson" />
+<meta name="author" content="Compiled on Wed Apr 22 14:08:49 2020 by sgclawson" />
 
 
 <title>Set up IUCN marine species list and risk assessments</title>
@@ -1640,7 +1640,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Set up IUCN marine species list and risk assessments</h1>
-<h4 class="author"><em>Compiled on Thu Aug 29 15:34:13 2019 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Wed Apr 22 14:08:49 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -1659,19 +1659,16 @@ div.tocify {
 <a class="sourceLine" id="cb3-9" title="9"><span class="kw">source</span>(<span class="kw">here</span>(<span class="st">&#39;workflow/R/common.R&#39;</span>))</a>
 <a class="sourceLine" id="cb3-10" title="10"></a>
 <a class="sourceLine" id="cb3-11" title="11">goal     &lt;-<span class="st"> &#39;spp&#39;</span></a>
-<a class="sourceLine" id="cb3-12" title="12">scenario &lt;-<span class="st"> &#39;v2019&#39;</span></a>
+<a class="sourceLine" id="cb3-12" title="12">scenario &lt;-<span class="st"> &#39;v2020&#39;</span></a>
 <a class="sourceLine" id="cb3-13" title="13"></a>
 <a class="sourceLine" id="cb3-14" title="14">dir_goal &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&#39;globalprep&#39;</span>, goal, scenario)</a>
 <a class="sourceLine" id="cb3-15" title="15"></a>
-<a class="sourceLine" id="cb3-16" title="16"><span class="co">### provenance tracking</span></a>
-<a class="sourceLine" id="cb3-17" title="17"><span class="co">#library(provRmd); prov_setup() #delete if not needed </span></a>
-<a class="sourceLine" id="cb3-18" title="18"></a>
-<a class="sourceLine" id="cb3-19" title="19"><span class="co">### goal specific folders and info</span></a>
-<a class="sourceLine" id="cb3-20" title="20">dir_anx  &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&#39;git-annex/globalprep&#39;</span>)</a>
-<a class="sourceLine" id="cb3-21" title="21">dir_setup   &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_goal, <span class="st">&#39;_setup&#39;</span>)</a>
-<a class="sourceLine" id="cb3-22" title="22">dir_goal_anx &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_anx, goal, scenario, <span class="st">&#39;spp_risk_dists&#39;</span>)</a>
-<a class="sourceLine" id="cb3-23" title="23"></a>
-<a class="sourceLine" id="cb3-24" title="24"><span class="kw">source</span>(<span class="kw">file.path</span>(dir_setup, <span class="st">&#39;common_fxns.R&#39;</span>))</a></code></pre></div>
+<a class="sourceLine" id="cb3-16" title="16"><span class="co">### goal specific folders and info</span></a>
+<a class="sourceLine" id="cb3-17" title="17">dir_anx  &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&#39;git-annex/globalprep&#39;</span>)</a>
+<a class="sourceLine" id="cb3-18" title="18">dir_setup   &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_goal, <span class="st">&#39;_setup&#39;</span>)</a>
+<a class="sourceLine" id="cb3-19" title="19">dir_goal_anx &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_anx, goal, scenario, <span class="st">&#39;spp_risk_dists&#39;</span>)</a>
+<a class="sourceLine" id="cb3-20" title="20"></a>
+<a class="sourceLine" id="cb3-21" title="21"><span class="kw">source</span>(<span class="kw">file.path</span>(dir_setup, <span class="st">&#39;common_fxns.R&#39;</span>))</a></code></pre></div>
 <div id="summary" class="section level1">
 <h1><span class="header-section-number">1</span> Summary</h1>
 <p>Get IUCN current risk assessments and historical assessments over time, for all IUCN marine species. This method is not reliant on any information from AquaMaps.</p>
@@ -1751,8 +1748,8 @@ div.tocify {
 <a class="sourceLine" id="cb5-20" title="20">  </a>
 <a class="sourceLine" id="cb5-21" title="21">  </a>
 <a class="sourceLine" id="cb5-22" title="22">  <span class="co">### Breaking this into chunks...</span></a>
-<a class="sourceLine" id="cb5-23" title="23">  <span class="co">### 500 spp takes 184 seconds; at that rate, 87851 species should take </span></a>
-<a class="sourceLine" id="cb5-24" title="24">  <span class="co">###   about 9 hrs.  Each chunk will save to tmp for later combining.</span></a>
+<a class="sourceLine" id="cb5-23" title="23">  <span class="co">### 500 spp takes 184 seconds; at that rate, 118000 species should take </span></a>
+<a class="sourceLine" id="cb5-24" title="24">  <span class="co">###   about 12 hrs.  Each chunk will save to tmp for later combining.</span></a>
 <a class="sourceLine" id="cb5-25" title="25"></a>
 <a class="sourceLine" id="cb5-26" title="26">  chunk_size &lt;-<span class="st"> </span><span class="dv">2000</span></a>
 <a class="sourceLine" id="cb5-27" title="27">  n_chunks &lt;-<span class="st"> </span><span class="kw">ceiling</span>(<span class="kw">length</span>(spp_ids_all)<span class="op">/</span>chunk_size)</a>
@@ -1812,7 +1809,10 @@ div.tocify {
 <a class="sourceLine" id="cb5-81" title="81">  <span class="kw">cat_msg</span>(<span class="st">&#39;File of species habitats from API exists: </span><span class="ch">\n</span><span class="st">  &#39;</span>, spp_habs_from_api_file)</a>
 <a class="sourceLine" id="cb5-82" title="82">  <span class="kw">git_prov</span>(spp_habs_from_api_file, <span class="dt">filetype =</span> <span class="st">&#39;output&#39;</span>)</a>
 <a class="sourceLine" id="cb5-83" title="83">  </a>
-<a class="sourceLine" id="cb5-84" title="84">}</a></code></pre></div>
+<a class="sourceLine" id="cb5-84" title="84">}</a>
+<a class="sourceLine" id="cb5-85" title="85"></a>
+<a class="sourceLine" id="cb5-86" title="86"></a>
+<a class="sourceLine" id="cb5-87" title="87"><span class="co"># old &lt;- read_csv(file.path(&quot;/home/shares/ohi/git-annex/globalprep/spp/v2019/spp_risk_dists/iucn/spp_habs_from_api_2019-1.csv&quot;))</span></a></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1"><span class="co">### You might receive an error like this at some point: Error in (function (classes, fdef, mtable) : unable to find an inherited method for function ‘select’ for signature ‘&quot;data.frame&quot;’</span></a>
 <a class="sourceLine" id="cb6-2" title="2"><span class="co">### Just try running again and it should work</span></a>
 <a class="sourceLine" id="cb6-3" title="3"></a>
@@ -1832,9 +1832,9 @@ div.tocify {
 <a class="sourceLine" id="cb6-17" title="17">  </a>
 <a class="sourceLine" id="cb6-18" title="18">  spp_systems_url &lt;-<span class="st"> &#39;http://apiv3.iucnredlist.org/api/v3/species/id/%s?token=%s&#39;</span></a>
 <a class="sourceLine" id="cb6-19" title="19"></a>
-<a class="sourceLine" id="cb6-20" title="20">  <span class="co">### Breaking this into chunks...</span></a>
-<a class="sourceLine" id="cb6-21" title="21">  <span class="co">### 500 spp takes 184 seconds; at that rate, 87851 species should take </span></a>
-<a class="sourceLine" id="cb6-22" title="22">  <span class="co">###   about 9 hrs.  Each chunk will save to tmp for later combining.</span></a>
+<a class="sourceLine" id="cb6-20" title="20"><span class="co"># started at 10:30 AM </span></a>
+<a class="sourceLine" id="cb6-21" title="21"><span class="co"># ended at 2:10</span></a>
+<a class="sourceLine" id="cb6-22" title="22"><span class="co"># ~ 3.5 hours  </span></a>
 <a class="sourceLine" id="cb6-23" title="23"></a>
 <a class="sourceLine" id="cb6-24" title="24">  chunk_size &lt;-<span class="st"> </span><span class="dv">2000</span></a>
 <a class="sourceLine" id="cb6-25" title="25">  n_chunks &lt;-<span class="st"> </span><span class="kw">ceiling</span>(<span class="kw">length</span>(spp_ids_all)<span class="op">/</span>chunk_size)</a>
@@ -1898,36 +1898,37 @@ div.tocify {
 <h4><span class="header-section-number">3.1.2.2</span> Generate Habitat inclusion list</h4>
 <p>From the habitats gleaned in the previous chunk, generate an inclusion list based on those that are considered marine. “Included” habitats are determined from inspection of the habitat list; we are including habitats 9-12, plus 15.11, 15.12, 15.13. Note category 13 is Marine Coastal/Supratidal, but includes many species whose “marine” dependence is only incidental. If these species do not show up in category 12 (marine intertidal) then they are assumed to not actually depend on marine habitats.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">hab_inclusion_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_setup, <span class="st">&#39;int&#39;</span>, <span class="st">&#39;iucn_habitat_categories.csv&#39;</span>)</a>
-<a class="sourceLine" id="cb7-2" title="2"></a>
-<a class="sourceLine" id="cb7-3" title="3">hab_cats &lt;-<span class="st"> </span><span class="kw">read_csv</span>(spp_habs_from_api_file, <span class="dt">col_types =</span> <span class="st">&#39;iciccccc&#39;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-4" title="4"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(habitat, code) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-5" title="5"><span class="st">  </span><span class="kw">distinct</span>() <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-6" title="6"><span class="st">  </span><span class="kw">separate</span>(code, <span class="kw">c</span>(<span class="st">&#39;cat&#39;</span>, <span class="st">&#39;subcat1&#39;</span>, <span class="st">&#39;subcat2&#39;</span>),</a>
-<a class="sourceLine" id="cb7-7" title="7">           <span class="dt">remove =</span> <span class="ot">FALSE</span>, <span class="dt">convert =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-8" title="8"><span class="st">  </span><span class="kw">arrange</span>(cat, subcat1, subcat2) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-9" title="9"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">include =</span> <span class="kw">ifelse</span>(cat <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">9</span><span class="op">:</span><span class="dv">12</span>), <span class="ot">TRUE</span>, <span class="ot">FALSE</span>),</a>
-<a class="sourceLine" id="cb7-10" title="10">         <span class="dt">include =</span> <span class="kw">ifelse</span>(cat <span class="op">==</span><span class="st"> </span><span class="dv">15</span> <span class="op">&amp;</span><span class="st"> </span>subcat1 <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">11</span>, <span class="dv">12</span>, <span class="dv">13</span>), <span class="ot">TRUE</span>, include),</a>
-<a class="sourceLine" id="cb7-11" title="11">         <span class="dt">include =</span> <span class="kw">ifelse</span>(cat <span class="op">==</span><span class="st"> </span><span class="dv">13</span> <span class="op">&amp;</span><span class="st"> </span>subcat1 <span class="op">==</span><span class="st"> </span><span class="dv">1</span>, <span class="ot">TRUE</span>, include),</a>
-<a class="sourceLine" id="cb7-12" title="12">           <span class="co">### Category 13 (Marine coastal/supratidal excluded here: except for</span></a>
-<a class="sourceLine" id="cb7-13" title="13">           <span class="co">### sea cliffs and offshore islands (13.1))</span></a>
-<a class="sourceLine" id="cb7-14" title="14">         <span class="dt">include =</span> <span class="kw">ifelse</span>(cat <span class="op">%in%</span><span class="st"> </span><span class="dv">17</span><span class="op">:</span><span class="dv">18</span>, <span class="ot">TRUE</span>, include)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-15" title="15"><span class="st">           </span><span class="co">### 17 and 18 are &quot;other&quot; and &quot;unknown&quot;; &quot;unknown&quot; includes some</span></a>
-<a class="sourceLine" id="cb7-16" title="16"><span class="st">           </span><span class="co">### marine spp e.g. 170022 and 170033, slipper lobsters; &quot;other&quot;</span></a>
-<a class="sourceLine" id="cb7-17" title="17"><span class="st">           </span><span class="co">### also includes marine spp e.g. 60087 sepia stingray</span></a>
-<a class="sourceLine" id="cb7-18" title="18"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(code))</a>
-<a class="sourceLine" id="cb7-19" title="19"></a>
-<a class="sourceLine" id="cb7-20" title="20"><span class="co">### Note these &quot;include&quot; values were manually determined by inspecting the habitat categories</span></a>
-<a class="sourceLine" id="cb7-21" title="21"><span class="co">### Notes on categories related to depth clipping </span></a>
-<a class="sourceLine" id="cb7-22" title="22"><span class="co">### see also: http://www.iucnredlist.org/technical-documents/classification-schemes/habitats-classification-scheme-ver3</span></a>
-<a class="sourceLine" id="cb7-23" title="23"><span class="co">### * category 9 is neritic (shallow) though 9.1 is specifically pelagic (NOT shallow)</span></a>
-<a class="sourceLine" id="cb7-24" title="24"><span class="co">### * category 10 is oceanic at different depths (pelagic: NOT shallow)</span></a>
-<a class="sourceLine" id="cb7-25" title="25"><span class="co">### * category 11 is Marine Deep Ocean Floor (Benthic and Demersal) (NOT shallow)</span></a>
-<a class="sourceLine" id="cb7-26" title="26"><span class="co">### * category 12 is Marine Intertidal (shallow)</span></a>
-<a class="sourceLine" id="cb7-27" title="27"><span class="co">### * category 13 is Marine Coastal/Supratidal (shallow) </span></a>
-<a class="sourceLine" id="cb7-28" title="28"><span class="co">### * category 15 includes shallow structures</span></a>
-<a class="sourceLine" id="cb7-29" title="29"><span class="co">### So: for depth clipping, cut at 200 m for all but category 9.1, 10, 11</span></a>
-<a class="sourceLine" id="cb7-30" title="30"></a>
-<a class="sourceLine" id="cb7-31" title="31"><span class="kw">write_csv</span>(hab_cats, hab_inclusion_file)</a></code></pre></div>
+<a class="sourceLine" id="cb7-2" title="2"><span class="co">#old &lt;- read_csv(file.path(&quot;/home/shares/ohi/git-annex/globalprep/spp/v2019/spp_risk_dists/iucn/spp_habs_from_api_2019-1.csv&quot;), col_types = &quot;iccccccc&quot;)</span></a>
+<a class="sourceLine" id="cb7-3" title="3"></a>
+<a class="sourceLine" id="cb7-4" title="4">hab_cats &lt;-<span class="st"> </span><span class="kw">read_csv</span>(spp_habs_from_api_file, <span class="dt">col_types =</span> <span class="st">&#39;iccccccc&#39;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb7-5" title="5"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(habitat, code) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb7-6" title="6"><span class="st">  </span><span class="kw">distinct</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb7-7" title="7"><span class="st">  </span><span class="kw">separate</span>(code, <span class="kw">c</span>(<span class="st">&#39;cat&#39;</span>, <span class="st">&#39;subcat1&#39;</span>, <span class="st">&#39;subcat2&#39;</span>),</a>
+<a class="sourceLine" id="cb7-8" title="8">           <span class="dt">remove =</span> <span class="ot">FALSE</span>, <span class="dt">convert =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb7-9" title="9"><span class="st">  </span><span class="kw">arrange</span>(cat, subcat1, subcat2) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb7-10" title="10"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">include =</span> <span class="kw">ifelse</span>(cat <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">9</span><span class="op">:</span><span class="dv">12</span>), <span class="ot">TRUE</span>, <span class="ot">FALSE</span>),</a>
+<a class="sourceLine" id="cb7-11" title="11">         <span class="dt">include =</span> <span class="kw">ifelse</span>(cat <span class="op">==</span><span class="st"> </span><span class="dv">15</span> <span class="op">&amp;</span><span class="st"> </span>subcat1 <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">11</span>, <span class="dv">12</span>, <span class="dv">13</span>), <span class="ot">TRUE</span>, include),</a>
+<a class="sourceLine" id="cb7-12" title="12">         <span class="dt">include =</span> <span class="kw">ifelse</span>(cat <span class="op">==</span><span class="st"> </span><span class="dv">13</span> <span class="op">&amp;</span><span class="st"> </span>subcat1 <span class="op">==</span><span class="st"> </span><span class="dv">1</span>, <span class="ot">TRUE</span>, include),</a>
+<a class="sourceLine" id="cb7-13" title="13">           <span class="co">### Category 13 (Marine coastal/supratidal excluded here: except for</span></a>
+<a class="sourceLine" id="cb7-14" title="14">           <span class="co">### sea cliffs and offshore islands (13.1))</span></a>
+<a class="sourceLine" id="cb7-15" title="15">         <span class="dt">include =</span> <span class="kw">ifelse</span>(cat <span class="op">%in%</span><span class="st"> </span><span class="dv">17</span><span class="op">:</span><span class="dv">18</span>, <span class="ot">TRUE</span>, include)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb7-16" title="16"><span class="st">           </span><span class="co">### 17 and 18 are &quot;other&quot; and &quot;unknown&quot;; &quot;unknown&quot; includes some</span></a>
+<a class="sourceLine" id="cb7-17" title="17"><span class="st">           </span><span class="co">### marine spp e.g. 170022 and 170033, slipper lobsters; &quot;other&quot;</span></a>
+<a class="sourceLine" id="cb7-18" title="18"><span class="st">           </span><span class="co">### also includes marine spp e.g. 60087 sepia stingray</span></a>
+<a class="sourceLine" id="cb7-19" title="19"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(code))</a>
+<a class="sourceLine" id="cb7-20" title="20"></a>
+<a class="sourceLine" id="cb7-21" title="21"><span class="co">### Note these &quot;include&quot; values were manually determined by inspecting the habitat categories</span></a>
+<a class="sourceLine" id="cb7-22" title="22"><span class="co">### Notes on categories related to depth clipping </span></a>
+<a class="sourceLine" id="cb7-23" title="23"><span class="co">### see also: http://www.iucnredlist.org/technical-documents/classification-schemes/habitats-classification-scheme-ver3</span></a>
+<a class="sourceLine" id="cb7-24" title="24"><span class="co">### * category 9 is neritic (shallow) though 9.1 is specifically pelagic (NOT shallow)</span></a>
+<a class="sourceLine" id="cb7-25" title="25"><span class="co">### * category 10 is oceanic at different depths (pelagic: NOT shallow)</span></a>
+<a class="sourceLine" id="cb7-26" title="26"><span class="co">### * category 11 is Marine Deep Ocean Floor (Benthic and Demersal) (NOT shallow)</span></a>
+<a class="sourceLine" id="cb7-27" title="27"><span class="co">### * category 12 is Marine Intertidal (shallow)</span></a>
+<a class="sourceLine" id="cb7-28" title="28"><span class="co">### * category 13 is Marine Coastal/Supratidal (shallow) </span></a>
+<a class="sourceLine" id="cb7-29" title="29"><span class="co">### * category 15 includes shallow structures</span></a>
+<a class="sourceLine" id="cb7-30" title="30"><span class="co">### So: for depth clipping, cut at 200 m for all but category 9.1, 10, 11</span></a>
+<a class="sourceLine" id="cb7-31" title="31"></a>
+<a class="sourceLine" id="cb7-32" title="32"><span class="kw">write_csv</span>(hab_cats, hab_inclusion_file)</a></code></pre></div>
 </div>
 <div id="determine-marine-species-and-depth-constraints" class="section level4">
 <h4><span class="header-section-number">3.1.2.3</span> Determine marine species and depth constraints</h4>
@@ -1940,7 +1941,7 @@ div.tocify {
 </ul>
 <p>It appears that coastal species suffer from the extended buffers so clipping these to a 200 m bathymetry line is important. Intertidal organisms may benefit from further clipping to shallower depths, depending on the quality of bathymetric layers.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1">spp_habs_from_api &lt;-<span class="st"> </span><span class="kw">read_csv</span>(spp_habs_from_api_file,</a>
-<a class="sourceLine" id="cb8-2" title="2">                              <span class="dt">col_types =</span> <span class="st">&#39;iciccccc&#39;</span>)</a>
+<a class="sourceLine" id="cb8-2" title="2">                              <span class="dt">col_types =</span> <span class="st">&#39;iccccccc&#39;</span>)</a>
 <a class="sourceLine" id="cb8-3" title="3"><span class="co">### &#39;code&#39; is character since it is in the form x.xx.xxx</span></a>
 <a class="sourceLine" id="cb8-4" title="4"></a>
 <a class="sourceLine" id="cb8-5" title="5">spp_systems_from_api &lt;-<span class="st"> </span><span class="kw">read_csv</span>(spp_sys_from_api_file) <span class="op">%&gt;%</span></a>
@@ -1956,11 +1957,11 @@ div.tocify {
 <a class="sourceLine" id="cb8-15" title="15"><span class="st">  </span><span class="kw">left_join</span>(hab_marine, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&#39;habitat&#39;</span>, <span class="st">&#39;code&#39;</span>))</a>
 <a class="sourceLine" id="cb8-16" title="16"></a>
 <a class="sourceLine" id="cb8-17" title="17"><span class="co">### Spot checks:  how to best differentiate true marine spp?</span></a>
-<a class="sourceLine" id="cb8-18" title="18"> <span class="co">#qwer &lt;- spp_habs_and_systems %&gt;%</span></a>
-<a class="sourceLine" id="cb8-19" title="19">  <span class="co"># filter(include == TRUE)</span></a>
-<a class="sourceLine" id="cb8-20" title="20"> <span class="co">#length(qwer$iucn_sid %&gt;% unique())</span></a>
-<a class="sourceLine" id="cb8-21" title="21"> <span class="co">#length(qwer %&gt;% filter(!cat %in% 17:18) %&gt;% .$iucn_sid %&gt;% unique())</span></a>
-<a class="sourceLine" id="cb8-22" title="22"> <span class="co">#2018: </span></a>
+<a class="sourceLine" id="cb8-18" title="18"> <span class="co"># qwer &lt;- spp_habs_and_systems %&gt;%</span></a>
+<a class="sourceLine" id="cb8-19" title="19"> <span class="co"># filter(include == TRUE)</span></a>
+<a class="sourceLine" id="cb8-20" title="20"> <span class="co"># length(qwer$iucn_sid %&gt;% unique())</span></a>
+<a class="sourceLine" id="cb8-21" title="21"> <span class="co"># length(qwer %&gt;% filter(!cat %in% 17:18) %&gt;% .$iucn_sid %&gt;% unique())</span></a>
+<a class="sourceLine" id="cb8-22" title="22"><span class="co">### 2018:</span></a>
 <a class="sourceLine" id="cb8-23" title="23"><span class="co">### 15105 spp marine by habitat only (NAs dropped); note undoubtedly</span></a>
 <a class="sourceLine" id="cb8-24" title="24"><span class="co">### some &quot;other&quot; and &quot;unknown&quot; that are NOT marine - only 12108 when</span></a>
 <a class="sourceLine" id="cb8-25" title="25"><span class="co">### excluding &quot;other&quot; and &quot;unknown&quot;</span></a>
@@ -1968,117 +1969,145 @@ div.tocify {
 <a class="sourceLine" id="cb8-27" title="27"><span class="co">### 16541 spp marine by habitat only (NAs dropped); note undoubtedly</span></a>
 <a class="sourceLine" id="cb8-28" title="28"><span class="co">### some &quot;other&quot; and &quot;unknown&quot; that are NOT marine - only 13437 when</span></a>
 <a class="sourceLine" id="cb8-29" title="29"><span class="co">### excluding &quot;other&quot; and &quot;unknown&quot;</span></a>
-<a class="sourceLine" id="cb8-30" title="30"></a>
-<a class="sourceLine" id="cb8-31" title="31"> asdf &lt;-<span class="st"> </span>spp_habs_and_systems <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-32" title="32"><span class="st">   </span><span class="kw">filter</span>(marine_system) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-33" title="33"><span class="st">   </span><span class="kw">distinct</span>()</a>
-<a class="sourceLine" id="cb8-34" title="34"> <span class="kw">length</span>(asdf<span class="op">$</span>iucn_sid <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">unique</span>())</a>
-<a class="sourceLine" id="cb8-35" title="35"> <span class="co">#2018:</span></a>
-<a class="sourceLine" id="cb8-36" title="36"><span class="co">### 13188 spp by marine_system only; some might be marine/terrestrial</span></a>
-<a class="sourceLine" id="cb8-37" title="37"> <span class="co">#2019:</span></a>
-<a class="sourceLine" id="cb8-38" title="38"> <span class="co">### 13669 spp by marine_system only; some might be marine/terrestrial</span></a>
-<a class="sourceLine" id="cb8-39" title="39"> </a>
-<a class="sourceLine" id="cb8-40" title="40"><span class="co"># zxcv &lt;- spp_habs_and_systems %&gt;%</span></a>
-<a class="sourceLine" id="cb8-41" title="41"><span class="co">#   filter(include == TRUE | (is.na(include) &amp; marine_system == TRUE)) %&gt;%</span></a>
-<a class="sourceLine" id="cb8-42" title="42"><span class="co">#   distinct()</span></a>
-<a class="sourceLine" id="cb8-43" title="43"><span class="co"># length(zxcv$iucn_sid %&gt;% unique())</span></a>
-<a class="sourceLine" id="cb8-44" title="44"><span class="co"># length(zxcv %&gt;% filter(!cat %in% 17:18) %&gt;% .$iucn_sid %&gt;% unique())</span></a>
-<a class="sourceLine" id="cb8-45" title="45"> <span class="co">#2018:</span></a>
-<a class="sourceLine" id="cb8-46" title="46"><span class="co">### 16253 in marine habitats, and/or with NA habitat but marine_system</span></a>
-<a class="sourceLine" id="cb8-47" title="47"><span class="co">### 13256 when ignoring &quot;other&quot; and &quot;unknown&quot;</span></a>
-<a class="sourceLine" id="cb8-48" title="48"> <span class="co">#2019:</span></a>
-<a class="sourceLine" id="cb8-49" title="49"><span class="co">### 16823 in marine habitats, and/or with NA habitat but marine_system</span></a>
-<a class="sourceLine" id="cb8-50" title="50"><span class="co">### 13719 when ignoring &quot;other&quot; and &quot;unknown&quot;</span></a>
-<a class="sourceLine" id="cb8-51" title="51"> </a>
-<a class="sourceLine" id="cb8-52" title="52"><span class="co"># qwer &lt;- spp_habs_and_systems %&gt;%</span></a>
-<a class="sourceLine" id="cb8-53" title="53"><span class="co">#   filter((include == TRUE | is.na(include)) &amp; marine_system == TRUE)</span></a>
-<a class="sourceLine" id="cb8-54" title="54"><span class="co"># length(qwer$iucn_sid %&gt;% unique())</span></a>
-<a class="sourceLine" id="cb8-55" title="55"> <span class="co">#2018:</span></a>
-<a class="sourceLine" id="cb8-56" title="56"><span class="co">### 12934 both marine hab (or NA hab) AND marine_system</span></a>
-<a class="sourceLine" id="cb8-57" title="57"> <span class="co">#2019:</span></a>
-<a class="sourceLine" id="cb8-58" title="58"><span class="co">### 13425 both marine hab (or NA hab) AND marine_system </span></a>
-<a class="sourceLine" id="cb8-59" title="59"></a>
-<a class="sourceLine" id="cb8-60" title="60"><span class="co">### Let&#39;s examine the spp that are marine_system but not by hab,</span></a>
-<a class="sourceLine" id="cb8-61" title="61"><span class="co">### and by hab but not marine_system.</span></a>
-<a class="sourceLine" id="cb8-62" title="62"><span class="co"># asdf &lt;- spp_habs_and_systems %&gt;%</span></a>
-<a class="sourceLine" id="cb8-63" title="63"><span class="co">#   filter(include == TRUE &amp; !marine_system)</span></a>
-<a class="sourceLine" id="cb8-64" title="64"><span class="co"># length(asdf$iucn_sid %&gt;% unique())</span></a>
-<a class="sourceLine" id="cb8-65" title="65"><span class="co"># length(asdf %&gt;% filter(!cat %in% 17:18) %&gt;% .$iucn_sid %&gt;% unique())</span></a>
-<a class="sourceLine" id="cb8-66" title="66"> <span class="co">#2018:</span></a>
-<a class="sourceLine" id="cb8-67" title="67"><span class="co">### 3319 spp: including &quot;other&quot; and &quot;unknown&quot; requires an additional filter... just</span></a>
-<a class="sourceLine" id="cb8-68" title="68"><span class="co">### too many extras included here.  782 if we ignore those.</span></a>
-<a class="sourceLine" id="cb8-69" title="69">  <span class="co">#2019:</span></a>
-<a class="sourceLine" id="cb8-70" title="70"><span class="co">### 3395 spp: including &quot;other&quot; and &quot;unknown&quot; requires an additional filter... just</span></a>
-<a class="sourceLine" id="cb8-71" title="71"><span class="co">### too many extras included here.  810 if we ignore those.</span></a>
-<a class="sourceLine" id="cb8-72" title="72"> </a>
-<a class="sourceLine" id="cb8-73" title="73"><span class="co"># zxcv &lt;- spp_habs_and_systems %&gt;%</span></a>
-<a class="sourceLine" id="cb8-74" title="74"><span class="co">#   group_by(iucn_sid) %&gt;%</span></a>
-<a class="sourceLine" id="cb8-75" title="75"><span class="co">#   mutate(include = any(include == TRUE)) %&gt;%</span></a>
-<a class="sourceLine" id="cb8-76" title="76"><span class="co">#   filter(include == FALSE &amp; marine_system)</span></a>
-<a class="sourceLine" id="cb8-77" title="77"><span class="co"># length(zxcv$iucn_sid %&gt;% unique())</span></a>
-<a class="sourceLine" id="cb8-78" title="78"> <span class="co">#2018:</span></a>
-<a class="sourceLine" id="cb8-79" title="79"><span class="co">### 254 spp here.  This looks pretty solid - the remainders look like</span></a>
-<a class="sourceLine" id="cb8-80" title="80"><span class="co">### they are inland wetlands, coastal lakes, caves, etc.  Some may</span></a>
-<a class="sourceLine" id="cb8-81" title="81"><span class="co">### be misclassified by IUCN as to their habitats.</span></a>
-<a class="sourceLine" id="cb8-82" title="82"> <span class="co">#2019:</span></a>
-<a class="sourceLine" id="cb8-83" title="83"><span class="co">### 244 spp here.  This looks pretty solid - the remainders look like</span></a>
-<a class="sourceLine" id="cb8-84" title="84"><span class="co">### they are inland wetlands, coastal lakes, caves, etc.  Some may</span></a>
-<a class="sourceLine" id="cb8-85" title="85"><span class="co">### be misclassified by IUCN as to their habitats.</span></a>
-<a class="sourceLine" id="cb8-86" title="86"></a>
-<a class="sourceLine" id="cb8-87" title="87">spp_marine &lt;-<span class="st"> </span>spp_habs_and_systems <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-88" title="88"><span class="st">  </span><span class="kw">filter</span>((include <span class="op">==</span><span class="st"> </span><span class="ot">TRUE</span> <span class="op">|</span><span class="st"> </span><span class="kw">is.na</span>(include)) <span class="op">&amp;</span><span class="st"> </span>marine_system <span class="op">==</span><span class="st"> </span><span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb8-89" title="89"> <span class="kw">length</span>(spp_marine<span class="op">$</span>iucn_sid <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">unique</span>())</a>
-<a class="sourceLine" id="cb8-90" title="90"> <span class="co">#2018:</span></a>
-<a class="sourceLine" id="cb8-91" title="91"><span class="co">### These 12934 spp either are positively coded hab or NA hab, and</span></a>
-<a class="sourceLine" id="cb8-92" title="92"><span class="co">### ALSO classified as marine system.  This is a reasonably aggressive</span></a>
-<a class="sourceLine" id="cb8-93" title="93"><span class="co">### cut that seems to minimize false positives and false negatives.</span></a>
-<a class="sourceLine" id="cb8-94" title="94"><span class="co">### </span><span class="al">NOTE</span><span class="co">: This still includes hippos because of estuaries - see next cut.</span></a>
-<a class="sourceLine" id="cb8-95" title="95"> <span class="co">#2019:</span></a>
-<a class="sourceLine" id="cb8-96" title="96"><span class="co">### These 13425 spp either are positively coded hab or NA hab, and</span></a>
-<a class="sourceLine" id="cb8-97" title="97"><span class="co">### ALSO classified as marine system.  This is a reasonably aggressive</span></a>
-<a class="sourceLine" id="cb8-98" title="98"><span class="co">### cut that seems to minimize false positives and false negatives.</span></a>
-<a class="sourceLine" id="cb8-99" title="99"><span class="co">### </span><span class="al">NOTE</span><span class="co">: This still includes hippos because of estuaries - see next cut.</span></a>
-<a class="sourceLine" id="cb8-100" title="100"> </a>
-<a class="sourceLine" id="cb8-101" title="101"><span class="co">### See which species are only &quot;marginal&quot; or of unknown suitability for</span></a>
-<a class="sourceLine" id="cb8-102" title="102"><span class="co">### marine habitats.  Filter out those that are pelagic, subtidal - </span></a>
-<a class="sourceLine" id="cb8-103" title="103"><span class="co">### those are clearly marine species.  If spp are only found in</span></a>
-<a class="sourceLine" id="cb8-104" title="104"><span class="co">### intertidal as a marginal habitat, inspect them - perhaps they&#39;re</span></a>
-<a class="sourceLine" id="cb8-105" title="105"><span class="co">### terrestrial that venture into intertidal occasionally... should they be included?</span></a>
-<a class="sourceLine" id="cb8-106" title="106">marg_suit &lt;-<span class="st"> </span>spp_marine <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-107" title="107"><span class="st">  </span><span class="kw">group_by</span>(iucn_sid) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-108" title="108"><span class="st">  </span><span class="kw">filter</span>(include <span class="op">==</span><span class="st"> </span><span class="ot">TRUE</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-109" title="109"><span class="st">  </span><span class="kw">arrange</span>(suitability) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-110" title="110"><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">suit_all =</span> <span class="kw">tolower</span>(<span class="kw">paste0</span>(<span class="kw">unique</span>(suitability), <span class="dt">collapse =</span> <span class="st">&#39;, &#39;</span>)),</a>
-<a class="sourceLine" id="cb8-111" title="111">            <span class="dt">intertidal_only =</span> <span class="kw">sum</span>(<span class="op">!</span>cat <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">12</span>) <span class="op">&amp;</span><span class="st"> </span><span class="op">!</span>(cat <span class="op">==</span><span class="st"> </span><span class="dv">9</span> <span class="op">&amp;</span><span class="st"> </span>subcat1 <span class="op">==</span><span class="st"> </span><span class="dv">10</span>)) <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-112" title="112"><span class="st">              </span><span class="co">### cat 9.10 is estuaries - if only intertidal or estuaries, </span></a>
-<a class="sourceLine" id="cb8-113" title="113"><span class="st">              </span><span class="co">### check for suitability</span></a>
-<a class="sourceLine" id="cb8-114" title="114"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">str_detect</span>(suit_all, <span class="st">&#39;suitable|unknown|^na&#39;</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-115" title="115"><span class="st">  </span><span class="kw">filter</span>(intertidal_only) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-116" title="116"><span class="st">  </span><span class="kw">left_join</span>(<span class="kw">read_csv</span>(spp_info_from_api_file), <span class="dt">by =</span> <span class="st">&#39;iucn_sid&#39;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-117" title="117"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(iucn_sid, sciname, suit_all, kingdom, phylum, class, order, family)</a>
-<a class="sourceLine" id="cb8-118" title="118"></a>
-<a class="sourceLine" id="cb8-119" title="119"><span class="co">#2018:</span></a>
-<a class="sourceLine" id="cb8-120" title="120"><span class="co">### 21 spp</span></a>
-<a class="sourceLine" id="cb8-121" title="121"><span class="co">#2019:</span></a>
-<a class="sourceLine" id="cb8-122" title="122"><span class="co">### 21 spp</span></a>
-<a class="sourceLine" id="cb8-123" title="123"><span class="kw">write_csv</span>(marg_suit, <span class="kw">file.path</span>(dir_setup, <span class="st">&#39;int&#39;</span>,</a>
-<a class="sourceLine" id="cb8-124" title="124">                               <span class="kw">sprintf</span>(<span class="st">&#39;spp_marine_marginal_%s.csv&#39;</span>, api_version)))</a>
+<a class="sourceLine" id="cb8-30" title="30"> <span class="co">#2020</span></a>
+<a class="sourceLine" id="cb8-31" title="31"> <span class="co">### 19517 spp marine by habitat only (NAs dropped); note undoubtedly</span></a>
+<a class="sourceLine" id="cb8-32" title="32"><span class="co">### some &quot;other&quot; and &quot;unknown&quot; that are NOT marine - only 16069 when</span></a>
+<a class="sourceLine" id="cb8-33" title="33"><span class="co">### excluding &quot;other&quot; and &quot;unknown&quot;</span></a>
+<a class="sourceLine" id="cb8-34" title="34"></a>
+<a class="sourceLine" id="cb8-35" title="35"> asdf &lt;-<span class="st"> </span>spp_habs_and_systems <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-36" title="36"><span class="st">   </span><span class="kw">filter</span>(marine_system) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-37" title="37"><span class="st">   </span><span class="kw">distinct</span>()</a>
+<a class="sourceLine" id="cb8-38" title="38"> <span class="kw">length</span>(asdf<span class="op">$</span>iucn_sid <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">unique</span>())</a>
+<a class="sourceLine" id="cb8-39" title="39"> <span class="co">#2018:</span></a>
+<a class="sourceLine" id="cb8-40" title="40"><span class="co">### 13188 spp by marine_system only; some might be marine/terrestrial</span></a>
+<a class="sourceLine" id="cb8-41" title="41"> <span class="co">#2019:</span></a>
+<a class="sourceLine" id="cb8-42" title="42"> <span class="co">### 13669 spp by marine_system only; some might be marine/terrestrial</span></a>
+<a class="sourceLine" id="cb8-43" title="43"><span class="co">#2020:</span></a>
+<a class="sourceLine" id="cb8-44" title="44"><span class="co">### 16304 spp by marine_system only; some might be marine/terrestrial</span></a>
+<a class="sourceLine" id="cb8-45" title="45"> </a>
+<a class="sourceLine" id="cb8-46" title="46"><span class="co"># zxcv &lt;- spp_habs_and_systems %&gt;%</span></a>
+<a class="sourceLine" id="cb8-47" title="47"><span class="co">#   filter(include == TRUE | (is.na(include) &amp; marine_system == TRUE)) %&gt;%</span></a>
+<a class="sourceLine" id="cb8-48" title="48"><span class="co">#   distinct()</span></a>
+<a class="sourceLine" id="cb8-49" title="49"><span class="co"># length(zxcv$iucn_sid %&gt;% unique())</span></a>
+<a class="sourceLine" id="cb8-50" title="50"><span class="co"># length(zxcv %&gt;% filter(!cat %in% 17:18) %&gt;% .$iucn_sid %&gt;% unique())</span></a>
+<a class="sourceLine" id="cb8-51" title="51"> <span class="co">#2018:</span></a>
+<a class="sourceLine" id="cb8-52" title="52"><span class="co">### 16253 in marine habitats, and/or with NA habitat but marine_system</span></a>
+<a class="sourceLine" id="cb8-53" title="53"><span class="co">### 13256 when ignoring &quot;other&quot; and &quot;unknown&quot;</span></a>
+<a class="sourceLine" id="cb8-54" title="54"> <span class="co">#2019:</span></a>
+<a class="sourceLine" id="cb8-55" title="55"><span class="co">### 16823 in marine habitats, and/or with NA habitat but marine_system</span></a>
+<a class="sourceLine" id="cb8-56" title="56"><span class="co">### 13719 when ignoring &quot;other&quot; and &quot;unknown&quot;</span></a>
+<a class="sourceLine" id="cb8-57" title="57"> <span class="co">#2020:</span></a>
+<a class="sourceLine" id="cb8-58" title="58"><span class="co">### 19340 in marine habitats, and/or with NA habitat but marine_system</span></a>
+<a class="sourceLine" id="cb8-59" title="59"><span class="co">### 16340 when ignoring &quot;other&quot; and &quot;unknown&quot;</span></a>
+<a class="sourceLine" id="cb8-60" title="60"> </a>
+<a class="sourceLine" id="cb8-61" title="61"><span class="co"># qwer &lt;- spp_habs_and_systems %&gt;%</span></a>
+<a class="sourceLine" id="cb8-62" title="62"><span class="co">#   filter((include == TRUE | is.na(include)) &amp; marine_system == TRUE)</span></a>
+<a class="sourceLine" id="cb8-63" title="63"><span class="co"># length(qwer$iucn_sid %&gt;% unique())</span></a>
+<a class="sourceLine" id="cb8-64" title="64"> <span class="co">#2018:</span></a>
+<a class="sourceLine" id="cb8-65" title="65"><span class="co">### 12934 both marine hab (or NA hab) AND marine_system</span></a>
+<a class="sourceLine" id="cb8-66" title="66"> <span class="co">#2019:</span></a>
+<a class="sourceLine" id="cb8-67" title="67"><span class="co">### 13425 both marine hab (or NA hab) AND marine_system </span></a>
+<a class="sourceLine" id="cb8-68" title="68"> <span class="co">#2020:</span></a>
+<a class="sourceLine" id="cb8-69" title="69"><span class="co">### 16039 both marine hab (or NA hab) AND marine_system </span></a>
+<a class="sourceLine" id="cb8-70" title="70"></a>
+<a class="sourceLine" id="cb8-71" title="71"><span class="co">### Let&#39;s examine the spp that are marine_system but not by hab,</span></a>
+<a class="sourceLine" id="cb8-72" title="72"><span class="co">### and by hab but not marine_system.</span></a>
+<a class="sourceLine" id="cb8-73" title="73"><span class="co"># asdf &lt;- spp_habs_and_systems %&gt;%</span></a>
+<a class="sourceLine" id="cb8-74" title="74"><span class="co">#   filter(include == TRUE &amp; !marine_system)</span></a>
+<a class="sourceLine" id="cb8-75" title="75"><span class="co"># length(asdf$iucn_sid %&gt;% unique())</span></a>
+<a class="sourceLine" id="cb8-76" title="76"><span class="co"># length(asdf %&gt;% filter(!cat %in% 17:18) %&gt;% .$iucn_sid %&gt;% unique())</span></a>
+<a class="sourceLine" id="cb8-77" title="77"> <span class="co">#2018:</span></a>
+<a class="sourceLine" id="cb8-78" title="78"><span class="co">### 3319 spp: including &quot;other&quot; and &quot;unknown&quot; requires an additional filter... just</span></a>
+<a class="sourceLine" id="cb8-79" title="79"><span class="co">### too many extras included here.  782 if we ignore those.</span></a>
+<a class="sourceLine" id="cb8-80" title="80">  <span class="co">#2019:</span></a>
+<a class="sourceLine" id="cb8-81" title="81"><span class="co">### 3395 spp: including &quot;other&quot; and &quot;unknown&quot; requires an additional filter... just</span></a>
+<a class="sourceLine" id="cb8-82" title="82"><span class="co">### too many extras included here.  810 if we ignore those.</span></a>
+<a class="sourceLine" id="cb8-83" title="83">  <span class="co">#2020:</span></a>
+<a class="sourceLine" id="cb8-84" title="84"><span class="co">### 3749 spp: including &quot;other&quot; and &quot;unknown&quot; requires an additional filter... just</span></a>
+<a class="sourceLine" id="cb8-85" title="85"><span class="co">### too many extras included here.  904 if we ignore those.</span></a>
+<a class="sourceLine" id="cb8-86" title="86"> </a>
+<a class="sourceLine" id="cb8-87" title="87"><span class="co"># zxcv &lt;- spp_habs_and_systems %&gt;%</span></a>
+<a class="sourceLine" id="cb8-88" title="88"><span class="co">#   group_by(iucn_sid) %&gt;%</span></a>
+<a class="sourceLine" id="cb8-89" title="89"><span class="co">#   mutate(include = any(include == TRUE)) %&gt;%</span></a>
+<a class="sourceLine" id="cb8-90" title="90"><span class="co">#   filter(include == FALSE &amp; marine_system)</span></a>
+<a class="sourceLine" id="cb8-91" title="91"><span class="co"># length(zxcv$iucn_sid %&gt;% unique())</span></a>
+<a class="sourceLine" id="cb8-92" title="92"> <span class="co">#2018:</span></a>
+<a class="sourceLine" id="cb8-93" title="93"><span class="co">### 254 spp here.  This looks pretty solid - the remainders look like</span></a>
+<a class="sourceLine" id="cb8-94" title="94"><span class="co">### they are inland wetlands, coastal lakes, caves, etc.  Some may</span></a>
+<a class="sourceLine" id="cb8-95" title="95"><span class="co">### be misclassified by IUCN as to their habitats.</span></a>
+<a class="sourceLine" id="cb8-96" title="96"> <span class="co">#2019:</span></a>
+<a class="sourceLine" id="cb8-97" title="97"><span class="co">### 244 spp here.  This looks pretty solid - the remainders look like</span></a>
+<a class="sourceLine" id="cb8-98" title="98"><span class="co">### they are inland wetlands, coastal lakes, caves, etc.  Some may</span></a>
+<a class="sourceLine" id="cb8-99" title="99"><span class="co">### be misclassified by IUCN as to their habitats.</span></a>
+<a class="sourceLine" id="cb8-100" title="100"> <span class="co">#2020:</span></a>
+<a class="sourceLine" id="cb8-101" title="101"><span class="co">### 265 spp here.  This looks pretty solid - the remainders look like</span></a>
+<a class="sourceLine" id="cb8-102" title="102"><span class="co">### they are inland wetlands, coastal lakes, caves, etc.  Some may</span></a>
+<a class="sourceLine" id="cb8-103" title="103"><span class="co">### be misclassified by IUCN as to their habitats.</span></a>
+<a class="sourceLine" id="cb8-104" title="104"></a>
+<a class="sourceLine" id="cb8-105" title="105"> </a>
+<a class="sourceLine" id="cb8-106" title="106"> </a>
+<a class="sourceLine" id="cb8-107" title="107">spp_marine &lt;-<span class="st"> </span>spp_habs_and_systems <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-108" title="108"><span class="st">  </span><span class="kw">filter</span>((include <span class="op">==</span><span class="st"> </span><span class="ot">TRUE</span> <span class="op">|</span><span class="st"> </span><span class="kw">is.na</span>(include)) <span class="op">&amp;</span><span class="st"> </span>marine_system <span class="op">==</span><span class="st"> </span><span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb8-109" title="109"> <span class="kw">length</span>(spp_marine<span class="op">$</span>iucn_sid <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">unique</span>())</a>
+<a class="sourceLine" id="cb8-110" title="110"> <span class="co">#2018:</span></a>
+<a class="sourceLine" id="cb8-111" title="111"><span class="co">### These 12934 spp either are positively coded hab or NA hab, and</span></a>
+<a class="sourceLine" id="cb8-112" title="112"><span class="co">### ALSO classified as marine system.  This is a reasonably aggressive</span></a>
+<a class="sourceLine" id="cb8-113" title="113"><span class="co">### cut that seems to minimize false positives and false negatives.</span></a>
+<a class="sourceLine" id="cb8-114" title="114"><span class="co">### </span><span class="al">NOTE</span><span class="co">: This still includes hippos because of estuaries - see next cut.</span></a>
+<a class="sourceLine" id="cb8-115" title="115"> <span class="co">#2019:</span></a>
+<a class="sourceLine" id="cb8-116" title="116"><span class="co">### These 13425 spp either are positively coded hab or NA hab, and</span></a>
+<a class="sourceLine" id="cb8-117" title="117"><span class="co">### ALSO classified as marine system.  This is a reasonably aggressive</span></a>
+<a class="sourceLine" id="cb8-118" title="118"><span class="co">### cut that seems to minimize false positives and false negatives.</span></a>
+<a class="sourceLine" id="cb8-119" title="119"><span class="co">### </span><span class="al">NOTE</span><span class="co">: This still includes hippos because of estuaries - see next cut.</span></a>
+<a class="sourceLine" id="cb8-120" title="120"> <span class="co">#2020:</span></a>
+<a class="sourceLine" id="cb8-121" title="121"><span class="co">### These 16039 spp either are positively coded hab or NA hab, and</span></a>
+<a class="sourceLine" id="cb8-122" title="122"><span class="co">### ALSO classified as marine system.  This is a reasonably aggressive</span></a>
+<a class="sourceLine" id="cb8-123" title="123"><span class="co">### cut that seems to minimize false positives and false negatives.</span></a>
+<a class="sourceLine" id="cb8-124" title="124"><span class="co">### </span><span class="al">NOTE</span><span class="co">: This still includes hippos because of estuaries - see next cut.</span></a>
 <a class="sourceLine" id="cb8-125" title="125">  </a>
-<a class="sourceLine" id="cb8-126" title="126"><span class="co">### Trim down to just the species ID, a quick list of habitats, and whether</span></a>
-<a class="sourceLine" id="cb8-127" title="127"><span class="co">### the species should be considered to be OK for deeper waters (200 m +)</span></a>
-<a class="sourceLine" id="cb8-128" title="128">spp_habs_clean &lt;-<span class="st"> </span>spp_marine <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-129" title="129"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>iucn_sid <span class="op">%in%</span><span class="st"> </span>marg_suit<span class="op">$</span>iucn_sid) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-130" title="130"><span class="st">  </span><span class="kw">group_by</span>(iucn_sid) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-131" title="131"><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">habs =</span> <span class="kw">paste0</span>(code, <span class="dt">collapse =</span> <span class="st">&#39;, &#39;</span>),</a>
-<a class="sourceLine" id="cb8-132" title="132">            <span class="dt">max_depth =</span> <span class="kw">case_when</span>(<span class="kw">all</span>((cat <span class="op">==</span><span class="st"> </span><span class="dv">10</span> <span class="op">&amp;</span><span class="st"> </span>subcat1 <span class="op">%in%</span><span class="st"> </span><span class="dv">3</span><span class="op">:</span><span class="dv">4</span>) <span class="op">|</span></a>
-<a class="sourceLine" id="cb8-133" title="133"><span class="st">                                        </span>cat <span class="op">==</span><span class="st"> </span><span class="dv">11</span>)        <span class="op">~</span><span class="st"> &#39;deep oceanic&#39;</span>,</a>
-<a class="sourceLine" id="cb8-134" title="134">                                  <span class="kw">any</span>(cat <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">11</span>)) <span class="op">~</span><span class="st"> &#39;200 m +&#39;</span>,</a>
-<a class="sourceLine" id="cb8-135" title="135">                                  <span class="kw">any</span>(cat <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">9</span>, <span class="dv">15</span>))  <span class="op">~</span><span class="st"> &#39;&lt; 200 m&#39;</span>,</a>
-<a class="sourceLine" id="cb8-136" title="136">                                  <span class="kw">any</span>(cat <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">12</span>))     <span class="op">~</span><span class="st"> &#39;&lt; 20 m&#39;</span>,</a>
-<a class="sourceLine" id="cb8-137" title="137">                                  <span class="ot">TRUE</span>                    <span class="op">~</span><span class="st"> &#39;unknown&#39;</span>))</a>
-<a class="sourceLine" id="cb8-138" title="138"></a>
-<a class="sourceLine" id="cb8-139" title="139"><span class="kw">write_csv</span>(spp_habs_clean, <span class="kw">file.path</span>(dir_goal, <span class="st">&#39;_data&#39;</span>,</a>
-<a class="sourceLine" id="cb8-140" title="140">                                     <span class="kw">sprintf</span>(<span class="st">&#39;spp_marine_from_api_%s.csv&#39;</span>, api_version)))</a></code></pre></div>
+<a class="sourceLine" id="cb8-126" title="126"></a>
+<a class="sourceLine" id="cb8-127" title="127"><span class="co">### See which species are only &quot;marginal&quot; or of unknown suitability for</span></a>
+<a class="sourceLine" id="cb8-128" title="128"><span class="co">### marine habitats.  Filter out those that are pelagic, subtidal - </span></a>
+<a class="sourceLine" id="cb8-129" title="129"><span class="co">### those are clearly marine species.  If spp are only found in</span></a>
+<a class="sourceLine" id="cb8-130" title="130"><span class="co">### intertidal as a marginal habitat, inspect them - perhaps they&#39;re</span></a>
+<a class="sourceLine" id="cb8-131" title="131"><span class="co">### terrestrial that venture into intertidal occasionally... should they be included?</span></a>
+<a class="sourceLine" id="cb8-132" title="132">marg_suit &lt;-<span class="st"> </span>spp_marine <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-133" title="133"><span class="st">  </span><span class="kw">group_by</span>(iucn_sid) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-134" title="134"><span class="st">  </span><span class="kw">filter</span>(include <span class="op">==</span><span class="st"> </span><span class="ot">TRUE</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-135" title="135"><span class="st">  </span><span class="kw">arrange</span>(suitability) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-136" title="136"><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">suit_all =</span> <span class="kw">tolower</span>(<span class="kw">paste0</span>(<span class="kw">unique</span>(suitability), <span class="dt">collapse =</span> <span class="st">&#39;, &#39;</span>)),</a>
+<a class="sourceLine" id="cb8-137" title="137">            <span class="dt">intertidal_only =</span> <span class="kw">sum</span>(<span class="op">!</span>cat <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">12</span>) <span class="op">&amp;</span><span class="st"> </span><span class="op">!</span>(cat <span class="op">==</span><span class="st"> </span><span class="dv">9</span> <span class="op">&amp;</span><span class="st"> </span>subcat1 <span class="op">==</span><span class="st"> </span><span class="dv">10</span>)) <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-138" title="138"><span class="st">              </span><span class="co">### cat 9.10 is estuaries - if only intertidal or estuaries, </span></a>
+<a class="sourceLine" id="cb8-139" title="139"><span class="st">              </span><span class="co">### check for suitability</span></a>
+<a class="sourceLine" id="cb8-140" title="140"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">str_detect</span>(suit_all, <span class="st">&#39;suitable|unknown|^na&#39;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-141" title="141"><span class="st">  </span><span class="kw">filter</span>(intertidal_only) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-142" title="142"><span class="st">  </span><span class="kw">left_join</span>(<span class="kw">read_csv</span>(spp_info_from_api_file), <span class="dt">by =</span> <span class="st">&#39;iucn_sid&#39;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-143" title="143"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(iucn_sid, sciname, suit_all, kingdom, phylum, class, order, family)</a>
+<a class="sourceLine" id="cb8-144" title="144"></a>
+<a class="sourceLine" id="cb8-145" title="145"><span class="co">#2018:</span></a>
+<a class="sourceLine" id="cb8-146" title="146"><span class="co">### 21 spp</span></a>
+<a class="sourceLine" id="cb8-147" title="147"><span class="co">#2019:</span></a>
+<a class="sourceLine" id="cb8-148" title="148"><span class="co">### 21 spp</span></a>
+<a class="sourceLine" id="cb8-149" title="149"><span class="co">#2020:</span></a>
+<a class="sourceLine" id="cb8-150" title="150"><span class="co">### 20 spp</span></a>
+<a class="sourceLine" id="cb8-151" title="151"><span class="kw">write_csv</span>(marg_suit, <span class="kw">file.path</span>(dir_setup, <span class="st">&#39;int&#39;</span>,</a>
+<a class="sourceLine" id="cb8-152" title="152">                               <span class="kw">sprintf</span>(<span class="st">&#39;spp_marine_marginal_%s.csv&#39;</span>, api_version)))</a>
+<a class="sourceLine" id="cb8-153" title="153">  </a>
+<a class="sourceLine" id="cb8-154" title="154"><span class="co">### Trim down to just the species ID, a quick list of habitats, and whether</span></a>
+<a class="sourceLine" id="cb8-155" title="155"><span class="co">### the species should be considered to be OK for deeper waters (200 m +)</span></a>
+<a class="sourceLine" id="cb8-156" title="156">spp_habs_clean &lt;-<span class="st"> </span>spp_marine <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-157" title="157"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>iucn_sid <span class="op">%in%</span><span class="st"> </span>marg_suit<span class="op">$</span>iucn_sid) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-158" title="158"><span class="st">  </span><span class="kw">group_by</span>(iucn_sid) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-159" title="159"><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">habs =</span> <span class="kw">paste0</span>(code, <span class="dt">collapse =</span> <span class="st">&#39;, &#39;</span>),</a>
+<a class="sourceLine" id="cb8-160" title="160">            <span class="dt">max_depth =</span> <span class="kw">case_when</span>(<span class="kw">all</span>((cat <span class="op">==</span><span class="st"> </span><span class="dv">10</span> <span class="op">&amp;</span><span class="st"> </span>subcat1 <span class="op">%in%</span><span class="st"> </span><span class="dv">3</span><span class="op">:</span><span class="dv">4</span>) <span class="op">|</span></a>
+<a class="sourceLine" id="cb8-161" title="161"><span class="st">                                        </span>cat <span class="op">==</span><span class="st"> </span><span class="dv">11</span>)        <span class="op">~</span><span class="st"> &#39;deep oceanic&#39;</span>,</a>
+<a class="sourceLine" id="cb8-162" title="162">                                  <span class="kw">any</span>(cat <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">11</span>)) <span class="op">~</span><span class="st"> &#39;200 m +&#39;</span>,</a>
+<a class="sourceLine" id="cb8-163" title="163">                                  <span class="kw">any</span>(cat <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">9</span>, <span class="dv">15</span>))  <span class="op">~</span><span class="st"> &#39;&lt; 200 m&#39;</span>,</a>
+<a class="sourceLine" id="cb8-164" title="164">                                  <span class="kw">any</span>(cat <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">12</span>))     <span class="op">~</span><span class="st"> &#39;&lt; 20 m&#39;</span>,</a>
+<a class="sourceLine" id="cb8-165" title="165">                                  <span class="ot">TRUE</span>                    <span class="op">~</span><span class="st"> &#39;unknown&#39;</span>))</a>
+<a class="sourceLine" id="cb8-166" title="166"></a>
+<a class="sourceLine" id="cb8-167" title="167"><span class="kw">write_csv</span>(spp_habs_clean, <span class="kw">file.path</span>(dir_goal, <span class="st">&#39;_data&#39;</span>,</a>
+<a class="sourceLine" id="cb8-168" title="168">                                     <span class="kw">sprintf</span>(<span class="st">&#39;spp_marine_from_api_%s.csv&#39;</span>, api_version)))</a></code></pre></div>
 <hr />
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">spp_timeseries_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_goal, <span class="st">&#39;_data&#39;</span>,</a>
 <a class="sourceLine" id="cb9-2" title="2">                                 <span class="kw">sprintf</span>(<span class="st">&#39;iucn_risk_timeseries_%s.csv&#39;</span>, api_version))</a>
@@ -2090,51 +2119,52 @@ div.tocify {
 <a class="sourceLine" id="cb9-8" title="8">                                      <span class="kw">sprintf</span>(<span class="st">&#39;spp_marine_from_api_%s.csv&#39;</span>, api_version))) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb9-9" title="9"><span class="st">  </span><span class="kw">left_join</span>(iucn_spp_info)</a>
 <a class="sourceLine" id="cb9-10" title="10"><span class="co">### Subpopulations are in here too, by ID number</span></a>
-<a class="sourceLine" id="cb9-11" title="11"><span class="co">### Always check how many observations there after a join. 2019: 13404</span></a>
-<a class="sourceLine" id="cb9-12" title="12"></a>
-<a class="sourceLine" id="cb9-13" title="13">reload &lt;-<span class="st"> </span><span class="ot">FALSE</span></a>
-<a class="sourceLine" id="cb9-14" title="14"></a>
-<a class="sourceLine" id="cb9-15" title="15"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(spp_timeseries_file) <span class="op">|</span><span class="st"> </span>reload) {</a>
-<a class="sourceLine" id="cb9-16" title="16"></a>
-<a class="sourceLine" id="cb9-17" title="17">  spp_hist_url &lt;-<span class="st"> &#39;http://apiv3.iucnredlist.org/api/v3/species/history/id/%s?token=%s&#39;</span></a>
-<a class="sourceLine" id="cb9-18" title="18">  </a>
-<a class="sourceLine" id="cb9-19" title="19">  sid_list &lt;-<span class="st"> </span>iucn_marine_spp <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-20" title="20"><span class="st">    </span>.<span class="op">$</span>iucn_sid <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-21" title="21"><span class="st">    </span><span class="kw">unique</span>() <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-22" title="22"><span class="st">    </span><span class="kw">sort</span>()</a>
-<a class="sourceLine" id="cb9-23" title="23">    </a>
-<a class="sourceLine" id="cb9-24" title="24">  ptm &lt;-<span class="st"> </span><span class="kw">proc.time</span>()</a>
-<a class="sourceLine" id="cb9-25" title="25">  spp_past_df &lt;-<span class="st"> </span><span class="kw">mc_get_from_api</span>(spp_hist_url, sid_list, api_key, <span class="dt">delay =</span> <span class="dv">1</span>, <span class="dt">cores =</span> <span class="dv">16</span>)</a>
-<a class="sourceLine" id="cb9-26" title="26">  <span class="kw">cat_msg</span>(<span class="st">&#39;elapsed time: &#39;</span>, (<span class="kw">proc.time</span>() <span class="op">-</span><span class="st"> </span>ptm)[<span class="dv">3</span>]) <span class="co">#2019 elapsed time:  1115.739 </span></a>
-<a class="sourceLine" id="cb9-27" title="27">  </a>
+<a class="sourceLine" id="cb9-11" title="11"><span class="co">### Always check how many observations there after a join. 2019: 13404, 2020: 16019</span></a>
+<a class="sourceLine" id="cb9-12" title="12">                                                          </a>
+<a class="sourceLine" id="cb9-13" title="13"></a>
+<a class="sourceLine" id="cb9-14" title="14">reload &lt;-<span class="st"> </span><span class="ot">FALSE</span></a>
+<a class="sourceLine" id="cb9-15" title="15"></a>
+<a class="sourceLine" id="cb9-16" title="16"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(spp_timeseries_file) <span class="op">|</span><span class="st"> </span>reload) {</a>
+<a class="sourceLine" id="cb9-17" title="17"></a>
+<a class="sourceLine" id="cb9-18" title="18">  spp_hist_url &lt;-<span class="st"> &#39;http://apiv3.iucnredlist.org/api/v3/species/history/id/%s?token=%s&#39;</span></a>
+<a class="sourceLine" id="cb9-19" title="19">  </a>
+<a class="sourceLine" id="cb9-20" title="20">  sid_list &lt;-<span class="st"> </span>iucn_marine_spp <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb9-21" title="21"><span class="st">    </span>.<span class="op">$</span>iucn_sid <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb9-22" title="22"><span class="st">    </span><span class="kw">unique</span>() <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb9-23" title="23"><span class="st">    </span><span class="kw">sort</span>()</a>
+<a class="sourceLine" id="cb9-24" title="24">    </a>
+<a class="sourceLine" id="cb9-25" title="25">  ptm &lt;-<span class="st"> </span><span class="kw">proc.time</span>()</a>
+<a class="sourceLine" id="cb9-26" title="26">  spp_past_df &lt;-<span class="st"> </span><span class="kw">mc_get_from_api</span>(spp_hist_url, sid_list, api_key, <span class="dt">delay =</span> <span class="dv">1</span>, <span class="dt">cores =</span> <span class="dv">16</span>)</a>
+<a class="sourceLine" id="cb9-27" title="27">  <span class="kw">cat_msg</span>(<span class="st">&#39;elapsed time: &#39;</span>, (<span class="kw">proc.time</span>() <span class="op">-</span><span class="st"> </span>ptm)[<span class="dv">3</span>]) <span class="co">#2020 elapsed time:  1339.143 </span></a>
 <a class="sourceLine" id="cb9-28" title="28">  </a>
-<a class="sourceLine" id="cb9-29" title="29">  <span class="co">### Clean up the time series: reclassify old codes to current</span></a>
-<a class="sourceLine" id="cb9-30" title="30">  cat_lookup &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(dir_setup, <span class="st">&#39;raw&#39;</span>, <span class="st">&#39;risk_code_lookup.csv&#39;</span>))</a>
-<a class="sourceLine" id="cb9-31" title="31">  </a>
-<a class="sourceLine" id="cb9-32" title="32">  spp_past_df1 &lt;-<span class="st"> </span>spp_past_df <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-33" title="33"><span class="st">    </span><span class="kw">left_join</span>(cat_lookup, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&#39;code&#39;</span>, <span class="st">&#39;category&#39;</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-34" title="34"><span class="st">    </span><span class="kw">rename</span>(<span class="dt">iucn_sid =</span> name,</a>
-<a class="sourceLine" id="cb9-35" title="35">           <span class="dt">old_cat  =</span> code,</a>
-<a class="sourceLine" id="cb9-36" title="36">           <span class="dt">cat_txt  =</span> category,</a>
-<a class="sourceLine" id="cb9-37" title="37">           <span class="dt">cat_ts   =</span> code_current)</a>
-<a class="sourceLine" id="cb9-38" title="38">  </a>
-<a class="sourceLine" id="cb9-39" title="39">  pop_cat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">cat_ts       =</span> <span class="kw">c</span>(<span class="st">&quot;LC&quot;</span>, <span class="st">&quot;NT&quot;</span>, <span class="st">&quot;VU&quot;</span>, <span class="st">&quot;EN&quot;</span>, <span class="st">&quot;CR&quot;</span>, <span class="st">&quot;EX&quot;</span>, <span class="st">&quot;NE&quot;</span>, <span class="st">&quot;DD&quot;</span>), </a>
-<a class="sourceLine" id="cb9-40" title="40">                        <span class="dt">cat_ts_score =</span> <span class="kw">c</span>( <span class="fl">0.0</span>,  <span class="fl">0.2</span>,  <span class="fl">0.4</span>,  <span class="fl">0.6</span>,  <span class="fl">0.8</span>,  <span class="fl">1.0</span>,  <span class="ot">NA</span>,   <span class="ot">NA</span>))</a>
-<a class="sourceLine" id="cb9-41" title="41">    </a>
-<a class="sourceLine" id="cb9-42" title="42">  spp_past_df1 &lt;-<span class="st"> </span>spp_past_df1 <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb9-43" title="43"><span class="st">    </span><span class="kw">left_join</span>(pop_cat, <span class="dt">by =</span> <span class="st">&#39;cat_ts&#39;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-44" title="44"><span class="st">    </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(cat_ts_score) <span class="op">&amp;</span><span class="st"> </span><span class="op">!</span><span class="kw">is.na</span>(year)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-45" title="45"><span class="st">    </span><span class="kw">arrange</span>(iucn_sid, year) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-46" title="46"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(iucn_sid, year, cat_ts, cat_ts_score) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-47" title="47"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">iucn_version =</span> api_version)</a>
-<a class="sourceLine" id="cb9-48" title="48">  </a>
-<a class="sourceLine" id="cb9-49" title="49">  <span class="kw">write_csv</span>(spp_past_df1, spp_timeseries_file)</a>
-<a class="sourceLine" id="cb9-50" title="50">  </a>
-<a class="sourceLine" id="cb9-51" title="51">} <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb9-52" title="52">  </a>
-<a class="sourceLine" id="cb9-53" title="53">  <span class="kw">git_prov</span>(spp_timeseries_file, <span class="dt">filetype =</span> <span class="st">&#39;output&#39;</span>)</a>
-<a class="sourceLine" id="cb9-54" title="54">  </a>
-<a class="sourceLine" id="cb9-55" title="55">}</a></code></pre></div>
+<a class="sourceLine" id="cb9-29" title="29">  </a>
+<a class="sourceLine" id="cb9-30" title="30">  <span class="co">### Clean up the time series: reclassify old codes to current</span></a>
+<a class="sourceLine" id="cb9-31" title="31">  cat_lookup &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(dir_setup, <span class="st">&#39;raw&#39;</span>, <span class="st">&#39;risk_code_lookup.csv&#39;</span>))</a>
+<a class="sourceLine" id="cb9-32" title="32">  </a>
+<a class="sourceLine" id="cb9-33" title="33">  spp_past_df1 &lt;-<span class="st"> </span>spp_past_df <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb9-34" title="34"><span class="st">    </span><span class="kw">left_join</span>(cat_lookup, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&#39;code&#39;</span>, <span class="st">&#39;category&#39;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb9-35" title="35"><span class="st">    </span><span class="kw">rename</span>(<span class="dt">iucn_sid =</span> name,</a>
+<a class="sourceLine" id="cb9-36" title="36">           <span class="dt">old_cat  =</span> code,</a>
+<a class="sourceLine" id="cb9-37" title="37">           <span class="dt">cat_txt  =</span> category,</a>
+<a class="sourceLine" id="cb9-38" title="38">           <span class="dt">cat_ts   =</span> code_current)</a>
+<a class="sourceLine" id="cb9-39" title="39">  </a>
+<a class="sourceLine" id="cb9-40" title="40">  pop_cat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">cat_ts       =</span> <span class="kw">c</span>(<span class="st">&quot;LC&quot;</span>, <span class="st">&quot;NT&quot;</span>, <span class="st">&quot;VU&quot;</span>, <span class="st">&quot;EN&quot;</span>, <span class="st">&quot;CR&quot;</span>, <span class="st">&quot;EX&quot;</span>, <span class="st">&quot;NE&quot;</span>, <span class="st">&quot;DD&quot;</span>), </a>
+<a class="sourceLine" id="cb9-41" title="41">                        <span class="dt">cat_ts_score =</span> <span class="kw">c</span>( <span class="fl">0.0</span>,  <span class="fl">0.2</span>,  <span class="fl">0.4</span>,  <span class="fl">0.6</span>,  <span class="fl">0.8</span>,  <span class="fl">1.0</span>,  <span class="ot">NA</span>,   <span class="ot">NA</span>))</a>
+<a class="sourceLine" id="cb9-42" title="42">    </a>
+<a class="sourceLine" id="cb9-43" title="43">  spp_past_df1 &lt;-<span class="st"> </span>spp_past_df1 <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb9-44" title="44"><span class="st">    </span><span class="kw">left_join</span>(pop_cat, <span class="dt">by =</span> <span class="st">&#39;cat_ts&#39;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb9-45" title="45"><span class="st">    </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(cat_ts_score) <span class="op">&amp;</span><span class="st"> </span><span class="op">!</span><span class="kw">is.na</span>(year)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb9-46" title="46"><span class="st">    </span><span class="kw">arrange</span>(iucn_sid, year) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb9-47" title="47"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(iucn_sid, year, cat_ts, cat_ts_score) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb9-48" title="48"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">iucn_version =</span> api_version)</a>
+<a class="sourceLine" id="cb9-49" title="49">  </a>
+<a class="sourceLine" id="cb9-50" title="50">  <span class="kw">write_csv</span>(spp_past_df1, spp_timeseries_file)</a>
+<a class="sourceLine" id="cb9-51" title="51">  </a>
+<a class="sourceLine" id="cb9-52" title="52">} <span class="cf">else</span> {</a>
+<a class="sourceLine" id="cb9-53" title="53">  </a>
+<a class="sourceLine" id="cb9-54" title="54">  <span class="kw">git_prov</span>(spp_timeseries_file, <span class="dt">filetype =</span> <span class="st">&#39;output&#39;</span>)</a>
+<a class="sourceLine" id="cb9-55" title="55">  </a>
+<a class="sourceLine" id="cb9-56" title="56">}</a></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">spp_current_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_goal, <span class="st">&#39;_data&#39;</span>, </a>
 <a class="sourceLine" id="cb10-2" title="2">                              <span class="kw">sprintf</span>(<span class="st">&#39;iucn_risk_current_%s.csv&#39;</span>, api_version))</a>
 <a class="sourceLine" id="cb10-3" title="3">iucn_spp_info &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(dir_goal_anx, </a>
@@ -2161,39 +2191,40 @@ div.tocify {
 <a class="sourceLine" id="cb10-24" title="24">  spp_current_df &lt;-<span class="st"> </span><span class="kw">mc_get_from_api</span>(spp_curr_url, sid_list, api_key, <span class="dt">delay =</span> <span class="dv">1</span>, <span class="dt">cores =</span> <span class="dv">16</span>)</a>
 <a class="sourceLine" id="cb10-25" title="25">  <span class="kw">cat_msg</span>(<span class="st">&#39;elapsed time: &#39;</span>, (<span class="kw">proc.time</span>() <span class="op">-</span><span class="st"> </span>ptm)[<span class="dv">3</span>])</a>
 <a class="sourceLine" id="cb10-26" title="26">    <span class="co">#   user   system  elapsed </span></a>
-<a class="sourceLine" id="cb10-27" title="27">    <span class="co"># 74.756   23.032 1251.880</span></a>
-<a class="sourceLine" id="cb10-28" title="28">    <span class="co"># 2019:           1130.972 </span></a>
-<a class="sourceLine" id="cb10-29" title="29">  spp_current_df1 &lt;-<span class="st"> </span>spp_current_df <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb10-30" title="30"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="dt">iucn_sid =</span> name, <span class="dt">sciname =</span> scientific_name,</a>
-<a class="sourceLine" id="cb10-31" title="31">           main_common_name, </a>
-<a class="sourceLine" id="cb10-32" title="32">           published_year, <span class="dt">code =</span> category, </a>
-<a class="sourceLine" id="cb10-33" title="33">           criteria)</a>
-<a class="sourceLine" id="cb10-34" title="34">  <span class="co">### dropping columns: </span></a>
-<a class="sourceLine" id="cb10-35" title="35">  <span class="co"># kingdom, phylum, class, order, family, genus, </span></a>
-<a class="sourceLine" id="cb10-36" title="36">  <span class="co"># authority, marine_system, freshwater_system, terrestrial_system, </span></a>
-<a class="sourceLine" id="cb10-37" title="37">  <span class="co"># assessor, reviewer, aoo_km2, eoo_km2, elevation_upper, elevation_lower, </span></a>
-<a class="sourceLine" id="cb10-38" title="38">  <span class="co"># depth_upper, depth_lower, errata_flag, errata_reason, amended_flag, amended_reason</span></a>
-<a class="sourceLine" id="cb10-39" title="39">  <span class="co">### keeping all listings regardless of NE or DD</span></a>
-<a class="sourceLine" id="cb10-40" title="40"></a>
-<a class="sourceLine" id="cb10-41" title="41">  <span class="co">### Clean up the time series: reclassify old codes to current and add scores</span></a>
-<a class="sourceLine" id="cb10-42" title="42">  cat_lookup &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(dir_setup, <span class="st">&#39;raw&#39;</span>, <span class="st">&#39;risk_code_lookup.csv&#39;</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb10-43" title="43"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>category)</a>
-<a class="sourceLine" id="cb10-44" title="44">  </a>
-<a class="sourceLine" id="cb10-45" title="45">  spp_current_df2 &lt;-<span class="st"> </span>spp_current_df1 <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb10-46" title="46"><span class="st">    </span><span class="kw">left_join</span>(cat_lookup, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&#39;code&#39;</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb10-47" title="47"><span class="st">    </span><span class="kw">rename</span>(<span class="dt">old_cat  =</span> code,</a>
-<a class="sourceLine" id="cb10-48" title="48">           <span class="dt">cat      =</span> code_current) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb10-49" title="49"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">iucn_sid =</span> <span class="kw">as.integer</span>(iucn_sid)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb10-50" title="50"><span class="st">    </span><span class="kw">arrange</span>(iucn_sid) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb10-51" title="51"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">iucn_version =</span> api_version)</a>
-<a class="sourceLine" id="cb10-52" title="52">  </a>
-<a class="sourceLine" id="cb10-53" title="53">  <span class="kw">write_csv</span>(spp_current_df2, spp_current_file)</a>
-<a class="sourceLine" id="cb10-54" title="54">  </a>
-<a class="sourceLine" id="cb10-55" title="55">} <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb10-56" title="56">  </a>
-<a class="sourceLine" id="cb10-57" title="57">  <span class="kw">git_prov</span>(spp_current_file, <span class="dt">filetype =</span> <span class="st">&#39;output&#39;</span>)</a>
-<a class="sourceLine" id="cb10-58" title="58">  </a>
-<a class="sourceLine" id="cb10-59" title="59">}</a></code></pre></div>
+<a class="sourceLine" id="cb10-27" title="27">    <span class="co"># 2019:           1130.972 </span></a>
+<a class="sourceLine" id="cb10-28" title="28">    <span class="co"># 2020:           1352.863</span></a>
+<a class="sourceLine" id="cb10-29" title="29">  </a>
+<a class="sourceLine" id="cb10-30" title="30">  spp_current_df1 &lt;-<span class="st"> </span>spp_current_df <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb10-31" title="31"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="dt">iucn_sid =</span> name, <span class="dt">sciname =</span> scientific_name,</a>
+<a class="sourceLine" id="cb10-32" title="32">           main_common_name, </a>
+<a class="sourceLine" id="cb10-33" title="33">           published_year, <span class="dt">code =</span> category, </a>
+<a class="sourceLine" id="cb10-34" title="34">           criteria)</a>
+<a class="sourceLine" id="cb10-35" title="35">  <span class="co">### dropping columns: </span></a>
+<a class="sourceLine" id="cb10-36" title="36">  <span class="co"># kingdom, phylum, class, order, family, genus, </span></a>
+<a class="sourceLine" id="cb10-37" title="37">  <span class="co"># authority, marine_system, freshwater_system, terrestrial_system, </span></a>
+<a class="sourceLine" id="cb10-38" title="38">  <span class="co"># assessor, reviewer, aoo_km2, eoo_km2, elevation_upper, elevation_lower, </span></a>
+<a class="sourceLine" id="cb10-39" title="39">  <span class="co"># depth_upper, depth_lower, errata_flag, errata_reason, amended_flag, amended_reason</span></a>
+<a class="sourceLine" id="cb10-40" title="40">  <span class="co">### keeping all listings regardless of NE or DD</span></a>
+<a class="sourceLine" id="cb10-41" title="41"></a>
+<a class="sourceLine" id="cb10-42" title="42">  <span class="co">### Clean up the time series: reclassify old codes to current and add scores</span></a>
+<a class="sourceLine" id="cb10-43" title="43">  cat_lookup &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(dir_setup, <span class="st">&#39;raw&#39;</span>, <span class="st">&#39;risk_code_lookup.csv&#39;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb10-44" title="44"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>category)</a>
+<a class="sourceLine" id="cb10-45" title="45">  </a>
+<a class="sourceLine" id="cb10-46" title="46">  spp_current_df2 &lt;-<span class="st"> </span>spp_current_df1 <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb10-47" title="47"><span class="st">    </span><span class="kw">left_join</span>(cat_lookup, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&#39;code&#39;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb10-48" title="48"><span class="st">    </span><span class="kw">rename</span>(<span class="dt">old_cat  =</span> code,</a>
+<a class="sourceLine" id="cb10-49" title="49">           <span class="dt">cat      =</span> code_current) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb10-50" title="50"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">iucn_sid =</span> <span class="kw">as.integer</span>(iucn_sid)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb10-51" title="51"><span class="st">    </span><span class="kw">arrange</span>(iucn_sid) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb10-52" title="52"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">iucn_version =</span> api_version)</a>
+<a class="sourceLine" id="cb10-53" title="53">  </a>
+<a class="sourceLine" id="cb10-54" title="54">  <span class="kw">write_csv</span>(spp_current_df2, spp_current_file)</a>
+<a class="sourceLine" id="cb10-55" title="55">  </a>
+<a class="sourceLine" id="cb10-56" title="56">} <span class="cf">else</span> {</a>
+<a class="sourceLine" id="cb10-57" title="57">  </a>
+<a class="sourceLine" id="cb10-58" title="58">  <span class="kw">git_prov</span>(spp_current_file, <span class="dt">filetype =</span> <span class="st">&#39;output&#39;</span>)</a>
+<a class="sourceLine" id="cb10-59" title="59">  </a>
+<a class="sourceLine" id="cb10-60" title="60">}</a></code></pre></div>
 <hr />
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1"><span class="kw">prov_wrapup</span>(<span class="dt">commit_outputs =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
 </div>

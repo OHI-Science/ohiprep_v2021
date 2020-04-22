@@ -36,7 +36,7 @@ library(ggridges)
 library(ggplot2)
 
 #source('https://raw.githubusercontent.com/oharac/src/master/R/common.R')
-source('http://ohi-science.org/ohiprep_v2020/workflow/R/common.R')
+source(here('workflow/R/common.R'))
 
 goal     <- 'spp'
 scenario <- 'v2020'

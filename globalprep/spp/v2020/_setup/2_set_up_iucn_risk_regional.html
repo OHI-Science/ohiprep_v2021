@@ -10,7 +10,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Thu Aug 29 15:36:40 2019 by sgclawson" />
+<meta name="author" content="Compiled on Wed Apr 22 15:06:42 2020 by sgclawson" />
 
 
 <title>Set up IUCN marine species risk by regional assessment</title>
@@ -1640,7 +1640,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Set up IUCN marine species risk by regional assessment</h1>
-<h4 class="author"><em>Compiled on Thu Aug 29 15:36:40 2019 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Wed Apr 22 15:06:42 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -1658,10 +1658,10 @@ div.tocify {
 <a class="sourceLine" id="cb3-8" title="8"><span class="kw">source</span>(<span class="kw">here</span>(<span class="st">&#39;workflow/R/common.R&#39;</span>))</a>
 <a class="sourceLine" id="cb3-9" title="9"></a>
 <a class="sourceLine" id="cb3-10" title="10"><span class="co">### provenance tracking</span></a>
-<a class="sourceLine" id="cb3-11" title="11"><span class="kw">library</span>(provRmd); <span class="kw">prov_setup</span>()</a>
+<a class="sourceLine" id="cb3-11" title="11"><span class="co">#library(provRmd); prov_setup()</span></a>
 <a class="sourceLine" id="cb3-12" title="12"></a>
 <a class="sourceLine" id="cb3-13" title="13">goal     &lt;-<span class="st"> &#39;spp&#39;</span></a>
-<a class="sourceLine" id="cb3-14" title="14">scenario &lt;-<span class="st"> &#39;v2019&#39;</span></a>
+<a class="sourceLine" id="cb3-14" title="14">scenario &lt;-<span class="st"> &#39;v2020&#39;</span></a>
 <a class="sourceLine" id="cb3-15" title="15">dir_goal &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&#39;globalprep&#39;</span>, goal, scenario)</a>
 <a class="sourceLine" id="cb3-16" title="16"></a>
 <a class="sourceLine" id="cb3-17" title="17"><span class="co">### goal specific folders and info</span></a>
@@ -1708,7 +1708,7 @@ div.tocify {
 <a class="sourceLine" id="cb4-19" title="19">rgn_assess<span class="op">$</span>version   &lt;-<span class="st"> </span>api_version</a>
 <a class="sourceLine" id="cb4-20" title="20"></a>
 <a class="sourceLine" id="cb4-21" title="21">rgn_assess &lt;-<span class="st"> </span>rgn_assess <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-22" title="22"><span class="st">  </span><span class="kw">filter</span>(identifier <span class="op">!=</span><span class="st"> &#39;global&#39;</span>)</a>
+<a class="sourceLine" id="cb4-22" title="22"><span class="st">  </span><span class="kw">filter</span>(identifier <span class="op">!=</span><span class="st"> &#39;global&#39;</span>) <span class="co">#why is the person gulf gone from this assessment?</span></a>
 <a class="sourceLine" id="cb4-23" title="23"></a>
 <a class="sourceLine" id="cb4-24" title="24"><span class="kw">write_csv</span>(rgn_assess, rgn_assess_from_api_file)</a></code></pre></div>
 </div>
@@ -1723,7 +1723,7 @@ div.tocify {
 <a class="sourceLine" id="cb5-5" title="5"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(rgn_spp_info_file)) {</a>
 <a class="sourceLine" id="cb5-6" title="6">  </a>
 <a class="sourceLine" id="cb5-7" title="7">  spp_df_rgn_list &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="dt">length =</span> <span class="kw">nrow</span>(rgn_assess), <span class="st">&#39;list&#39;</span>)</a>
-<a class="sourceLine" id="cb5-8" title="8">  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(rgn_assess)) { <span class="co">### i &lt;- 1</span></a>
+<a class="sourceLine" id="cb5-8" title="8">  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(rgn_assess)) {  <span class="co">###i &lt;- 1</span></a>
 <a class="sourceLine" id="cb5-9" title="9">    rgn_id &lt;-<span class="st"> </span>rgn_assess<span class="op">$</span>identifier[i]</a>
 <a class="sourceLine" id="cb5-10" title="10">    n_pages &lt;-<span class="st"> </span><span class="kw">ceiling</span>(rgn_assess<span class="op">$</span>spp_count[i] <span class="op">/</span><span class="st"> </span><span class="dv">10000</span>)</a>
 <a class="sourceLine" id="cb5-11" title="11">    spp_page_url &lt;-<span class="st"> </span><span class="kw">file.path</span>(<span class="kw">sprintf</span>(<span class="st">&#39;http://apiv3.iucnredlist.org/api/v3/species/region/%s&#39;</span>, rgn_id),</a>
@@ -1768,7 +1768,7 @@ div.tocify {
 <p>Once regional assessments are gleaned from the API, check them against the global marine species list. Species are matched by ID numbers. Species whose regional category differs from the global category are kept and scored.</p>
 <ul>
 <li>note, quick check of scientific names showed they all match</li>
-<li>no regional subpopulations fell into this category</li>
+<li>125 spp fall into this…</li>
 </ul>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">global_marine_spp_risk &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(dir_goal, <span class="kw">sprintf</span>(<span class="st">&#39;_data/iucn_risk_current_%s.csv&#39;</span>, api_version)))</a>
 <a class="sourceLine" id="cb6-2" title="2"></a>
@@ -1778,7 +1778,7 @@ div.tocify {
 <a class="sourceLine" id="cb6-6" title="6"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(iucn_sid, sciname, main_common_name, <span class="dt">global_cat =</span> cat, <span class="dt">global_cat_score =</span> cat_score) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb6-7" title="7"><span class="st">  </span><span class="kw">inner_join</span>(rgn_marine_spp <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb6-8" title="8"><span class="st">               </span>dplyr<span class="op">::</span><span class="kw">select</span>(iucn_sid, </a>
-<a class="sourceLine" id="cb6-9" title="9">                      <span class="co"># rgn_sciname = sciname, rgn_pop = population,</span></a>
+<a class="sourceLine" id="cb6-9" title="9">                       <span class="co">#rgn_sciname = sciname, #rgn_pop = population,</span></a>
 <a class="sourceLine" id="cb6-10" title="10">                      <span class="dt">rgn_cat =</span> cat_current, <span class="dt">rgn_cat_score =</span> cat_score, iucn_rgn),</a>
 <a class="sourceLine" id="cb6-11" title="11">             <span class="dt">by =</span> <span class="st">&#39;iucn_sid&#39;</span>) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb6-12" title="12"><span class="st">  </span><span class="kw">filter</span>(global_cat_score <span class="op">!=</span><span class="st"> </span>rgn_cat_score)</a></code></pre></div>
@@ -1803,7 +1803,7 @@ div.tocify {
 <a class="sourceLine" id="cb7-15" title="15"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(spp_timeseries_file)) {</a>
 <a class="sourceLine" id="cb7-16" title="16">  </a>
 <a class="sourceLine" id="cb7-17" title="17">  spp_ts_df_rgn_list &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="dt">length =</span> <span class="kw">nrow</span>(rgn_assess), <span class="st">&#39;list&#39;</span>)</a>
-<a class="sourceLine" id="cb7-18" title="18">  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(rgn_assess)) {  <span class="co">###i &lt;- 5</span></a>
+<a class="sourceLine" id="cb7-18" title="18">  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(rgn_assess)) {  <span class="co">#i &lt;- 5</span></a>
 <a class="sourceLine" id="cb7-19" title="19">    rgn_id &lt;-<span class="st"> </span>rgn_assess<span class="op">$</span>identifier[i]</a>
 <a class="sourceLine" id="cb7-20" title="20">    </a>
 <a class="sourceLine" id="cb7-21" title="21">    spp_hist_url &lt;-<span class="st"> </span><span class="kw">file.path</span>(<span class="st">&#39;http://apiv3.iucnredlist.org/api/v3/species&#39;</span>, </a>
@@ -1840,15 +1840,16 @@ div.tocify {
 <a class="sourceLine" id="cb7-52" title="52"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(iucn_sid, year, rgn_cat_ts, rgn_cat_ts_score, iucn_rgn) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb7-53" title="53"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">iucn_version =</span> api_version) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb7-54" title="54"><span class="st">    </span><span class="kw">group_by</span>(iucn_sid, iucn_rgn) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-55" title="55"><span class="st">    </span><span class="kw">filter</span>(<span class="kw">n</span>() <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb7-56" title="56">  </a>
-<a class="sourceLine" id="cb7-57" title="57">  <span class="kw">write_csv</span>(spp_hist_df1, spp_timeseries_file)</a>
-<a class="sourceLine" id="cb7-58" title="58">  </a>
-<a class="sourceLine" id="cb7-59" title="59">} <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb7-60" title="60">  </a>
-<a class="sourceLine" id="cb7-61" title="61">  <span class="kw">git_prov</span>(spp_timeseries_file, <span class="dt">filetype =</span> <span class="st">&#39;output&#39;</span>)</a>
-<a class="sourceLine" id="cb7-62" title="62">  </a>
-<a class="sourceLine" id="cb7-63" title="63">}</a></code></pre></div>
+<a class="sourceLine" id="cb7-55" title="55"><span class="st">    </span><span class="co">#summarise(n())</span></a>
+<a class="sourceLine" id="cb7-56" title="56"><span class="st">    </span><span class="kw">filter</span>(<span class="kw">n</span>() <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb7-57" title="57">  </a>
+<a class="sourceLine" id="cb7-58" title="58">  <span class="kw">write_csv</span>(spp_hist_df1, spp_timeseries_file)</a>
+<a class="sourceLine" id="cb7-59" title="59">  </a>
+<a class="sourceLine" id="cb7-60" title="60">} <span class="cf">else</span> {</a>
+<a class="sourceLine" id="cb7-61" title="61">  </a>
+<a class="sourceLine" id="cb7-62" title="62">  <span class="kw">git_prov</span>(spp_timeseries_file, <span class="dt">filetype =</span> <span class="st">&#39;output&#39;</span>)</a>
+<a class="sourceLine" id="cb7-63" title="63">  </a>
+<a class="sourceLine" id="cb7-64" title="64">}</a></code></pre></div>
 <hr />
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">prov_wrapup</span>(<span class="dt">commit_outputs =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
 </div>

@@ -40,10 +40,10 @@ library(ggplot2)
 source(here('workflow/R/common.R'))
 
 ### provenance tracking
-library(provRmd); prov_setup()
+#library(provRmd); prov_setup()
 
 goal     <- 'spp'
-scenario <- 'v2019'
+scenario <- 'v2020'
 dir_goal <- here('globalprep', goal, scenario)
 
 ### goal specific folders and info
@@ -93,7 +93,7 @@ rgn_assess$spp_count <- spp_count
 rgn_assess$version   <- api_version
 
 rgn_assess <- rgn_assess %>%
-  filter(identifier != 'global')
+  filter(identifier != 'global') #why is the person gulf gone from this assessment?
 
 write_csv(rgn_assess, rgn_assess_from_api_file)
 
@@ -115,7 +115,7 @@ rgn_spp_info_file <- file.path(dir_goal, sprintf('_data/iucn_risk_rgn_current_%s
 if(!file.exists(rgn_spp_info_file)) {
   
   spp_df_rgn_list <- vector(length = nrow(rgn_assess), 'list')
-  for(i in 1:nrow(rgn_assess)) { ### i <- 1
+  for(i in 1:nrow(rgn_assess)) {  ###i <- 1
     rgn_id <- rgn_assess$identifier[i]
     n_pages <- ceiling(rgn_assess$spp_count[i] / 10000)
     spp_page_url <- file.path(sprintf('http://apiv3.iucnredlist.org/api/v3/species/region/%s', rgn_id),
@@ -163,7 +163,7 @@ if(!file.exists(rgn_spp_info_file)) {
 Once regional assessments are gleaned from the API, check them against the global marine species list.  Species are matched by ID numbers.  Species whose regional category differs from the global category are kept and scored.
 
 * note, quick check of scientific names showed they all match
-* no regional subpopulations fell into this category
+* 125 spp fall into this...
 
 ``` {r}
 
@@ -175,7 +175,7 @@ rgn_spp_list <- global_marine_spp_risk %>%
   dplyr::select(iucn_sid, sciname, main_common_name, global_cat = cat, global_cat_score = cat_score) %>%
   inner_join(rgn_marine_spp %>%
                dplyr::select(iucn_sid, 
-                      # rgn_sciname = sciname, rgn_pop = population,
+                       #rgn_sciname = sciname, #rgn_pop = population,
                       rgn_cat = cat_current, rgn_cat_score = cat_score, iucn_rgn),
              by = 'iucn_sid') %>%
   filter(global_cat_score != rgn_cat_score)
@@ -202,7 +202,7 @@ rgn_assess <- read_csv(rgn_assess_from_api_file)
 if(!file.exists(spp_timeseries_file)) {
   
   spp_ts_df_rgn_list <- vector(length = nrow(rgn_assess), 'list')
-  for(i in 1:nrow(rgn_assess)) {  ###i <- 5
+  for(i in 1:nrow(rgn_assess)) {  #i <- 5
     rgn_id <- rgn_assess$identifier[i]
     
     spp_hist_url <- file.path('http://apiv3.iucnredlist.org/api/v3/species', 
@@ -239,6 +239,7 @@ if(!file.exists(spp_timeseries_file)) {
     dplyr::select(iucn_sid, year, rgn_cat_ts, rgn_cat_ts_score, iucn_rgn) %>%
     mutate(iucn_version = api_version) %>%
     group_by(iucn_sid, iucn_rgn) %>%
+    #summarise(n())
     filter(n() >= 2)
   
   write_csv(spp_hist_df1, spp_timeseries_file)
