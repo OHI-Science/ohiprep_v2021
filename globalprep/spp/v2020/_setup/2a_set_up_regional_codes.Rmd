@@ -26,16 +26,16 @@ library(dplyr)
 library(rgdal)
 library(raster)
 library(here)
-library(ggridges)
+#library(ggridges)
 library(ggplot2)
 
 source(here('workflow/R/common.R'))
 
 ### provenance tracking
-library(provRmd); prov_setup()
+#library(provRmd); prov_setup()
 
 goal     <- 'spp'
-scenario <- 'v2019'
+scenario <- 'v2020'
 dir_goal <- here('globalprep', goal, scenario)
 
 ### goal specific folders and info
@@ -197,7 +197,7 @@ Where an LME is assigned to multiple regions, use a prioritization then averagin
 
 ``` {r prov_footer, results = 'asis'}
 
-prov_wrapup(commit_outputs = FALSE)
+#prov_wrapup(commit_outputs = FALSE)
 
 ```
 
