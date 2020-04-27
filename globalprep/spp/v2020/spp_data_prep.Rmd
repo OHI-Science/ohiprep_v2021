@@ -95,7 +95,7 @@ IUCN:
 * __Reference__: 
     * IUCN 2020. The IUCN Red List of Threatened Species. Version 2019-1. <http://www.iucnredlist.org>.
         * Shapefiles available from: https://www.iucnredlist.org/resources/spatial-data-download
-        * __Downloaded__: April 22, 2019
+        * __Downloaded__: April 1, 2020
     *BirdLife International and Handbook of the Birds of the World (2018) Bird species distribution maps of the world. Version 2018.1. BirdLife International, Cambridge, UK and NatureServe, Arlington, USA. http://datazone.birdlife.org/species/requestdis.
         * Zipped shapefile available from BirdLife International.  
         * __Downloaded__: April 27, 2019
@@ -103,6 +103,21 @@ IUCN:
 * __Native data resolution__: NA
 * __Time range__: NA
 * __Format__:  Shapefile
+
+WDPA: 
+
+* __Reference__:  
+    *IUCN and UNEP-WCMC (2020), The World Database on Protected Areas (WDPA) [On-line], April 2020. Cambridge, UK: UNEP-WCMC. 
+    * Zipped shapefile available at: www.protectedplanet.net.
+    * __Downloaded__: April 24, 2020
+
+* __Description__:   Shapefile of World Database on Protected Areas
+
+* __Time range__: 1819 - 2020; some protected areas do not have an associated "status year" and are reported as year 0.
+
+* __Format__:  Shapefile
+
+*__File location__: `Mazu:git-annex/globalprep/_raw_data/wdpa_mpa/d2019/WDPA_Apr2019-shapefile/`
 
 
 
