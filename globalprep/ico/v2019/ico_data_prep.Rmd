@@ -125,7 +125,7 @@ Get all pages and bind into total species list, using the IUCN API.
 
 ``` {r get_spp_info, eval= F}
 
-api_file <- file.path(dir_server, 'api_key.csv')
+api_file <- file.path(dir_server, 'api_key_gc.csv')
 api_key <- scan(api_file, what = 'character') 
 
 # file path to save species list that is scraped from the web.
