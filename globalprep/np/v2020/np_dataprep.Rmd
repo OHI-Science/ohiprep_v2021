@@ -1,5 +1,5 @@
 ---
-title: 'OHI 2019: Natural Products'
+title: 'OHI 2020: Natural Products'
 author: "*Compiled on `r date()` by `r Sys.info()['user']`*"
 output: 
   html_document:
@@ -13,15 +13,15 @@ output:
     toc: true
 ---
 
-[REFERENCE RMD FILE](https://cdn.rawgit.com/OHI-Science/ohiprep_v2019/master/globalprep/np/v2019/np_dataprep.html)
+[REFERENCE RMD FILE](https://cdn.rawgit.com/OHI-Science/ohiprep_v2020/master/globalprep/np/v2020/np_dataprep.html)
 
 # Summary
-This analysis converts FAO commodities data into data layers used to calculate OHI 2018 global natural products scores.  
+This analysis converts FAO commodities data into data layers used to calculate OHI 2019 global natural products scores.  
 
 # Updates from previous assessment
-New year of FAO data (1976-2016). To stabilize the model, we include only commodities with >= 4 non-zero/non-NA values within the most recent 10 years (vs. the entire time frame we previously used).
+New year of FAO data (1976-2017). To stabilize the model, we include only commodities with >= 4 non-zero/non-NA values within the most recent 10 years (vs. the entire time frame we previously used).
 
-For next year, consider only including commodities with USD value > 1.  This may further improve the stability of the model. Also want to narrow the products to just fish oil and seaweed to mitigate model instability.
+For this year, consider only including commodities with USD value > 1.  This may further improve the stability of the model. Also want to narrow the products to just fish oil and seaweed to mitigate model instability.
 
 ***
 
@@ -29,16 +29,16 @@ For next year, consider only including commodities with USD value > 1.  This may
 
 **Reference**:      
     http://www.fao.org/fishery/statistics/software/fishstatj/en#downlApp
-     App release date: May 2019
-FAO raw commodities quantity 1976_2016
-FAO raw commodities value 1976_2016
+     App release date: July 2019
+FAO raw commodities quantity 1976_20167
+FAO raw commodities value 1976_2017
 FAO metadata found [here](http://www.fao.org/fishery/statistics/global-commodities-production/en)
 
-**Downloaded**: July 22 2019
+**Downloaded**: May 3 2020
 
 **Description**:  Quantity (tonnes) and value (USD) of raw commodities (Exports only) for each country, taxa, year.  The FAO data is subset to include commodities in these categories: shells, corals, ornamental fish, fish oil, seaweed and plants, sponges (see: raw/commodities2products.csv for details).
 
-**Time range**: 1976-2016
+**Time range**: 1976-2017
 
 ***
   
