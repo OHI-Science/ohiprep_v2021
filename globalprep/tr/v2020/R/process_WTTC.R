@@ -48,14 +48,14 @@ emp_file <- wttc_files[str_detect(wttc_files, 'empd')]
   ## extract only country names and save as vector
   rgn_name <- d %>% 
     filter(!temp %in% data_rows) %>%
-    select(country = temp)
+    dplyr::select(country = temp)
   rgn_name[nrow(rgn_name), 1] ## note: last one is 'Source: WTTC'
   rgn_name <- rgn_name[1:(nrow(rgn_name) - 1), ]
   
   ## Create data frame for number of jobs in each country
   data_count <- cbind(rgn_name,
                       d %>% filter(temp == data_rows[1]) %>%
-                        select(-temp))
+                        dplyr::select(-temp))
   data_count <- data_count %>%
     gather(year, jobs_ct, -rgn_name) %>%
     mutate(jobs_ct = round(jobs_ct * 1000),
@@ -64,7 +64,7 @@ emp_file <- wttc_files[str_detect(wttc_files, 'empd')]
   ## Create data frame for % share of total employment in each country
   data_perct <- cbind(rgn_name,
                       d %>% filter(temp == data_rows[2]) %>%
-                        select(-temp))
+                        dplyr::select(-temp))
   data_perct <- data_perct %>%
     gather(year, jobs_pct, -rgn_name) %>%
     mutate(year = as.integer(as.character(year)))
@@ -91,7 +91,7 @@ names <- data.frame(rgn_name = unique(empd$rgn_name), new_rgn_name = unique(empd
 
 empd <- empd %>%
   left_join(names, by='rgn_name') %>%
-  select(rgn_name=new_rgn_name, year, jobs_ct, jobs_pct)
+  dplyr::select(rgn_name=new_rgn_name, year, jobs_ct, jobs_pct)
   
 
 ### Prep direct and total employment data with name_to_rgn function
