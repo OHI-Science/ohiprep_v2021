@@ -38,7 +38,7 @@ library(ggplot2)
 source(here('workflow/R/common.R'))
 
 goal     <- 'spp'
-scenario <- 'v2019'
+scenario <- 'v2020'
 dir_goal <- here('globalprep', goal, scenario)
 
 ### goal specific folders and info
@@ -60,6 +60,7 @@ Set up analysis rasters for EEZs, MEOWs, and bathymetry at Gall-Peters 10 km^2 r
 * MEOWs will include all MEOW provinces, though only some are appropriate for IUCN regional assessments (see `2a_set_up_regional_codes.Rmd`).
 * Bathymetry will include regions for 200m+, 20-200m, and <20m.  
 * All will be clipped to the same ocean presence using the area raster.
+* Note: This likely won't be updated (since the data isn't updated on a yearly basis, but you should still check)
 
 # Methods
 
@@ -177,7 +178,7 @@ plot(meow_rast, main = 'MEOW raster 10 km^2 Gall-Peters')
 
 ## Bathymetry raster
 
-Using [General Bathymetric Chart of the Oceans (GEBCO) bathymetry raster](https://www.bodc.ac.uk/data/hosted_data_systems/gebco_gridded_bathymetry_data/), identify min depth of ocean cells.  For neritic and coastal cells, leaving as min depth allows for changing depth thresholds if desired.  We will not clip based on anything below 200 m, so can classify these more coarsely.
+Using [General Bathymetric Chart of the Oceans (GEBCO) bathymetry raster](https://www.gebco.net/data_and_products/historical_data_sets/#gebco_2014), identify min depth of ocean cells.  For neritic and coastal cells, leaving as min depth allows for changing depth thresholds if desired.  We will not clip based on anything below 200 m, so can classify these more coarsely.
 
 NOTE: 1 arcmin and 30 arcsec are available; 30 arcsec is more recent but one arcmin should be sufficient for our purposes.  Resample to 6 arc-minute (0.10°) using min depth in each cell.
 
