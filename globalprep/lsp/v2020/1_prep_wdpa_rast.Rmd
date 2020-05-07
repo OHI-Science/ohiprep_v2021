@@ -48,7 +48,7 @@ However, this was taking forever to run (>24 hours). It is a nice check, but not
 knitr::opts_chunk$set(eval = FALSE)
 ```
 
-```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+```{r setup, echo = FALSE, message = TRUE, warning = FALSE}
 
 knitr::opts_chunk$set(fig.width = 6, fig.height = 4, fig.path = 'Figs/',
                       echo = FALSE, message = FALSE, warning = FALSE, eval=FALSE)
@@ -94,7 +94,7 @@ if(!file.exists(paste0(shp_reorder, '.shp'))) {
   message('elapsed: ', (proc.time() - ptm)[3])
   
   ## filter polygons
-  # glimpse(wdpa_poly@data) ## check class of STATUS_YR
+  # glimpse(wdpa_poly@data) ## check class of status_yr: checked, integer
   wdpa_poly <- wdpa_poly %>%
     setNames(tolower(names(.))) %>% #improve?
     dplyr::select(wdpaid, name, orig_name, 
@@ -107,10 +107,11 @@ if(!file.exists(paste0(shp_reorder, '.shp'))) {
     dplyr::mutate(status_yr = as.integer(status_yr))
   
   # wdpa_poly@data$status %>% unique()
-  ## [1] "Designated"   "Proposed"     "Inscribed"    "Not Reported" "Adopted"     
+  ## [1] "Designated"  "Proposed"  "Inscribed" "Not Reported" "Adopted" "Established"     
 
-  # x <- wdpa_poly@data %>% filter(str_detect(tolower(mang_plan), 'non-mpa program'))
+  #x <- wdpa_poly@data$status %>% filter(str_detect(tolower(mang_plan), 'non-mpa program'))
   ## 84 observations
+  ##update: when I run, I only get 44? but also I have to get rid of the @data for it to work
   wdpa_poly <- wdpa_poly[wdpa_poly$status == 'Designated', ]
   wdpa_poly <- wdpa_poly[!str_detect(tolower(wdpa_poly$mang_plan), 'non-mpa program'), ]
   
@@ -140,7 +141,7 @@ Transform ordered polygons to Mollweide and save as new polygons.
 ``` {r transform_poly}
 
 
-shp_xformed <- file.path(dir_data, 'shps', 'WDPA_Apr2019_shp_xformed')
+shp_xformed <- file.path(dir_data, 'shps', 'WDPA_Apr2020_shp_xformed')
 
 if(!file.exists(paste0(shp_xformed, '.shp'))) {
   message('No shp found for filtered/reordered/transformed WDPA database')
