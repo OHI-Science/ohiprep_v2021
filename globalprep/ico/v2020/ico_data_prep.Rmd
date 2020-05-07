@@ -1,5 +1,5 @@
 ---
-title: 'OHI 2019 - Iconic species subgoal'
+title: 'OHI 2020 - Iconic species subgoal'
 author: "*Compiled on `r date()` by `r Sys.info()['user']`*"
 output: 
   html_document:
@@ -46,7 +46,7 @@ ICO trend is calculated in a similar manner, but weightings are assigned accordi
 # Updates from previous assessment
 
 Additional year of IUCN Red List data added. 
-In 2019, we stopped using the regions list to merge IUCN and iconic species region IDs and switched to the name_2_rgn() funciton in ohicore. However, this function reports regions that don't have a match in OHI region list, so we report certain reported regions at a higher spatial scale, based on the listed regions in the error message. 
+In 2019, we stopped using the regions list to merge IUCN and iconic species region IDs and switched to the name_2_rgn() function in ohicore. However, this function reports regions that don't have a match in OHI region list, so we report certain reported regions at a higher spatial scale, based on the listed regions in the error message. 
 
 
 ## Future improvements?
@@ -61,10 +61,10 @@ In 2019, we stopped using the regions list to merge IUCN and iconic species regi
 **Species native country information:**
 
 * __Reference__: 
-    * IUCN 2019. IUCN Red List of Threatened Species. Version 2019-2 <www.iucnredlist.org>
-        * __Accessed__: 15 May 2019 
+    * IUCN 2020. IUCN Red List of Threatened Species. Version 2020-1 <www.iucnredlist.org>
+        * __Accessed__: 6 May 2020 
 * __Native data resolution__: Country level (by country name)
-* __Time range__: 1965-2019 (discrete past assessments by species) 
+* __Time range__: 1965-2020 (discrete past assessments by species) 
 * __Format__:  JSON
 
 ***
@@ -91,9 +91,9 @@ library(ohicore)
 # Set up sourcing and storage 
 
 goal          <- 'globalprep/ico'
-scenario      <- 'v2019'
-previous_scen <- 'v2018'
-source('http://ohi-science.org/ohiprep_v2019/workflow/R/common.R')
+scenario      <- 'v2020'
+previous_scen <- 'v2019'
+source('http://ohi-science.org/ohiprep_v2020/workflow/R/common.R')
 
 # Changed these names to dir_server and dir_github from dir_anx and dir_goal, updated them in ico_fxn.R also
 dir_server      <- file.path(dir_M, 'git-annex', goal)
@@ -218,7 +218,7 @@ spp_ico <- spp_df_all %>%
 
 # Is everything we see in the iconic list in the IUCN list?
 spp_missing <- ico_list_raw %>% 
-  filter(!sciname %in% spp_ico$sciname) # no data here for v2019
+  filter(!sciname %in% spp_ico$sciname) # no data here for v2020
 
 ico_list <- ico_list_raw %>%
   left_join(spp_ico %>% 
@@ -226,7 +226,7 @@ ico_list <- ico_list_raw %>%
             by = 'sciname') %>%
   filter(!is.na(iucn_sid))
 
-write_csv(ico_list, file.path(dir_github, 'int/ico_list_prepped.csv')) # 270 in v2019
+write_csv(ico_list, file.path(dir_github, 'int/ico_list_prepped.csv')) # 269 in v2020
 ```
 
 For each of these species, use the IUCN API to gather a list of countries in which it is present.
