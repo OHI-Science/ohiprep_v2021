@@ -149,7 +149,7 @@ if(!file.exists(paste0(shp_xformed, '.shp'))) {
   if(!exists('wdpa_poly1')) {
     
     message('loading wdpa polygons (filtered and ordered)')
-    shp_reorder <- file.path(dir_data, 'shps', 'WDPA_Apr2019_shp_ordered')
+    shp_reorder <- file.path(dir_data, 'shps', 'WDPA_Apr2020_shp_ordered')
     wdpa_poly1 <- st_read(dsn = dirname(shp_reorder), 
                           layer = basename(shp_reorder),
                           stringsAsFactors = FALSE)
