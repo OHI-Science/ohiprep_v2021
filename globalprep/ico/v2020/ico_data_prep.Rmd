@@ -11,6 +11,8 @@ output:
       in_header: '../../../workflow/templates/ohi_hdr.html'
   pdf_document:
     toc: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -233,7 +235,62 @@ For each of these species, use the IUCN API to gather a list of countries in whi
 
 ``` {r get_country_list, eval= F}
 
-## for each species ID, get country list
+ico_list <- read_csv(file.path(dir_github, 'int/ico_list_prepped.csv'))
+
+ico_country_url <- 'http://apiv3.iucnredlist.org/api/v3/species/countries/id/%s?token=%s'
+
+  n_chunks <- ceiling(unique(ico_list$iucn_sid))
+  
+  cat_msg <- function(x, ...) {
+  if(is.null(knitr:::.knitEnv$input.dir)) {
+    ### not in knitr environment, so use cat()
+    cat(x, ..., '\n')
+  } else {
+    ### in knitr env, so use message()
+    message(x, ...)
+  }
+  return(invisible(NULL))
+}
+
+  ## for each species ID, get country list
+for(j in 1:n_chunks){
+   #j = 2
+
+    chunk_file <- file.path(dir_github, 'tmp', 
+                    sprintf('spp_countries_chunk_%s.csv', 
+                            n_chunks[j]))
+    
+     if(!file.exists(chunk_file)) {
+      cat_msg('Getting habitat info for species ', min(n_chunks[j]), ' row number ', j, ' out of ', 146)
+      
+      #spp_ids_chunk <- ico_list$iucn_sid[n_chunks[j]]
+ico_spp_countries_chunk <- mc_get_from_api(url = ico_country_url, param_vec = n_chunks[j], api_key = api_key, delay = 0.5)
+      cat_msg('... found ', nrow(ico_spp_countries_chunk), ' countries for these species')
+      
+            write_csv(ico_spp_countries_chunk, chunk_file)
+     }else {
+      
+      cat_msg('Chunk file ', chunk_file, ' already exists; skipping these spp')
+      
+    }
+  }
+  
+  
+  spp_countries_chunk_files <- list.files(file.path(dir_github, 'tmp'), 
+                                    pattern = 'spp_countries_chunk', 
+                                    full.names = TRUE)
+  
+  spp_countries_df <- lapply(spp_countries_chunk_files, FUN = function(x) {
+    read.csv(x) %>%
+      mutate(code = as.character(code))}) %>%
+    bind_rows()
+  
+write_csv(spp_countries_df, file.path(dir_github, 'int/ico_spp_countries.csv')) # save this as an intermediate data file since it takes so long to create the df
+  
+
+#### STOPPED HERE ORIGINAL IS BELOW ####
+
+#### ORIGINAL ####
 ico_country_url <- 'http://apiv3.iucnredlist.org/api/v3/species/countries/id/%s?token=%s'
 
 ico_spp_countries <- mc_get_from_api(url = ico_country_url, param_vec = unique(ico_list$iucn_sid), api_key = api_key, delay = 0.5)
