@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Thu Aug 29 15:38:01 2019 by sgclawson" />
+<meta name="author" content="Compiled on Wed May 6 11:42:23 2020 by sgclawson" />
 
 
 <title>Set up ocean area raster and MPA pct rasters</title>
@@ -1288,7 +1287,7 @@ window.initializeCodeFolding = function(show) {
 
     // create a collapsable div to wrap the code in
     var div = $('<div class="collapse r-code-collapse"></div>');
-    if (show)
+    if (show || $(this)[0].classList.contains('fold-show'))
       div.addClass('in');
     var id = 'rcode-643E0F36' + currentIndex++;
     div.attr('id', id);
@@ -1468,7 +1467,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -1530,6 +1528,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -1561,6 +1560,12 @@ summary {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -1640,7 +1645,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Set up ocean area raster and MPA pct rasters</h1>
-<h4 class="author"><em>Compiled on Thu Aug 29 15:38:01 2019 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Wed May 6 11:42:23 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -1659,17 +1664,26 @@ div.tocify {
 <h3><span class="header-section-number">2.0.1</span> WDPA</h3>
 </div>
 </div>
+<div id="data-source" class="section level1">
+<h1><span class="header-section-number">3</span> Data Source</h1>
+<p><strong>Reference</strong>: IUCN and UNEP-WCMC (2020), The World Database on Protected Areas (WDPA) [On-line], April 2020. Cambridge, UK: UNEP-WCMC. Available at: www.protectedplanet.net.</p>
+<p><strong>Downloaded</strong>: April 24, 2020</p>
+<p><strong>Description</strong>: Shapefile of World Database on Protected Areas</p>
+<p><strong>Time range</strong>: 1819 - 2020; some protected areas do not have an associated “status year” and are reported as year 0.</p>
+<p><strong>Format</strong>: Shapefile</p>
+<p><strong>File location</strong>: <code>Mazu:git-annex/globalprep/_raw_data/wdpa_mpa/d2020/WDPA_Apr2020-shapefile/</code></p>
+</div>
 <div id="methods" class="section level1">
-<h1><span class="header-section-number">3</span> Methods</h1>
+<h1><span class="header-section-number">4</span> Methods</h1>
 <div id="ocean-area-raster" class="section level2">
-<h2><span class="header-section-number">3.1</span> Ocean area raster</h2>
+<h2><span class="header-section-number">4.1</span> Ocean area raster</h2>
 <ul>
-<li>Project Natural Earth 10M oceabn polygons into Gall-Peters equal area projection</li>
+<li>Project Natural Earth 10M ocean polygons into Gall-Peters equal area projection</li>
 <li>rasterize at 500 m resolution</li>
 <li>aggregate up to 10 km resolution</li>
 </ul>
 <div id="create-a-10-km2-gall-peters-projection-cell-id-raster" class="section level3">
-<h3><span class="header-section-number">3.1.1</span> Create a 10 km^2 Gall Peters projection cell ID raster</h3>
+<h3><span class="header-section-number">4.1.1</span> Create a 10 km^2 Gall Peters projection cell ID raster</h3>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">ocean_area_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_spatial, <span class="st">&#39;ocean_area_rast.tif&#39;</span>)</a>
 <a class="sourceLine" id="cb2-2" title="2">cell_id_file    &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_spatial, <span class="st">&#39;cell_id_rast.tif&#39;</span>)</a>
 <a class="sourceLine" id="cb2-3" title="3"><span class="co"># ocean_1km_file  &lt;- file.path(dir_goal_anx, &#39;spatial&#39;, &#39;ocean_1km.tif&#39;)</span></a>
@@ -1684,68 +1698,70 @@ div.tocify {
 <a class="sourceLine" id="cb2-12" title="12">  caspian_block &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">c</span>(<span class="dv">45</span>, <span class="dv">35</span>, <span class="dv">45</span>, <span class="dv">48</span>, <span class="dv">56</span>, <span class="dv">48</span>, <span class="dv">56</span>, <span class="dv">35</span>, <span class="dv">45</span>, <span class="dv">35</span>), </a>
 <a class="sourceLine" id="cb2-13" title="13">                          <span class="dt">ncol =</span> <span class="dv">2</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)</a>
 <a class="sourceLine" id="cb2-14" title="14">  caspian_sf &lt;-<span class="st"> </span><span class="kw">st_polygon</span>(<span class="kw">list</span>(caspian_block)) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb2-15" title="15"><span class="st">    </span><span class="kw">st_sfc</span>(<span class="dt">crs =</span> <span class="dv">4326</span>)</a>
-<a class="sourceLine" id="cb2-16" title="16">  </a>
-<a class="sourceLine" id="cb2-17" title="17">  ocean_sf &lt;-<span class="st"> </span>ocean_sf_wgs84 <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-18" title="18"><span class="st">    </span><span class="kw">st_difference</span>(caspian_sf) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-19" title="19"><span class="st">    </span><span class="kw">st_transform</span>(gp_proj4)</a>
-<a class="sourceLine" id="cb2-20" title="20"></a>
-<a class="sourceLine" id="cb2-21" title="21">  bbox_ocean &lt;-<span class="st"> </span><span class="kw">st_bbox</span>(ocean_sf)</a>
-<a class="sourceLine" id="cb2-22" title="22">  ext_r  &lt;-<span class="st"> </span><span class="kw">extent</span>(bbox_ocean<span class="op">$</span>xmin, bbox_ocean<span class="op">$</span>xmax, bbox_ocean<span class="op">$</span>ymin, bbox_ocean<span class="op">$</span>ymax)</a>
-<a class="sourceLine" id="cb2-23" title="23">  rast_base_500m &lt;-<span class="st"> </span><span class="kw">raster</span>(ext_r, <span class="dt">crs =</span> <span class="kw">crs</span>(gp_proj4), <span class="dt">res =</span> <span class="dv">500</span>)</a>
-<a class="sourceLine" id="cb2-24" title="24">  rast_base_10km &lt;-<span class="st"> </span><span class="kw">raster</span>(ext_r, <span class="dt">crs =</span> <span class="kw">crs</span>(gp_proj4), <span class="dt">res =</span> <span class="dv">10000</span>)</a>
-<a class="sourceLine" id="cb2-25" title="25">  </a>
-<a class="sourceLine" id="cb2-26" title="26">  <span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(ocean_500m_file)) {</a>
-<a class="sourceLine" id="cb2-27" title="27">    rast_ocean_500m &lt;-<span class="st"> </span><span class="kw">fasterize</span>(ocean_sf, rast_base_500m, </a>
-<a class="sourceLine" id="cb2-28" title="28">                              <span class="dt">field =</span> <span class="ot">NULL</span>,   <span class="co">### all polygons given value of 1</span></a>
-<a class="sourceLine" id="cb2-29" title="29">                              <span class="dt">background =</span> <span class="dv">0</span>) <span class="co">### all non-polygons given value of 0</span></a>
-<a class="sourceLine" id="cb2-30" title="30">    <span class="kw">writeRaster</span>(rast_ocean_500m, </a>
-<a class="sourceLine" id="cb2-31" title="31">                ocean_500m_file,</a>
-<a class="sourceLine" id="cb2-32" title="32">                <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>)</a>
-<a class="sourceLine" id="cb2-33" title="33">    <span class="co">#plot(rast_ocean_500m) #check if worked in R </span></a>
-<a class="sourceLine" id="cb2-34" title="34">  } <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb2-35" title="35">    rast_ocean_500m &lt;-<span class="st"> </span><span class="kw">raster</span>(ocean_500m_file)</a>
-<a class="sourceLine" id="cb2-36" title="36">  }</a>
-<a class="sourceLine" id="cb2-37" title="37">  </a>
-<a class="sourceLine" id="cb2-38" title="38">  rast_ocean_10km &lt;-<span class="st"> </span>raster<span class="op">::</span><span class="kw">aggregate</span>(rast_ocean_500m, </a>
-<a class="sourceLine" id="cb2-39" title="39">                                     <span class="dt">fact =</span> <span class="dv">20</span>,   <span class="co">### factor of 20 aggregation</span></a>
-<a class="sourceLine" id="cb2-40" title="40">                                     <span class="dt">fun =</span> mean,  <span class="co">### mean of 1s (ocean) and 0s (land)</span></a>
-<a class="sourceLine" id="cb2-41" title="41">                                     <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>)</a>
-<a class="sourceLine" id="cb2-42" title="42">  </a>
-<a class="sourceLine" id="cb2-43" title="43">  rast_ocean_area &lt;-<span class="st"> </span>rast_ocean_10km <span class="op">*</span><span class="st"> </span><span class="dv">100</span> <span class="co">### multiply by 100 km^2 per cell</span></a>
-<a class="sourceLine" id="cb2-44" title="44">  <span class="kw">values</span>(rast_ocean_area)[<span class="kw">values</span>(rast_ocean_area) <span class="op">&lt;</span><span class="st"> </span><span class="fl">1e-5</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></a>
-<a class="sourceLine" id="cb2-45" title="45">  </a>
-<a class="sourceLine" id="cb2-46" title="46">  <span class="kw">writeRaster</span>(rast_ocean_area, ocean_area_file, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb2-47" title="47">}</a>
-<a class="sourceLine" id="cb2-48" title="48"></a>
-<a class="sourceLine" id="cb2-49" title="49"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(cell_id_file)) {</a>
-<a class="sourceLine" id="cb2-50" title="50">  rast_cell_id &lt;-<span class="st"> </span><span class="kw">raster</span>(ocean_area_file) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-51" title="51"><span class="st">    </span><span class="kw">setValues</span>(<span class="dv">1</span><span class="op">:</span><span class="kw">ncell</span>(.))</a>
-<a class="sourceLine" id="cb2-52" title="52">  </a>
-<a class="sourceLine" id="cb2-53" title="53">  <span class="kw">writeRaster</span>(rast_cell_id, cell_id_file)</a>
-<a class="sourceLine" id="cb2-54" title="54">}</a></code></pre></div>
+<a class="sourceLine" id="cb2-15" title="15"><span class="st">    </span><span class="kw">st_sfc</span>(<span class="dt">crs =</span> <span class="dv">4326</span>) <span class="co"># %&gt;%</span></a>
+<a class="sourceLine" id="cb2-16" title="16">    <span class="co"># st_set_precision(1000000) %&gt;% </span></a>
+<a class="sourceLine" id="cb2-17" title="17">    <span class="co"># st_make_valid()</span></a>
+<a class="sourceLine" id="cb2-18" title="18">  </a>
+<a class="sourceLine" id="cb2-19" title="19">  ocean_sf &lt;-<span class="st"> </span>ocean_sf_wgs84 <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb2-20" title="20"><span class="st">    </span><span class="kw">st_difference</span>(caspian_sf) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb2-21" title="21"><span class="st">    </span><span class="kw">st_transform</span>(gp_proj4)</a>
+<a class="sourceLine" id="cb2-22" title="22"></a>
+<a class="sourceLine" id="cb2-23" title="23">  bbox_ocean &lt;-<span class="st"> </span><span class="kw">st_bbox</span>(ocean_sf)</a>
+<a class="sourceLine" id="cb2-24" title="24">  ext_r  &lt;-<span class="st"> </span><span class="kw">extent</span>(bbox_ocean<span class="op">$</span>xmin, bbox_ocean<span class="op">$</span>xmax, bbox_ocean<span class="op">$</span>ymin, bbox_ocean<span class="op">$</span>ymax)</a>
+<a class="sourceLine" id="cb2-25" title="25">  rast_base_500m &lt;-<span class="st"> </span><span class="kw">raster</span>(ext_r, <span class="dt">crs =</span> <span class="kw">crs</span>(gp_proj4), <span class="dt">res =</span> <span class="dv">500</span>)</a>
+<a class="sourceLine" id="cb2-26" title="26">  rast_base_10km &lt;-<span class="st"> </span><span class="kw">raster</span>(ext_r, <span class="dt">crs =</span> <span class="kw">crs</span>(gp_proj4), <span class="dt">res =</span> <span class="dv">10000</span>)</a>
+<a class="sourceLine" id="cb2-27" title="27">  </a>
+<a class="sourceLine" id="cb2-28" title="28">  <span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(ocean_500m_file)) {</a>
+<a class="sourceLine" id="cb2-29" title="29">    rast_ocean_500m &lt;-<span class="st"> </span><span class="kw">fasterize</span>(ocean_sf, rast_base_500m, </a>
+<a class="sourceLine" id="cb2-30" title="30">                              <span class="dt">field =</span> <span class="ot">NULL</span>,   <span class="co">### all polygons given value of 1</span></a>
+<a class="sourceLine" id="cb2-31" title="31">                              <span class="dt">background =</span> <span class="dv">0</span>) <span class="co">### all non-polygons given value of 0</span></a>
+<a class="sourceLine" id="cb2-32" title="32">    <span class="kw">writeRaster</span>(rast_ocean_500m, </a>
+<a class="sourceLine" id="cb2-33" title="33">                ocean_500m_file,</a>
+<a class="sourceLine" id="cb2-34" title="34">                <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>)</a>
+<a class="sourceLine" id="cb2-35" title="35">    <span class="co">#plot(rast_ocean_500m) #check if worked in R </span></a>
+<a class="sourceLine" id="cb2-36" title="36">  } <span class="cf">else</span> {</a>
+<a class="sourceLine" id="cb2-37" title="37">    rast_ocean_500m &lt;-<span class="st"> </span><span class="kw">raster</span>(ocean_500m_file)</a>
+<a class="sourceLine" id="cb2-38" title="38">  }</a>
+<a class="sourceLine" id="cb2-39" title="39">  </a>
+<a class="sourceLine" id="cb2-40" title="40">  rast_ocean_10km &lt;-<span class="st"> </span>raster<span class="op">::</span><span class="kw">aggregate</span>(rast_ocean_500m, </a>
+<a class="sourceLine" id="cb2-41" title="41">                                     <span class="dt">fact =</span> <span class="dv">20</span>,   <span class="co">### factor of 20 aggregation</span></a>
+<a class="sourceLine" id="cb2-42" title="42">                                     <span class="dt">fun =</span> mean,  <span class="co">### mean of 1s (ocean) and 0s (land)</span></a>
+<a class="sourceLine" id="cb2-43" title="43">                                     <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>)</a>
+<a class="sourceLine" id="cb2-44" title="44">  </a>
+<a class="sourceLine" id="cb2-45" title="45">  rast_ocean_area &lt;-<span class="st"> </span>rast_ocean_10km <span class="op">*</span><span class="st"> </span><span class="dv">100</span> <span class="co">### multiply by 100 km^2 per cell</span></a>
+<a class="sourceLine" id="cb2-46" title="46">  <span class="kw">values</span>(rast_ocean_area)[<span class="kw">values</span>(rast_ocean_area) <span class="op">&lt;</span><span class="st"> </span><span class="fl">1e-5</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></a>
+<a class="sourceLine" id="cb2-47" title="47">  </a>
+<a class="sourceLine" id="cb2-48" title="48">  <span class="kw">writeRaster</span>(rast_ocean_area, ocean_area_file, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb2-49" title="49">}</a>
+<a class="sourceLine" id="cb2-50" title="50"></a>
+<a class="sourceLine" id="cb2-51" title="51"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(cell_id_file)) {</a>
+<a class="sourceLine" id="cb2-52" title="52">  rast_cell_id &lt;-<span class="st"> </span><span class="kw">raster</span>(ocean_area_file) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb2-53" title="53"><span class="st">    </span><span class="kw">setValues</span>(<span class="dv">1</span><span class="op">:</span><span class="kw">ncell</span>(.))</a>
+<a class="sourceLine" id="cb2-54" title="54">  </a>
+<a class="sourceLine" id="cb2-55" title="55">  <span class="kw">writeRaster</span>(rast_cell_id, cell_id_file)</a>
+<a class="sourceLine" id="cb2-56" title="56">}</a></code></pre></div>
 </div>
 </div>
 <div id="create-wdpa-mpa-percent-protection-data-frame" class="section level2">
-<h2><span class="header-section-number">3.2</span> Create WDPA MPA percent protection data frame</h2>
+<h2><span class="header-section-number">4.2</span> Create WDPA MPA percent protection data frame</h2>
 <p>Marine regions are any protected area with MARINE flag of 1 or 2, or non-zero GIS_M_AREA. Classify by IUCN category (I-VI -&gt; 1-6; non-classified get 8). Include only designated, adopted, and established parks. Omit non-MPA management plans from U.S. Rasterize to CHI resolution, calculate protected cells vs total cells to get percent of protection for each IUCN protection category.</p>
 <p>Because we are rasterizing the protected areas down to 500 m resolution, we risk dropping MPAs smaller than about 1 km^2. We assume these are not likely to have a significant impact on biodiversity protection, but see the sensitivity analysis.</p>
 <div id="create-wdpa-map-at-gp-500-m-.25-km2-resolution" class="section level3">
-<h3><span class="header-section-number">3.2.1</span> Create WDPA map at GP 500 m (.25 km^2) resolution</h3>
+<h3><span class="header-section-number">4.2.1</span> Create WDPA map at GP 500 m (.25 km^2) resolution</h3>
 <p>Actually, create two maps: one by protection category, another by year for no-take only (categories Ia, Ib, II, and no-take).</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">rast_cell_id    &lt;-<span class="st"> </span><span class="kw">raster</span>(cell_id_file)</a>
 <a class="sourceLine" id="cb3-2" title="2">rast_ocean_500m  &lt;-<span class="st"> </span><span class="kw">raster</span>(ocean_500m_file)</a>
-<a class="sourceLine" id="cb3-3" title="3"><span class="co">#plot(rast_ocean_500m) check to see if loaded properly </span></a>
+<a class="sourceLine" id="cb3-3" title="3"><span class="co">#plot(rast_ocean_500m) #check to see if loaded properly </span></a>
 <a class="sourceLine" id="cb3-4" title="4"></a>
-<a class="sourceLine" id="cb3-5" title="5">wdpa_marine_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_raw_data_anx, <span class="st">&#39;wdpa_mpa/d2019/wdpa_mar_by_cat_Apr2019_500m.tif&#39;</span>)</a>
-<a class="sourceLine" id="cb3-6" title="6">wdpa_poly_file   &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_raw_data_anx, <span class="st">&#39;wdpa_mpa/d2019/WDPA_Apr2019-shapefile&#39;</span>, </a>
-<a class="sourceLine" id="cb3-7" title="7">                              <span class="st">&#39;WDPA_Apr2019-shapefile-polygons.shp&#39;</span>)</a>
+<a class="sourceLine" id="cb3-5" title="5">wdpa_marine_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_raw_data_anx, <span class="st">&#39;wdpa_mpa/d2020/wdpa_mar_by_cat_Apr2020_500m.tif&#39;</span>)</a>
+<a class="sourceLine" id="cb3-6" title="6">wdpa_poly_file   &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_raw_data_anx, <span class="st">&#39;wdpa_mpa/d2020/WDPA_Apr2020-shapefile&#39;</span>, </a>
+<a class="sourceLine" id="cb3-7" title="7">                              <span class="st">&#39;WDPA_Apr2020-shapefile-polygons.shp&#39;</span>)</a>
 <a class="sourceLine" id="cb3-8" title="8"></a>
 <a class="sourceLine" id="cb3-9" title="9"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(wdpa_marine_file)) {</a>
 <a class="sourceLine" id="cb3-10" title="10">  </a>
-<a class="sourceLine" id="cb3-11" title="11">  wdpa_poly &lt;-<span class="st"> </span>sf<span class="op">::</span><span class="kw">read_sf</span>(wdpa_poly_file)</a>
+<a class="sourceLine" id="cb3-11" title="11">  wdpa_poly &lt;-<span class="st"> </span>sf<span class="op">::</span><span class="kw">st_read</span>(wdpa_poly_file)</a>
 <a class="sourceLine" id="cb3-12" title="12"></a>
-<a class="sourceLine" id="cb3-13" title="13">  <span class="co"># wdpa_poly$IUCN_CAT %&gt;% unique() </span></a>
+<a class="sourceLine" id="cb3-13" title="13">   <span class="co">#wdpa_poly$IUCN_CAT %&gt;% unique() </span></a>
 <a class="sourceLine" id="cb3-14" title="14">  <span class="co">##only grab ones that are reported/assigned/applicable</span></a>
 <a class="sourceLine" id="cb3-15" title="15">  iucn_cats &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;Ia&#39;</span>  =<span class="st"> </span><span class="dv">1</span>,</a>
 <a class="sourceLine" id="cb3-16" title="16">                 <span class="st">&#39;Ib&#39;</span>  =<span class="st"> </span><span class="dv">1</span>,</a>
@@ -1754,9 +1770,9 @@ div.tocify {
 <a class="sourceLine" id="cb3-19" title="19">                 <span class="st">&#39;IV&#39;</span>  =<span class="st"> </span><span class="dv">4</span>,</a>
 <a class="sourceLine" id="cb3-20" title="20">                 <span class="st">&#39;V&#39;</span>   =<span class="st"> </span><span class="dv">5</span>,</a>
 <a class="sourceLine" id="cb3-21" title="21">                 <span class="st">&#39;VI&#39;</span>  =<span class="st"> </span><span class="dv">6</span>)</a>
-<a class="sourceLine" id="cb3-22" title="22">   <span class="co">#wdpa_poly$STATUS %&gt;% table()</span></a>
-<a class="sourceLine" id="cb3-23" title="23">       <span class="co"># Adopted   Designated  Established    Inscribed Not Reported     Proposed </span></a>
-<a class="sourceLine" id="cb3-24" title="24">       <span class="co">#      34       220127            48          242          128         1436 </span></a>
+<a class="sourceLine" id="cb3-22" title="22">   wdpa_poly<span class="op">$</span>STATUS <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">table</span>()</a>
+<a class="sourceLine" id="cb3-23" title="23">     <span class="co"># Adopted   Designated  Established    Inscribed Not Reported     Proposed </span></a>
+<a class="sourceLine" id="cb3-24" title="24">     <span class="co">#      34       222545           86          243           59         1289 </span></a>
 <a class="sourceLine" id="cb3-25" title="25">  <span class="co"># wdpa_poly$NO_TAKE %&gt;% unique()</span></a>
 <a class="sourceLine" id="cb3-26" title="26">  <span class="co"># x &lt;- wdpa_poly %&gt;% filter(NO_TAKE %in% c(&#39;All&#39;, &#39;Part&#39;))</span></a>
 <a class="sourceLine" id="cb3-27" title="27">  </a>
@@ -1775,82 +1791,92 @@ div.tocify {
 <a class="sourceLine" id="cb3-40" title="40">           <span class="dt">cat =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(cat), <span class="dv">8</span>, cat)) <span class="op">%&gt;%</span><span class="st">           </span><span class="co">### use 8 as an &quot;other protected&quot; flag</span></a>
 <a class="sourceLine" id="cb3-41" title="41"><span class="st">    </span><span class="kw">arrange</span>(cat) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb3-42" title="42"><span class="st">    </span><span class="kw">st_transform</span>(<span class="dt">crs =</span> gp_proj4)</a>
-<a class="sourceLine" id="cb3-43" title="43">  </a>
-<a class="sourceLine" id="cb3-44" title="44">  <span class="co">### rasterize all protected areas to 500m global raster;</span></a>
-<a class="sourceLine" id="cb3-45" title="45">  <span class="co">### use min value: will prioritize no-take and higher levels of protection</span></a>
-<a class="sourceLine" id="cb3-46" title="46">  wdpa_all_rast_500m &lt;-<span class="st"> </span>fasterize<span class="op">::</span><span class="kw">fasterize</span>(<span class="dt">sf =</span> wdpa_marine, </a>
-<a class="sourceLine" id="cb3-47" title="47">                                        <span class="dt">raster =</span> rast_ocean_500m,</a>
-<a class="sourceLine" id="cb3-48" title="48">                                        <span class="dt">field  =</span> <span class="st">&#39;cat&#39;</span>, </a>
-<a class="sourceLine" id="cb3-49" title="49">                                        <span class="dt">fun    =</span> <span class="st">&#39;min&#39;</span>)</a>
-<a class="sourceLine" id="cb3-50" title="50">  </a>
-<a class="sourceLine" id="cb3-51" title="51">  <span class="kw">values</span>(rast_ocean_500m)[<span class="kw">values</span>(rast_ocean_500m) <span class="op">&lt;</span><span class="st"> </span><span class="fl">.005</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></a>
-<a class="sourceLine" id="cb3-52" title="52">  wdpa_marine_rast_500m &lt;-<span class="st"> </span><span class="kw">mask</span>(wdpa_all_rast_500m, rast_ocean_500m)</a>
+<a class="sourceLine" id="cb3-43" title="43"></a>
+<a class="sourceLine" id="cb3-44" title="44">  </a>
+<a class="sourceLine" id="cb3-45" title="45">  <span class="co">### rasterize all protected areas to 500m global raster;</span></a>
+<a class="sourceLine" id="cb3-46" title="46">  <span class="co">### use min value: will prioritize no-take and higher levels of protection</span></a>
+<a class="sourceLine" id="cb3-47" title="47">  wdpa_all_rast_500m &lt;-<span class="st"> </span>fasterize<span class="op">::</span><span class="kw">fasterize</span>(<span class="dt">sf =</span> wdpa_marine, </a>
+<a class="sourceLine" id="cb3-48" title="48">                                        <span class="dt">raster =</span> rast_ocean_500m,</a>
+<a class="sourceLine" id="cb3-49" title="49">                                        <span class="dt">field  =</span> <span class="st">&#39;cat&#39;</span>, </a>
+<a class="sourceLine" id="cb3-50" title="50">                                        <span class="dt">fun    =</span> <span class="st">&#39;min&#39;</span>)   </a>
+<a class="sourceLine" id="cb3-51" title="51"></a>
+<a class="sourceLine" id="cb3-52" title="52">  <span class="co">#plot(wdpa_all_rast_500m)</span></a>
 <a class="sourceLine" id="cb3-53" title="53">  </a>
-<a class="sourceLine" id="cb3-54" title="54">  <span class="kw">writeRaster</span>(wdpa_marine_rast_500m, wdpa_marine_file, </a>
-<a class="sourceLine" id="cb3-55" title="55">              <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>,</a>
-<a class="sourceLine" id="cb3-56" title="56">              <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb3-57" title="57">  </a>
-<a class="sourceLine" id="cb3-58" title="58">}</a></code></pre></div>
+<a class="sourceLine" id="cb3-54" title="54">  <span class="kw">values</span>(rast_ocean_500m)[<span class="kw">values</span>(rast_ocean_500m) <span class="op">&lt;</span><span class="st"> </span><span class="fl">.005</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></a>
+<a class="sourceLine" id="cb3-55" title="55">  wdpa_marine_rast_500m &lt;-<span class="st"> </span><span class="kw">mask</span>(wdpa_all_rast_500m, rast_ocean_500m)</a>
+<a class="sourceLine" id="cb3-56" title="56">  </a>
+<a class="sourceLine" id="cb3-57" title="57">  <span class="co">#plot(wdpa_marine_rast_500m)</span></a>
+<a class="sourceLine" id="cb3-58" title="58">  <span class="co">#plot(raster(file.path(dir_raw_data_anx, &#39;wdpa_mpa/d2019/wdpa_mar_by_cat_Apr2019_500m.tif&#39;)))</span></a>
+<a class="sourceLine" id="cb3-59" title="59">  </a>
+<a class="sourceLine" id="cb3-60" title="60">  <span class="kw">writeRaster</span>(wdpa_marine_rast_500m, wdpa_marine_file, </a>
+<a class="sourceLine" id="cb3-61" title="61">              <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>,</a>
+<a class="sourceLine" id="cb3-62" title="62">              <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb3-63" title="63">  </a>
+<a class="sourceLine" id="cb3-64" title="64">}</a></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">rast_cell_id    &lt;-<span class="st"> </span><span class="kw">raster</span>(cell_id_file)</a>
 <a class="sourceLine" id="cb4-2" title="2">rast_ocean_500m  &lt;-<span class="st"> </span><span class="kw">raster</span>(ocean_500m_file)</a>
-<a class="sourceLine" id="cb4-3" title="3"></a>
-<a class="sourceLine" id="cb4-4" title="4">wdpa_prot_yr_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_raw_data_anx, <span class="st">&#39;wdpa_mpa/d2019&#39;</span>, </a>
-<a class="sourceLine" id="cb4-5" title="5">                               <span class="st">&#39;wdpa_mar_by_prot_yr_Apr2019_500m.tif&#39;</span>)</a>
-<a class="sourceLine" id="cb4-6" title="6"></a>
-<a class="sourceLine" id="cb4-7" title="7"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(wdpa_prot_yr_file)) {</a>
-<a class="sourceLine" id="cb4-8" title="8">  </a>
-<a class="sourceLine" id="cb4-9" title="9">  wdpa_poly &lt;-<span class="st"> </span>sf<span class="op">::</span><span class="kw">read_sf</span>(wdpa_poly_file)</a>
-<a class="sourceLine" id="cb4-10" title="10"></a>
-<a class="sourceLine" id="cb4-11" title="11">  <span class="co"># wdpa_poly$IUCN_CAT %&gt;% unique()</span></a>
-<a class="sourceLine" id="cb4-12" title="12">  iucn_cats &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;Ia&#39;</span>  =<span class="st"> </span><span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb4-13" title="13">                 <span class="st">&#39;Ib&#39;</span>  =<span class="st"> </span><span class="dv">1</span>,</a>
-<a class="sourceLine" id="cb4-14" title="14">                 <span class="st">&#39;II&#39;</span>  =<span class="st"> </span><span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb4-15" title="15">                 <span class="st">&#39;III&#39;</span> =<span class="st"> </span><span class="dv">3</span>,</a>
-<a class="sourceLine" id="cb4-16" title="16">                 <span class="st">&#39;IV&#39;</span>  =<span class="st"> </span><span class="dv">4</span>,</a>
-<a class="sourceLine" id="cb4-17" title="17">                 <span class="st">&#39;V&#39;</span>   =<span class="st"> </span><span class="dv">5</span>,</a>
-<a class="sourceLine" id="cb4-18" title="18">                 <span class="st">&#39;VI&#39;</span>  =<span class="st"> </span><span class="dv">6</span>)</a>
-<a class="sourceLine" id="cb4-19" title="19">   <span class="co"># wdpa_poly$STATUS %&gt;% table()</span></a>
-<a class="sourceLine" id="cb4-20" title="20">       <span class="co"># Adopted   Designated  Established    Inscribed Not Reported     Proposed </span></a>
-<a class="sourceLine" id="cb4-21" title="21">       <span class="co">#      34       220127            48          242          128         1436 </span></a>
-<a class="sourceLine" id="cb4-22" title="22">  <span class="co"># wdpa_poly$NO_TAKE %&gt;% unique()</span></a>
-<a class="sourceLine" id="cb4-23" title="23">  <span class="co"># x &lt;- wdpa_poly %&gt;% filter(NO_TAKE %in% c(&#39;All&#39;, &#39;Part&#39;))</span></a>
-<a class="sourceLine" id="cb4-24" title="24">  </a>
-<a class="sourceLine" id="cb4-25" title="25">  wdpa_no_take &lt;-<span class="st"> </span>wdpa_poly <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-26" title="26"><span class="st">    </span><span class="kw">filter</span>(MARINE <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span> <span class="op">|</span><span class="st"> </span>GIS_M_AREA <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-27" title="27"><span class="st">    </span><span class="kw">filter</span>(STATUS <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;Designated&#39;</span>, <span class="st">&#39;Adopted&#39;</span>, <span class="st">&#39;Established&#39;</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-28" title="28"><span class="st">      </span><span class="co">### no paper parks!</span></a>
-<a class="sourceLine" id="cb4-29" title="29"><span class="st">    </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">str_detect</span>(<span class="kw">tolower</span>(MANG_PLAN), <span class="st">&#39;non-mpa&#39;</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-30" title="30"><span class="st">      </span><span class="co">### omit non-MPA fisheries or species management plans!</span></a>
-<a class="sourceLine" id="cb4-31" title="31"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">NO_TAKE =</span> <span class="kw">ifelse</span>(WDPAID <span class="op">==</span><span class="st"> </span><span class="dv">309888</span>, <span class="ot">TRUE</span>, NO_TAKE),</a>
-<a class="sourceLine" id="cb4-32" title="32">             <span class="co">### patch PIPA to be no take - currently &quot;not reported&quot;</span></a>
-<a class="sourceLine" id="cb4-33" title="33">           <span class="dt">no_take =</span> (NO_TAKE <span class="op">==</span><span class="st"> &#39;All&#39;</span>) <span class="op">|</span><span class="st"> </span>(NO_TAKE <span class="op">==</span><span class="st"> &#39;Part&#39;</span> <span class="op">&amp;</span><span class="st"> </span>NO_TK_AREA <span class="op">&gt;</span><span class="st"> </span><span class="fl">0.75</span> <span class="op">*</span><span class="st"> </span>GIS_M_AREA),</a>
-<a class="sourceLine" id="cb4-34" title="34">             <span class="co">### if NO_TK_AREA is 75% or more of GIS area, count it...</span></a>
-<a class="sourceLine" id="cb4-35" title="35">           <span class="dt">cat =</span> iucn_cats[IUCN_CAT],</a>
-<a class="sourceLine" id="cb4-36" title="36">           <span class="dt">cat =</span> <span class="kw">ifelse</span>(no_take <span class="op">&amp;</span><span class="st"> </span><span class="op">!</span>cat <span class="op">%in%</span><span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">2</span>, <span class="dv">-1</span>, cat), <span class="co">### use -1 as a &quot;no take&quot; flag</span></a>
-<a class="sourceLine" id="cb4-37" title="37">           <span class="dt">cat =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(cat), <span class="dv">8</span>, cat)) <span class="op">%&gt;%</span><span class="st">           </span><span class="co">### use 8 as an &quot;other protected&quot; flag</span></a>
-<a class="sourceLine" id="cb4-38" title="38"><span class="st">    </span><span class="kw">arrange</span>(cat) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-39" title="39"><span class="st">    </span><span class="kw">filter</span>(cat <span class="op">&lt;=</span><span class="st"> </span><span class="dv">2</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">### this limits to categories Ia, Ib, II, and no-take</span></a>
-<a class="sourceLine" id="cb4-40" title="40"><span class="st">    </span><span class="kw">st_transform</span>(<span class="dt">crs =</span> gp_proj4)</a>
-<a class="sourceLine" id="cb4-41" title="41">  </a>
-<a class="sourceLine" id="cb4-42" title="42">  <span class="co">### rasterize all protected areas to 500 m global raster;</span></a>
-<a class="sourceLine" id="cb4-43" title="43">  <span class="co">### use min value: will prioritize no-take and higher levels of protection</span></a>
-<a class="sourceLine" id="cb4-44" title="44">  wdpa_all_rast_500m &lt;-<span class="st"> </span>fasterize<span class="op">::</span><span class="kw">fasterize</span>(<span class="dt">sf =</span> wdpa_no_take, </a>
-<a class="sourceLine" id="cb4-45" title="45">                                        <span class="dt">raster =</span> rast_ocean_500m,</a>
-<a class="sourceLine" id="cb4-46" title="46">                                        <span class="dt">field  =</span> <span class="st">&#39;STATUS_YR&#39;</span>, </a>
-<a class="sourceLine" id="cb4-47" title="47">                                        <span class="dt">fun    =</span> <span class="st">&#39;min&#39;</span>)</a>
-<a class="sourceLine" id="cb4-48" title="48">  </a>
-<a class="sourceLine" id="cb4-49" title="49">  <span class="kw">values</span>(rast_ocean_500m)[<span class="kw">values</span>(rast_ocean_500m) <span class="op">&lt;</span><span class="st"> </span><span class="fl">.005</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></a>
-<a class="sourceLine" id="cb4-50" title="50">    <span class="co">### in case of floating point not-quite-zeros...</span></a>
-<a class="sourceLine" id="cb4-51" title="51">  wdpa_yr_rast_500m &lt;-<span class="st"> </span><span class="kw">mask</span>(wdpa_all_rast_500m, rast_ocean_500m)</a>
-<a class="sourceLine" id="cb4-52" title="52">  </a>
-<a class="sourceLine" id="cb4-53" title="53">  <span class="kw">writeRaster</span>(wdpa_yr_rast_500m, wdpa_prot_yr_file, </a>
-<a class="sourceLine" id="cb4-54" title="54">              <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>,</a>
-<a class="sourceLine" id="cb4-55" title="55">              <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb4-3" title="3"><span class="co"># plot(rast_ocean_500m)</span></a>
+<a class="sourceLine" id="cb4-4" title="4"></a>
+<a class="sourceLine" id="cb4-5" title="5">wdpa_prot_yr_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_raw_data_anx, <span class="st">&#39;wdpa_mpa/d2020&#39;</span>, </a>
+<a class="sourceLine" id="cb4-6" title="6">                               <span class="st">&#39;wdpa_mar_by_prot_yr_Apr2020_500m.tif&#39;</span>)</a>
+<a class="sourceLine" id="cb4-7" title="7"></a>
+<a class="sourceLine" id="cb4-8" title="8"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(wdpa_prot_yr_file)) {</a>
+<a class="sourceLine" id="cb4-9" title="9">  </a>
+<a class="sourceLine" id="cb4-10" title="10">  wdpa_poly &lt;-<span class="st"> </span>sf<span class="op">::</span><span class="kw">read_sf</span>(wdpa_poly_file)</a>
+<a class="sourceLine" id="cb4-11" title="11"></a>
+<a class="sourceLine" id="cb4-12" title="12">   <span class="co">#wdpa_poly$IUCN_CAT %&gt;% unique()</span></a>
+<a class="sourceLine" id="cb4-13" title="13">  iucn_cats &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;Ia&#39;</span>  =<span class="st"> </span><span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb4-14" title="14">                 <span class="st">&#39;Ib&#39;</span>  =<span class="st"> </span><span class="dv">1</span>,</a>
+<a class="sourceLine" id="cb4-15" title="15">                 <span class="st">&#39;II&#39;</span>  =<span class="st"> </span><span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb4-16" title="16">                 <span class="st">&#39;III&#39;</span> =<span class="st"> </span><span class="dv">3</span>,</a>
+<a class="sourceLine" id="cb4-17" title="17">                 <span class="st">&#39;IV&#39;</span>  =<span class="st"> </span><span class="dv">4</span>,</a>
+<a class="sourceLine" id="cb4-18" title="18">                 <span class="st">&#39;V&#39;</span>   =<span class="st"> </span><span class="dv">5</span>,</a>
+<a class="sourceLine" id="cb4-19" title="19">                 <span class="st">&#39;VI&#39;</span>  =<span class="st"> </span><span class="dv">6</span>)</a>
+<a class="sourceLine" id="cb4-20" title="20">    <span class="co">#wdpa_poly$STATUS %&gt;% table()</span></a>
+<a class="sourceLine" id="cb4-21" title="21">          <span class="co">#   Adopted   Designated  Established    Inscribed Not Reported     Proposed </span></a>
+<a class="sourceLine" id="cb4-22" title="22">          <span class="co"># 34       222545           86          243           59         1289 </span></a>
+<a class="sourceLine" id="cb4-23" title="23">  <span class="co"># wdpa_poly$NO_TAKE %&gt;% unique()</span></a>
+<a class="sourceLine" id="cb4-24" title="24">  <span class="co"># x &lt;- wdpa_poly %&gt;% filter(NO_TAKE %in% c(&#39;All&#39;, &#39;Part&#39;))</span></a>
+<a class="sourceLine" id="cb4-25" title="25">  </a>
+<a class="sourceLine" id="cb4-26" title="26">  wdpa_no_take &lt;-<span class="st"> </span>wdpa_poly <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb4-27" title="27"><span class="st">    </span><span class="kw">filter</span>(MARINE <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span> <span class="op">|</span><span class="st"> </span>GIS_M_AREA <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb4-28" title="28"><span class="st">    </span><span class="kw">filter</span>(STATUS <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;Designated&#39;</span>, <span class="st">&#39;Adopted&#39;</span>, <span class="st">&#39;Established&#39;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb4-29" title="29"><span class="st">      </span><span class="co">### no paper parks!</span></a>
+<a class="sourceLine" id="cb4-30" title="30"><span class="st">    </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">str_detect</span>(<span class="kw">tolower</span>(MANG_PLAN), <span class="st">&#39;non-mpa&#39;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb4-31" title="31"><span class="st">      </span><span class="co">### omit non-MPA fisheries or species management plans!</span></a>
+<a class="sourceLine" id="cb4-32" title="32"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">NO_TAKE =</span> <span class="kw">ifelse</span>(WDPAID <span class="op">==</span><span class="st"> </span><span class="dv">309888</span>, <span class="ot">TRUE</span>, NO_TAKE),</a>
+<a class="sourceLine" id="cb4-33" title="33">             <span class="co">### patch PIPA to be no take - currently &quot;not reported&quot;</span></a>
+<a class="sourceLine" id="cb4-34" title="34">           <span class="dt">no_take =</span> (NO_TAKE <span class="op">==</span><span class="st"> &#39;All&#39;</span>) <span class="op">|</span><span class="st"> </span>(NO_TAKE <span class="op">==</span><span class="st"> &#39;Part&#39;</span> <span class="op">&amp;</span><span class="st"> </span>NO_TK_AREA <span class="op">&gt;</span><span class="st"> </span><span class="fl">0.75</span> <span class="op">*</span><span class="st"> </span>GIS_M_AREA),</a>
+<a class="sourceLine" id="cb4-35" title="35">             <span class="co">### if NO_TK_AREA is 75% or more of GIS area, count it...</span></a>
+<a class="sourceLine" id="cb4-36" title="36">           <span class="dt">cat =</span> iucn_cats[IUCN_CAT],</a>
+<a class="sourceLine" id="cb4-37" title="37">           <span class="dt">cat =</span> <span class="kw">ifelse</span>(no_take <span class="op">&amp;</span><span class="st"> </span><span class="op">!</span>cat <span class="op">%in%</span><span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">2</span>, <span class="dv">-1</span>, cat), <span class="co">### use -1 as a &quot;no take&quot; flag</span></a>
+<a class="sourceLine" id="cb4-38" title="38">           <span class="dt">cat =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(cat), <span class="dv">8</span>, cat)) <span class="op">%&gt;%</span><span class="st">           </span><span class="co">### use 8 as an &quot;other protected&quot; flag</span></a>
+<a class="sourceLine" id="cb4-39" title="39"><span class="st">    </span><span class="kw">arrange</span>(cat) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb4-40" title="40"><span class="st">    </span><span class="kw">filter</span>(cat <span class="op">&lt;=</span><span class="st"> </span><span class="dv">2</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">### this limits to categories Ia, Ib, II, and no-take</span></a>
+<a class="sourceLine" id="cb4-41" title="41"><span class="st">    </span><span class="kw">st_transform</span>(<span class="dt">crs =</span> gp_proj4)</a>
+<a class="sourceLine" id="cb4-42" title="42">  </a>
+<a class="sourceLine" id="cb4-43" title="43">  <span class="co">### rasterize all protected areas to 500 m global raster;</span></a>
+<a class="sourceLine" id="cb4-44" title="44">  <span class="co">### use min value: will prioritize no-take and higher levels of protection</span></a>
+<a class="sourceLine" id="cb4-45" title="45">  wdpa_all_rast_500m &lt;-<span class="st"> </span>fasterize<span class="op">::</span><span class="kw">fasterize</span>(<span class="dt">sf =</span> wdpa_no_take, </a>
+<a class="sourceLine" id="cb4-46" title="46">                                        <span class="dt">raster =</span> rast_ocean_500m,</a>
+<a class="sourceLine" id="cb4-47" title="47">                                        <span class="dt">field  =</span> <span class="st">&#39;STATUS_YR&#39;</span>, </a>
+<a class="sourceLine" id="cb4-48" title="48">                                        <span class="dt">fun    =</span> <span class="st">&#39;min&#39;</span>)</a>
+<a class="sourceLine" id="cb4-49" title="49">  </a>
+<a class="sourceLine" id="cb4-50" title="50">  <span class="kw">values</span>(rast_ocean_500m)[<span class="kw">values</span>(rast_ocean_500m) <span class="op">&lt;</span><span class="st"> </span><span class="fl">.005</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></a>
+<a class="sourceLine" id="cb4-51" title="51">    <span class="co">### in case of floating point not-quite-zeros...</span></a>
+<a class="sourceLine" id="cb4-52" title="52">  wdpa_yr_rast_500m &lt;-<span class="st"> </span><span class="kw">mask</span>(wdpa_all_rast_500m, rast_ocean_500m)</a>
+<a class="sourceLine" id="cb4-53" title="53">  </a>
+<a class="sourceLine" id="cb4-54" title="54">    <span class="co">#plot(wdpa_yr_rast_500m)</span></a>
+<a class="sourceLine" id="cb4-55" title="55">  <span class="co">#plot(raster(file.path(dir_raw_data_anx, &#39;wdpa_mpa/d2019/wdpa_mar_by_prot_yr_Apr2019_500m.tif&#39;)))</span></a>
 <a class="sourceLine" id="cb4-56" title="56">  </a>
-<a class="sourceLine" id="cb4-57" title="57">}</a></code></pre></div>
+<a class="sourceLine" id="cb4-57" title="57">  <span class="kw">writeRaster</span>(wdpa_yr_rast_500m, wdpa_prot_yr_file, </a>
+<a class="sourceLine" id="cb4-58" title="58">              <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>,</a>
+<a class="sourceLine" id="cb4-59" title="59">              <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb4-60" title="60">  </a>
+<a class="sourceLine" id="cb4-61" title="61">}</a></code></pre></div>
 </div>
 <div id="crosstab-wdpa-map-to-cell-ids" class="section level3">
-<h3><span class="header-section-number">3.2.2</span> Crosstab WDPA map to cell IDs</h3>
+<h3><span class="header-section-number">4.2.2</span> Crosstab WDPA map to cell IDs</h3>
 <p>Be cautious when using <code>raster::crosstab()</code> as it returns factors that need to be coerced into integers… This code results in a file of cell IDs, IUCN protected area categories (1 = Ia and Ib, 2-6 = II - VI, 7 = no take, -1 = other), and proportion of cell protected by that category.</p>
 <p>We can’t simply aggregate upwards here, since we need to keep track of different protection levels (for the first) and year (for the second).</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">wdpa_marine_rast_500m &lt;-<span class="st"> </span><span class="kw">raster</span>(wdpa_marine_file)</a>
@@ -1870,71 +1896,70 @@ div.tocify {
 <a class="sourceLine" id="cb5-15" title="15">} <span class="cf">else</span> {</a>
 <a class="sourceLine" id="cb5-16" title="16">  rast_cell_id_500m &lt;-<span class="st"> </span><span class="kw">raster</span>(cell_id_500m_file)</a>
 <a class="sourceLine" id="cb5-17" title="17">}</a>
-<a class="sourceLine" id="cb5-18" title="18"></a>
-<a class="sourceLine" id="cb5-19" title="19">wdpa_cell_area_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_spatial, <span class="st">&#39;wdpa_mpa_area.csv&#39;</span>)</a>
-<a class="sourceLine" id="cb5-20" title="20"></a>
-<a class="sourceLine" id="cb5-21" title="21"><span class="co">### now break into chunks and mclapply across them to crosstab WDPA categories to cell IDs</span></a>
-<a class="sourceLine" id="cb5-22" title="22"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(wdpa_cell_area_file)) {</a>
-<a class="sourceLine" id="cb5-23" title="23">  <span class="co">### Break into smaller chunks for faster processing and eventual parallelizing</span></a>
-<a class="sourceLine" id="cb5-24" title="24">  n_chunks &lt;-<span class="st"> </span><span class="dv">60</span></a>
-<a class="sourceLine" id="cb5-25" title="25">  </a>
-<a class="sourceLine" id="cb5-26" title="26">  crosstab_chunk &lt;-<span class="st"> </span><span class="cf">function</span>(rast1, rast2, chunk, n_chunks) {</a>
-<a class="sourceLine" id="cb5-27" title="27">    <span class="co">### chunk &lt;- 30</span></a>
-<a class="sourceLine" id="cb5-28" title="28">    chunk_size &lt;-<span class="st"> </span><span class="kw">ceiling</span>(<span class="kw">ncol</span>(rast1) <span class="op">/</span><span class="st"> </span>n_chunks)</a>
-<a class="sourceLine" id="cb5-29" title="29">    left_bound &lt;-<span class="st"> </span>(chunk <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span><span class="st"> </span>chunk_size <span class="op">+</span><span class="st"> </span><span class="dv">1</span></a>
-<a class="sourceLine" id="cb5-30" title="30">    right_bound &lt;-<span class="st"> </span><span class="kw">min</span>(left_bound <span class="op">+</span><span class="st"> </span>chunk_size <span class="op">-</span><span class="st"> </span><span class="dv">1</span>, <span class="kw">ncol</span>(rast1))</a>
-<a class="sourceLine" id="cb5-31" title="31">    </a>
-<a class="sourceLine" id="cb5-32" title="32">    chunk_ext &lt;-<span class="st"> </span><span class="kw">extent</span>(rast1, <span class="dv">1</span>, <span class="kw">nrow</span>(rast1), left_bound, right_bound)</a>
-<a class="sourceLine" id="cb5-33" title="33">    <span class="kw">message</span>(<span class="st">&#39;Processing &#39;</span>, chunk, <span class="st">&#39;: &#39;</span>, <span class="kw">paste0</span>(<span class="kw">as.character</span>(<span class="kw">round</span>(chunk_ext)), <span class="dt">collapse =</span> <span class="st">&#39;, &#39;</span>))</a>
-<a class="sourceLine" id="cb5-34" title="34">    wdpa_chunk    &lt;-<span class="st"> </span><span class="kw">crop</span>(rast1, chunk_ext)</a>
-<a class="sourceLine" id="cb5-35" title="35">    cell_id_chunk &lt;-<span class="st"> </span><span class="kw">crop</span>(rast2, chunk_ext)</a>
-<a class="sourceLine" id="cb5-36" title="36">    </a>
-<a class="sourceLine" id="cb5-37" title="37">    wdpa_cells &lt;-<span class="st"> </span><span class="kw">crosstab</span>(wdpa_chunk, cell_id_chunk, </a>
-<a class="sourceLine" id="cb5-38" title="38">                           <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>,</a>
-<a class="sourceLine" id="cb5-39" title="39">                           <span class="dt">long =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-40" title="40"><span class="st">      </span><span class="kw">setNames</span>(<span class="kw">c</span>(<span class="st">&#39;wdpa_category&#39;</span>, <span class="st">&#39;cell_id&#39;</span>, <span class="st">&#39;n_prot&#39;</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-41" title="41"><span class="st">      </span><span class="kw">mutate</span>(<span class="dt">wdpa_category =</span> <span class="kw">as.integer</span>(<span class="kw">as.character</span>(wdpa_category)),</a>
-<a class="sourceLine" id="cb5-42" title="42">             <span class="dt">cell_id       =</span> <span class="kw">as.integer</span>(<span class="kw">as.character</span>(cell_id)))</a>
-<a class="sourceLine" id="cb5-43" title="43">        <span class="co">### wdpa_category and cell_id are crosstabbed as factors - first</span></a>
-<a class="sourceLine" id="cb5-44" title="44">        <span class="co">### convert to character (to unfactorize it) then to integer.  Otherwise</span></a>
-<a class="sourceLine" id="cb5-45" title="45">        <span class="co">### you end up with factor index, not actual cell ID or category.</span></a>
-<a class="sourceLine" id="cb5-46" title="46">    </a>
-<a class="sourceLine" id="cb5-47" title="47">    <span class="kw">return</span>(wdpa_cells)</a>
-<a class="sourceLine" id="cb5-48" title="48">  }</a>
-<a class="sourceLine" id="cb5-49" title="49"></a>
-<a class="sourceLine" id="cb5-50" title="50">  <span class="co">### Use the function in an mclapply call</span></a>
-<a class="sourceLine" id="cb5-51" title="51">  <span class="kw">system.time</span>({</a>
-<a class="sourceLine" id="cb5-52" title="52">    wdpa_cells_list &lt;-<span class="st"> </span>parallel<span class="op">::</span><span class="kw">mclapply</span>(<span class="dv">1</span><span class="op">:</span>n_chunks, <span class="dt">mc.cores =</span> <span class="dv">12</span>,</a>
-<a class="sourceLine" id="cb5-53" title="53">      <span class="dt">FUN =</span> <span class="cf">function</span>(x) <span class="kw">crosstab_chunk</span>(wdpa_marine_rast_500m, </a>
-<a class="sourceLine" id="cb5-54" title="54">                                       rast_cell_id_500m, </a>
-<a class="sourceLine" id="cb5-55" title="55">                                       <span class="dt">chunk =</span> x, n_chunks))</a>
-<a class="sourceLine" id="cb5-56" title="56">  <span class="co">#     user   system  elapsed  USING 16 CORES at 1 km resolution...</span></a>
-<a class="sourceLine" id="cb5-57" title="57">  <span class="co"># 1184.324  814.096  208.082 </span></a>
-<a class="sourceLine" id="cb5-58" title="58">  <span class="co">#     user   system  elapsed 12 cores 500 m resolution 60 chunks</span></a>
-<a class="sourceLine" id="cb5-59" title="59">  <span class="co"># 4844.748  509.712  495.893   </span></a>
-<a class="sourceLine" id="cb5-60" title="60">  })</a>
-<a class="sourceLine" id="cb5-61" title="61">  </a>
-<a class="sourceLine" id="cb5-62" title="62">  wdpa_cells_df &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(wdpa_cells_list)</a>
-<a class="sourceLine" id="cb5-63" title="63">  </a>
-<a class="sourceLine" id="cb5-64" title="64">  area_df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">cell_id  =</span> <span class="kw">values</span>(rast_cell_id),</a>
-<a class="sourceLine" id="cb5-65" title="65">                        <span class="dt">area_km2 =</span> <span class="kw">values</span>(rast_ocean_area))</a>
-<a class="sourceLine" id="cb5-66" title="66">  </a>
-<a class="sourceLine" id="cb5-67" title="67">  wdpa_area_df &lt;-<span class="st"> </span>wdpa_cells_df <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-68" title="68"><span class="st">    </span><span class="kw">full_join</span>(area_df, <span class="dt">by =</span> <span class="st">&#39;cell_id&#39;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-69" title="69"><span class="st">    </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(wdpa_category)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-70" title="70"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">prot_area_km2 =</span> n_prot <span class="op">/</span><span class="st"> </span><span class="dv">4</span>, <span class="co">### count of cells in 500 x 500 m raster, div by 4</span></a>
-<a class="sourceLine" id="cb5-71" title="71">           <span class="dt">mpa_pct =</span> prot_area_km2 <span class="op">/</span><span class="st"> </span>area_km2) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-72" title="72"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(wdpa_category, cell_id, mpa_pct, prot_area_km2) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-73" title="73"><span class="st">      </span><span class="co">### mpa pct is relative to *ocean* area - not *total cell* area</span></a>
-<a class="sourceLine" id="cb5-74" title="74"><span class="st">    </span><span class="kw">group_by</span>(wdpa_category, cell_id) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-75" title="75"><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">mpa_pct =</span> <span class="kw">sum</span>(mpa_pct), <span class="dt">prot_area_km2 =</span> <span class="kw">sum</span>(prot_area_km2)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-76" title="76"><span class="st">    </span><span class="kw">ungroup</span>()</a>
-<a class="sourceLine" id="cb5-77" title="77">  </a>
-<a class="sourceLine" id="cb5-78" title="78">  <span class="kw">write_csv</span>(wdpa_area_df, wdpa_cell_area_file)</a>
-<a class="sourceLine" id="cb5-79" title="79">  </a>
-<a class="sourceLine" id="cb5-80" title="80">} <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb5-81" title="81">  <span class="co"># git_prov(wdpa_cell_area_file, &#39;output&#39;)</span></a>
-<a class="sourceLine" id="cb5-82" title="82">}</a></code></pre></div>
+<a class="sourceLine" id="cb5-18" title="18"><span class="co">#plot(rast_cell_id_500m)</span></a>
+<a class="sourceLine" id="cb5-19" title="19"></a>
+<a class="sourceLine" id="cb5-20" title="20">wdpa_cell_area_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_spatial, <span class="st">&#39;wdpa_mpa_area.csv&#39;</span>)</a>
+<a class="sourceLine" id="cb5-21" title="21"></a>
+<a class="sourceLine" id="cb5-22" title="22"><span class="co">### now break into chunks and mclapply across them to crosstab WDPA categories to cell IDs</span></a>
+<a class="sourceLine" id="cb5-23" title="23"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(wdpa_cell_area_file)) {</a>
+<a class="sourceLine" id="cb5-24" title="24">  <span class="co">### Break into smaller chunks for faster processing and eventual parallelizing</span></a>
+<a class="sourceLine" id="cb5-25" title="25">  n_chunks &lt;-<span class="st"> </span><span class="dv">60</span></a>
+<a class="sourceLine" id="cb5-26" title="26">  </a>
+<a class="sourceLine" id="cb5-27" title="27">  crosstab_chunk &lt;-<span class="st"> </span><span class="cf">function</span>(rast1, rast2, chunk, n_chunks) {</a>
+<a class="sourceLine" id="cb5-28" title="28">    <span class="co">### chunk &lt;- 30</span></a>
+<a class="sourceLine" id="cb5-29" title="29">    chunk_size &lt;-<span class="st"> </span><span class="kw">ceiling</span>(<span class="kw">ncol</span>(rast1) <span class="op">/</span><span class="st"> </span>n_chunks)</a>
+<a class="sourceLine" id="cb5-30" title="30">    left_bound &lt;-<span class="st"> </span>(chunk <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span><span class="st"> </span>chunk_size <span class="op">+</span><span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb5-31" title="31">    right_bound &lt;-<span class="st"> </span><span class="kw">min</span>(left_bound <span class="op">+</span><span class="st"> </span>chunk_size <span class="op">-</span><span class="st"> </span><span class="dv">1</span>, <span class="kw">ncol</span>(rast1))</a>
+<a class="sourceLine" id="cb5-32" title="32">    </a>
+<a class="sourceLine" id="cb5-33" title="33">    chunk_ext &lt;-<span class="st"> </span><span class="kw">extent</span>(rast1, <span class="dv">1</span>, <span class="kw">nrow</span>(rast1), left_bound, right_bound)</a>
+<a class="sourceLine" id="cb5-34" title="34">    <span class="kw">message</span>(<span class="st">&#39;Processing &#39;</span>, chunk, <span class="st">&#39;: &#39;</span>, <span class="kw">paste0</span>(<span class="kw">as.character</span>(<span class="kw">round</span>(chunk_ext)), <span class="dt">collapse =</span> <span class="st">&#39;, &#39;</span>))</a>
+<a class="sourceLine" id="cb5-35" title="35">    wdpa_chunk    &lt;-<span class="st"> </span><span class="kw">crop</span>(rast1, chunk_ext)</a>
+<a class="sourceLine" id="cb5-36" title="36">    cell_id_chunk &lt;-<span class="st"> </span><span class="kw">crop</span>(rast2, chunk_ext)</a>
+<a class="sourceLine" id="cb5-37" title="37">    </a>
+<a class="sourceLine" id="cb5-38" title="38">    wdpa_cells &lt;-<span class="st"> </span><span class="kw">crosstab</span>(wdpa_chunk, cell_id_chunk, </a>
+<a class="sourceLine" id="cb5-39" title="39">                           <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>,</a>
+<a class="sourceLine" id="cb5-40" title="40">                           <span class="dt">long =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-41" title="41"><span class="st">      </span><span class="kw">setNames</span>(<span class="kw">c</span>(<span class="st">&#39;wdpa_category&#39;</span>, <span class="st">&#39;cell_id&#39;</span>, <span class="st">&#39;n_prot&#39;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-42" title="42"><span class="st">      </span><span class="kw">mutate</span>(<span class="dt">wdpa_category =</span> <span class="kw">as.integer</span>(<span class="kw">as.character</span>(wdpa_category)),</a>
+<a class="sourceLine" id="cb5-43" title="43">             <span class="dt">cell_id       =</span> <span class="kw">as.integer</span>(<span class="kw">as.character</span>(cell_id)))</a>
+<a class="sourceLine" id="cb5-44" title="44">        <span class="co">### wdpa_category and cell_id are crosstabbed as factors - first</span></a>
+<a class="sourceLine" id="cb5-45" title="45">        <span class="co">### convert to character (to unfactorize it) then to integer.  Otherwise</span></a>
+<a class="sourceLine" id="cb5-46" title="46">        <span class="co">### you end up with factor index, not actual cell ID or category.</span></a>
+<a class="sourceLine" id="cb5-47" title="47">    </a>
+<a class="sourceLine" id="cb5-48" title="48">    <span class="kw">return</span>(wdpa_cells)</a>
+<a class="sourceLine" id="cb5-49" title="49">  }</a>
+<a class="sourceLine" id="cb5-50" title="50"></a>
+<a class="sourceLine" id="cb5-51" title="51">  <span class="co">### Use the function in an mclapply call</span></a>
+<a class="sourceLine" id="cb5-52" title="52">  <span class="kw">system.time</span>({</a>
+<a class="sourceLine" id="cb5-53" title="53">    wdpa_cells_list &lt;-<span class="st"> </span>parallel<span class="op">::</span><span class="kw">mclapply</span>(<span class="dv">1</span><span class="op">:</span>n_chunks, <span class="dt">mc.cores =</span> <span class="dv">12</span>,</a>
+<a class="sourceLine" id="cb5-54" title="54">      <span class="dt">FUN =</span> <span class="cf">function</span>(x) <span class="kw">crosstab_chunk</span>(wdpa_marine_rast_500m, </a>
+<a class="sourceLine" id="cb5-55" title="55">                                       rast_cell_id_500m, </a>
+<a class="sourceLine" id="cb5-56" title="56">                                       <span class="dt">chunk =</span> x, n_chunks))</a>
+<a class="sourceLine" id="cb5-57" title="57"><span class="co">#     user   system  elapsed </span></a>
+<a class="sourceLine" id="cb5-58" title="58"><span class="co"># 5335.773  588.892  550.586  - about ten minutes! </span></a>
+<a class="sourceLine" id="cb5-59" title="59">  })</a>
+<a class="sourceLine" id="cb5-60" title="60">  </a>
+<a class="sourceLine" id="cb5-61" title="61">  wdpa_cells_df &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(wdpa_cells_list)</a>
+<a class="sourceLine" id="cb5-62" title="62">  </a>
+<a class="sourceLine" id="cb5-63" title="63">  area_df &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">cell_id  =</span> <span class="kw">values</span>(rast_cell_id),</a>
+<a class="sourceLine" id="cb5-64" title="64">                        <span class="dt">area_km2 =</span> <span class="kw">values</span>(rast_ocean_area))</a>
+<a class="sourceLine" id="cb5-65" title="65">  </a>
+<a class="sourceLine" id="cb5-66" title="66">  wdpa_area_df &lt;-<span class="st"> </span>wdpa_cells_df <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-67" title="67"><span class="st">    </span><span class="kw">full_join</span>(area_df, <span class="dt">by =</span> <span class="st">&#39;cell_id&#39;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-68" title="68"><span class="st">    </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(wdpa_category)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-69" title="69"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">prot_area_km2 =</span> n_prot <span class="op">/</span><span class="st"> </span><span class="dv">4</span>, <span class="co">### count of cells in 500 x 500 m raster, div by 4</span></a>
+<a class="sourceLine" id="cb5-70" title="70">           <span class="dt">mpa_pct =</span> prot_area_km2 <span class="op">/</span><span class="st"> </span>area_km2) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-71" title="71"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(wdpa_category, cell_id, mpa_pct, prot_area_km2) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-72" title="72"><span class="st">      </span><span class="co">### mpa pct is relative to *ocean* area - not *total cell* area</span></a>
+<a class="sourceLine" id="cb5-73" title="73"><span class="st">    </span><span class="kw">group_by</span>(wdpa_category, cell_id) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-74" title="74"><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">mpa_pct =</span> <span class="kw">sum</span>(mpa_pct), <span class="dt">prot_area_km2 =</span> <span class="kw">sum</span>(prot_area_km2)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-75" title="75"><span class="st">    </span><span class="kw">ungroup</span>()</a>
+<a class="sourceLine" id="cb5-76" title="76">  </a>
+<a class="sourceLine" id="cb5-77" title="77">  <span class="kw">write_csv</span>(wdpa_area_df, wdpa_cell_area_file)</a>
+<a class="sourceLine" id="cb5-78" title="78">  </a>
+<a class="sourceLine" id="cb5-79" title="79">} <span class="cf">else</span> {</a>
+<a class="sourceLine" id="cb5-80" title="80">  <span class="co"># git_prov(wdpa_cell_area_file, &#39;output&#39;)</span></a>
+<a class="sourceLine" id="cb5-81" title="81">}</a></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">wdpa_yr_rast_500m &lt;-<span class="st"> </span><span class="kw">raster</span>(wdpa_prot_yr_file)</a>
 <a class="sourceLine" id="cb6-2" title="2">rast_cell_id    &lt;-<span class="st"> </span><span class="kw">raster</span>(cell_id_file)    <span class="co">### cell IDs at 10 km^2</span></a>
 <a class="sourceLine" id="cb6-3" title="3">rast_ocean_500m  &lt;-<span class="st"> </span><span class="kw">raster</span>(ocean_500m_file)  <span class="co">### ocean presence at 1 km^2</span></a>
@@ -1980,8 +2005,8 @@ div.tocify {
 <a class="sourceLine" id="cb6-43" title="43">      <span class="dt">FUN =</span> <span class="cf">function</span>(x) <span class="kw">crosstab_chunk2</span>(wdpa_yr_rast_500m, </a>
 <a class="sourceLine" id="cb6-44" title="44">                                        rast_cell_id_500m, </a>
 <a class="sourceLine" id="cb6-45" title="45">                                        <span class="dt">chunk =</span> x, n_chunks))</a>
-<a class="sourceLine" id="cb6-46" title="46">  <span class="co">#     user   system  elapsed </span></a>
-<a class="sourceLine" id="cb6-47" title="47">  <span class="co"># 1184.324  814.096  208.082 </span></a>
+<a class="sourceLine" id="cb6-46" title="46"><span class="co">#     user   system  elapsed </span></a>
+<a class="sourceLine" id="cb6-47" title="47"><span class="co"># 5401.628  619.072  562.306 - about 10 mins</span></a>
 <a class="sourceLine" id="cb6-48" title="48">  })</a>
 <a class="sourceLine" id="cb6-49" title="49">  </a>
 <a class="sourceLine" id="cb6-50" title="50">  wdpa_cells_df &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(wdpa_cells_list)</a>
@@ -2008,7 +2033,7 @@ div.tocify {
 <a class="sourceLine" id="cb6-71" title="71">}</a></code></pre></div>
 </div>
 <div id="view-wdpa-protected-area-proportions-as-raster" class="section level3">
-<h3><span class="header-section-number">3.2.3</span> View WDPA protected area proportions as raster</h3>
+<h3><span class="header-section-number">4.2.3</span> View WDPA protected area proportions as raster</h3>
 <p>Proportional protection can be multiplied by ocean area raster to get area of protection. Collect by category (to avoid duplicate “by” values):</p>
 <ul>
 <li>No Take (categories 1 &amp; 2 and specifically designated “no take”)
