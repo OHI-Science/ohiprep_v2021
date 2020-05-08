@@ -41,6 +41,8 @@ where:
 
 2020
 Using updated April 2020 data
+Made a slight change to the calc_area function by moving the `ungroup()` step one step earlier, to avoid error
+Got rid of ggplotly funtion, simply called the comparison graph
 
 
 2019
@@ -363,8 +365,8 @@ write.csv(offshore, "output/lsp_prot_area_offshore3nm_gf.csv", row.names=FALSE)
 
 Plot scores for 2020 vs 2019 assessment years
 
-* 2018 AY data goes through June 2018
 * 2019 AY data goes through March (downloaded on April 1) 2019
+* 2020 AY data goes through March (downloaded on April 1) 2020
 
 ``` {r plot_scores_vs_v2016, plotly = TRUE, eval = FALSE}
 
@@ -381,7 +383,7 @@ status_3nm_new <- read_csv(file.path(dir_goal, 'output', 'lsp_prot_area_offshore
   filter(year == max(year)) %>%
   select(rgn_id, pct_prot_3nm_new, status_3nm_new)
 
-status_3nm_old <- read_csv(file.path(dir_goal, '../v2018/output', 'lsp_prot_area_offshore3nm.csv')) %>%
+status_3nm_old <- read_csv(file.path(dir_goal, '../v2019/output', 'lsp_prot_area_offshore3nm.csv')) %>%
   full_join(read_csv(file.path(dir_goal, 'output', 'rgn_area_offshore3nm.csv')),
             by = 'rgn_id') %>%
   mutate(pct_prot_3nm_old = a_prot_3nm / area,
@@ -400,7 +402,7 @@ status_1km_new <- read_csv(file.path(dir_goal, 'output', 'lsp_prot_area_inland1k
   filter(year == max(year)) %>%
   select(rgn_id, pct_prot_1km_new, status_1km_new)
 
-status_1km_old <- read_csv(file.path(dir_goal, '../v2018/output', 'lsp_prot_area_inland1km.csv')) %>%
+status_1km_old <- read_csv(file.path(dir_goal, '../v2019/output', 'lsp_prot_area_inland1km.csv')) %>%
   full_join(read_csv(file.path(dir_goal, 'output', 'rgn_area_inland1km.csv')),
             by = 'rgn_id') %>%
   mutate(pct_prot_1km_old = a_prot_1km / area,
@@ -432,20 +434,21 @@ lsp_status_plot <- ggplot(lsp_new_old,
   geom_point(alpha = .6) +
   theme(legend.position = 'none') +
   geom_abline(slope = 1, intercept = 0, color = 'red') +
-  labs(x = 'LSP status v2018 (data through June 2018)',
-       y = 'LSP status v2019 (data through April 2019)',
-       title = 'Comparing LSP status: 2019 vs 2018') +
+  labs(x = 'LSP status v2019 (data through March 2020)',
+       y = 'LSP status v2020 (data through March 2020)',
+       title = 'Comparing LSP status: 2020 vs 2019') +
   facet_wrap( ~ rgn)
 
-ggplotly(lsp_status_plot)
+lsp_status_plot #got rid of ggplotly
 
-ggsave(file.path(dir_goal, 'Figs/plot_v2018_v2019.png'), 
+ggsave(file.path(dir_goal, 'Figs/plot_v2019_v2020.png'), 
        plot = lsp_status_plot, height = 4.5, width = 6)
 
 x <- lsp_new_old %>%
   mutate(diff = score_new - score_old) %>%
   filter(rgn == 'status' & abs(diff) > 0.05)
 
+write.csv(x, "output/major_changes_2020.csv" ) #added this so I could come back to it without rerunning everything
 ```
 
 
