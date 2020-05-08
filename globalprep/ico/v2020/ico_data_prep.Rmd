@@ -232,8 +232,22 @@ write_csv(ico_list, file.path(dir_github, 'int/ico_list_prepped.csv')) # 269 in 
 ```
 
 For each of these species, use the IUCN API to gather a list of countries in which it is present.
-
+ 
 ``` {r get_country_list, eval= F}
+
+ico_country_url <- 'http://apiv3.iucnredlist.org/api/v3/species/countries/id/%s?token=%s'
+
+ico_spp_countries <- mc_get_from_api(url = ico_country_url, param_vec = unique(ico_list$iucn_sid), api_key = api_key, delay = 0.5)
+# sometimes this line takes a while to run! Make sure you have the project open........
+# v2020 had trouble with this line running for 8+ hours and never finishing, I think the server might have been timing out but wasn't sure, used the work around below instead
+
+write_csv(ico_spp_countries, file.path(dir_github, 'int/ico_spp_countries.csv')) # save this as an intermediate data file since it takes so long to create the df
+
+ico_spp_countries <- read_csv(here("globalprep/ico/v2019/int/ico_spp_countries.csv"))
+
+################ v2020 workaround 
+
+## v2020 workaround - The following code is a work around that saves each species as a temp file in a new tmp folder then binds them together to form the full species list
 
 ico_list <- read_csv(file.path(dir_github, 'int/ico_list_prepped.csv'))
 
@@ -252,7 +266,7 @@ ico_country_url <- 'http://apiv3.iucnredlist.org/api/v3/species/countries/id/%s?
   return(invisible(NULL))
 }
 
-  ## for each species ID, get country list
+## for each species ID, get country list
 for(j in 1:n_chunks){
    #j = 2
 
@@ -261,7 +275,7 @@ for(j in 1:n_chunks){
                             n_chunks[j]))
     
      if(!file.exists(chunk_file)) {
-      cat_msg('Getting habitat info for species ', min(n_chunks[j]), ' row number ', j, ' out of ', 146)
+      cat_msg('Getting country info for species ', min(n_chunks[j]), ' row number ', j, ' out of ', 146)
       
       #spp_ids_chunk <- ico_list$iucn_sid[n_chunks[j]]
 ico_spp_countries_chunk <- mc_get_from_api(url = ico_country_url, param_vec = n_chunks[j], api_key = api_key, delay = 0.5)
@@ -287,23 +301,11 @@ ico_spp_countries_chunk <- mc_get_from_api(url = ico_country_url, param_vec = n_
   
 write_csv(spp_countries_df, file.path(dir_github, 'int/ico_spp_countries.csv')) # save this as an intermediate data file since it takes so long to create the df
   
-
-#### STOPPED HERE ORIGINAL IS BELOW ####
-
-#### ORIGINAL ####
-ico_country_url <- 'http://apiv3.iucnredlist.org/api/v3/species/countries/id/%s?token=%s'
-
-ico_spp_countries <- mc_get_from_api(url = ico_country_url, param_vec = unique(ico_list$iucn_sid), api_key = api_key, delay = 0.5)
-# sometimes this line takes a while to run! Make sure you have the project open........
-
-write_csv(ico_spp_countries, file.path(dir_github, 'int/ico_spp_countries.csv')) # save this as an intermediate data file since it takes so long to create the df
-
-ico_spp_countries <- read_csv(here("globalprep/ico/v2019/int/ico_spp_countries.csv"))
-
 ```
 
 Name to region function (in OHI core package) reports regions that don't have a match in OHI region list. Here we report certain reported regions at a higher spatial scale, based on the listed regions in the error message. 
 ```{r country_split, eval=FALSE}
+ico_spp_countries <- read_csv(file.path(dir_github, 'int/ico_spp_countries.csv'))
 
 # Report these regions at higher spatial resolution:
 country_split_1 <- data.frame(country = "Bonaire, Sint Eustatius and Saba", region = c('Bonaire', 'Saba', 'Sint Eustatius'))
@@ -333,13 +335,33 @@ ico_spp_rgn_raw <- name_2_rgn(df_in = ico_spp_countries,
                        fld_name='country',
                        flds_unique = 'iucn_sid')
 
-# No match for Isle of Man (not reported in OHI), Palestine (disputed), Saint Barthélemy (not reported in OHI) or Macedonia (landlocked)
+####### v2020 error checking:
+
+# v2020 - No match for Isle of Man (not reported in OHI), Palestine (disputed), Saint Barthélemy (not reported in OHI), Disputed Territory (not associated with a country and can't be mapped to an OHI region) Macedonia (landlocked), and the four country strings above that were split to higher spatial resolutions 
+
+
+# Check that the country_split_data captures all the data from the longer country strings that were removed 
+check_full <- ico_spp_countries %>% 
+  filter(country == "Bonaire, Sint Eustatius and Saba") #29 species
+check_split <- ico_spp_countries %>% 
+  filter(country == "Bonaire" | country == "Saba" | country == "Sint Eustatius") 
+#87 entries - makes sense each of the 29 species is listed three times, one for each country
 
 # Check error message to make sure the unmatched countries don't have an OHI region match, that there are no duplicates, and that the unmatched regions make sense (not disputed, landlocked, not reported). If there are duplicates or unmatched regions that are reported in OHI, need to go back to fix and rerun the code.
 
+# v2020 - 26 countries removed for not being proper rgn_type or mismatched region names, all countries are not reported in OHI and aren't found in the rgns_all list
+
+# v2020 - returned the "duplicates found" error 
+# check for duplicates by replicating the code at the end of the name_2_rgn function
+dups <- ico_spp_rgn_raw[, c("iucn_sid", "country")]
+i_dupes <- duplicated(dups, fromLast = FALSE) | duplicated(dups, 
+        fromLast = TRUE)
+sum(i_dupes) #returns 0 
+df_dups <- unique(ico_spp_rgn_raw[i_dupes, "country"]) #empty df - implies there are no duplicates, so I'm not sure why I was getting that error
+
+############
 
 summary(ico_spp_rgn_raw) # Make sure there are no NAs!
-
 write_csv(ico_spp_rgn_raw, file.path(dir_github, 'raw/ico_spp_rgn_raw.csv'))
 ```
 
@@ -358,10 +380,10 @@ ico_spp_rgn_prepped <- ico_spp_rgn_raw %>%
 ##  OR ico_rgn_id matches rgn_id (so locally iconic matches with location)
 ico_spp_rgn_prepped <- ico_spp_rgn_prepped %>%
   filter(ico_gl == TRUE | ico_rgn_id == rgn_id) %>% 
-  as.tibble()
+  as_tibble() 
 # dimensions should shrink after running this line
 # Adding as.tibble() simplified the structure, prevents ico_rgn_id from being coerced to logical structue
-
+# v2020- changed to as_tibble, as.tibble() is deprecated as of tibble 2.0.0
 
 write_csv(ico_spp_rgn_prepped, here('globalprep/ico/v2019/int/ico_spp_rgn_prepped.csv'))
 # This part of the code presented an issue where the ico_rgn_id column values being preserved in this csv, but these data were being lost where the csv is imported in the next code chunk. Tried converting the column to numeric before saving and updating the tidyverse, neither of which solved the problem.  . Read_csv is coercing ico_rgn_id column to logical instead of numeric/integer format, as it only looks at the first 1000 rows of data, all of which are NA for ico_rgn_id (where ico_gl = TRUE). Read.csv solves the problem, but the better solution was to hard code col_types into the read_csv function in the next code chunk.
@@ -403,6 +425,60 @@ ico_list <- read_csv(file.path(dir_github, 'int/ico_list_prepped.csv'))
 ## for each species ID, get past assessments
 ico_assess_raw <- mc_get_from_api(ico_past_assess_url, ico_list$iucn_sid, api_key)
 # this line also sometimes takes a while to run
+# v2020 - again had trouble running this line, adapted the above work around for this too 
+
+############### 
+# v2020 workaround
+
+  n_chunks <- ceiling(unique(ico_list$iucn_sid))
+  
+  cat_msg <- function(x, ...) {
+  if(is.null(knitr:::.knitEnv$input.dir)) {
+    ### not in knitr environment, so use cat()
+    cat(x, ..., '\n')
+  } else {
+    ### in knitr env, so use message()
+    message(x, ...)
+  }
+  return(invisible(NULL))
+}
+
+## for each species ID, get past assessments
+for(j in 1:n_chunks){
+   #j = 2
+
+    chunk_file <- file.path(dir_github, 'tmp', 
+                    sprintf('spp_past_assess_chunk_%s.csv', 
+                            n_chunks[j]))
+    
+     if(!file.exists(chunk_file)) {
+      cat_msg('Getting assessment info for species ', min(n_chunks[j]), ' row number ', j, ' out of ', 146)
+      
+    
+ico_spp_past_assess_chunk <- mc_get_from_api(url = ico_past_assess_url, param_vec = n_chunks[j],
+                                             api_key = api_key, delay = 0.5)
+      cat_msg('... found ', nrow(ico_spp_past_assess_chunk), ' past assessments for this species')
+      
+            write_csv(ico_spp_past_assess_chunk, chunk_file)
+     }else {
+      
+      cat_msg('Chunk file ', chunk_file, ' already exists; skipping these spp')
+      
+    }
+  }
+  
+  # Read in all the files and bind together to make the ico_assess_raw file
+  spp_past_assess_chunk_files <- list.files(file.path(dir_github, 'tmp'), 
+                                    pattern = 'spp_past_assess_chunk', 
+                                    full.names = TRUE)
+  
+  ico_assess_raw <- lapply(spp_past_assess_chunk_files, FUN = function(x) {
+    read.csv(x) %>%
+    mutate(code = as.character(code))}) %>%
+    bind_rows()
+  
+
+###############
 
 ico_assess_raw <- ico_assess_raw %>%
   rename(iucn_sid = name) %>%
@@ -412,7 +488,40 @@ ico_assess_raw <- ico_assess_raw %>%
               select(iucn_sid, sciname) %>%
               distinct(),
             by = 'iucn_sid')
-# 705 in v2018, 743 in v2019
+# 705 in v2018, 743 in v2019, 463 in v2020 
+  
+##### v2020 error check 
+# there's a difference of 280 past assessments which seems like a lot, I feel like past assessments should only be increasing unless for some reason they are no longer accessible on the website
+  
+# group by iucn_sid and compare the number of assessments for each species
+v2020_grouped <- ico_assess_raw %>% 
+  group_by(iucn_sid) %>% 
+  count() %>% 
+  rename(v2020 = "n")
+
+v2019_grouped <- read_csv(file = file.path(here(),"/globalprep/ico/v2019/raw/ico_assessments_raw.csv")) %>% 
+  group_by(iucn_sid) %>% 
+  count() %>% 
+  rename(v2019 = "n")
+
+compare_totals <- left_join(v2020_grouped, v2019_grouped, by="iucn_sid") %>% 
+  filter(v2019 != v2020) %>% 
+  mutate(diff = v2019 - v2020)
+# there are 29 species with a different number of past assessments between last year and this year
+# of these, 11 have one more observation in 2020 compared to 2019
+# but the rest have more past assessments in 2019 than today, by as much as 40 for some species (which adds up to the 280)
+# for example spp 12419 has five assessments in the 2020 data but 45 in the 2019 data maybe this has something to do with different years or numbers of assessment per year?
+v2019 <- read_csv(file = file.path(here(),"/globalprep/ico/v2019/raw/ico_assessments_raw.csv")) %>% 
+  filter(iucn_sid == 12419) %>% 
+  group_by(year) %>%
+  count()
+v2020 <- ico_assess_raw %>% 
+  filter(iucn_sid == 12419) %>% 
+  group_by(year) %>% 
+  count()
+# okay so the years of assessment are all the same (1996-2000-2004-2008-2015) but there were 9 assessments in every year for the 2019 data and only one assessment per year in the 2020 data, when I look at the tmp csv file it just shows one assessment for every year - might be a problem with the "duplicates" part of the workaround code 
+
+######
 
 write_csv(ico_assess_raw, file.path(dir_github, 'raw/ico_assessments_raw.csv'))
 
