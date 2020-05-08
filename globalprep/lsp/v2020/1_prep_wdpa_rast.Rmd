@@ -58,10 +58,10 @@ library(tidyverse)
 library(here)
 library(sf)
 
-source('http://ohi-science.org/ohiprep_v2019/workflow/R/common.R')
+source('http://ohi-science.org/ohiprep_v2020/workflow/R/common.R')
 
 goal     <- 'globalprep/lsp'
-scenario <- 'v2019'
+scenario <- 'v2020'
 dir_goal_anx   <- file.path(dir_M, 'git-annex', goal, scenario) 
 dir_goal  <- file.path(here('globalprep', goal, scenario))
 dir_data <- file.path(dir_M, 'git-annex/globalprep', '_raw_data',
@@ -307,6 +307,9 @@ wdpa_sf_19 <- st_read(dsn = file.path(dir_data, '../d2019', 'shps'), layer = 'WD
 
 plot(wdpa_sf[1])
 plot(wdpa_sf_19[1])
+
+#to click around and look at different values to check differences can use (kind of clunky)
+#click(wdpa_sf)
 
 ## Convert back to 'Spatial' object
 # wdpa_order <- as(variable, "Spatial")

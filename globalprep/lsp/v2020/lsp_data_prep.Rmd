@@ -39,6 +39,11 @@ where:
 
 # Updates from previous assessment
 
+2020
+Using updated April 2020 data
+
+
+2019
 Using updated April 2019 data. 
 Implementing here() for filepaths not in Mazu.
 Changed the code to calculate zonal statistics. No longer using the "mcapply()" function to calculate each lsp_crosstab(). Updated to calculate each zonal statistic df individually. 
@@ -46,17 +51,17 @@ Changed the code to calculate zonal statistics. No longer using the "mcapply()" 
 ***
 
 # Data Source
-**Reference**: IUCN and UNEP-WCMC (2019), The World Database on Protected Areas (WDPA) [On-line], April 2019. Cambridge, UK: UNEP-WCMC. Available at: www.protectedplanet.net.
+**Reference**: IUCN and UNEP-WCMC (2020), The World Database on Protected Areas (WDPA) [On-line], April 2020. Cambridge, UK: UNEP-WCMC. Available at: www.protectedplanet.net.
 
-**Downloaded**: April 1, 2019
+**Downloaded**: April 1, 2020
 
 **Description**:  Shapefile of World Database on Protected Areas
 
-**Time range**: 1819 - 2019; some protected areas do not have an associated "status year" and are reported as year 0.
+**Time range**: 1819 - 2020; some protected areas do not have an associated "status year" and are reported as year 0.
 
 **Format**:  Shapefile
 
-**File location**: `Mazu:git-annex/globalprep/_raw_data/wdpa_mpa/d2019/WDPA_Apr2019-shapefile/`
+**File location**: `Mazu:git-annex/globalprep/_raw_data/wdpa_mpa/d2020/WDPA_Apr2020-shapefile/`
 
 ***
 
@@ -83,9 +88,9 @@ library(here)
 source('http://ohi-science.org/ohiprep_v2019/workflow/R/common.R')
 
 goal     <- 'lsp'
-scenario <- 'v2019'
+scenario <- 'v2020'
 dir_anx       <- file.path(dir_M, 'git-annex/globalprep') 
-dir_goal      <- file.path(here('globalprep', goal, scenario))
+dir_goal      <- file.path(here('globalprep',goal, scenario)) #changed this 2020, took out global prep
 dir_goal_anx  <- file.path(dir_anx, goal, scenario)
 
 ## set up provenance tracking for this script:
@@ -102,7 +107,7 @@ The WDPA-MPA dataset comes as a shapefile or geodatabase in WGS84 coordinate ref
 
 * For OHI we have chosen to count only protected areas with defined legal protection, so we apply a filter on the STATUS attribute that selects only STATUS == "Designated". 
   * According to the WDPA Manual:  STATUS as "Designated" means:  "Is recognized or dedicated through legal means. Implies specific binding commitment to conservation in the long term. Applicable to government and non-government sources."
-  * Other values for STATUS include "Proposed", "Adopted", "Inscribed", or "Not Reported".
+  * Other values for STATUS include "Proposed", "Adopted", "Inscribed", or "Not Reported" and "Established".
     * "Adopted" and "Inscribed" are World Heritage or Barcelona Convention sites; while these may seem important, they are generally protected by other means (as overlapping "Designated" polygons) in addition to these values.
 * In 2015, the USA started including polygons that represent marine management plans, in addition to more strictly defined protected areas.  This info is contained in the "MANG_PLAN" field.
   * These programmatic management plans variously protect species, habitats, and (??) and can be MPA or non-MPA.
@@ -125,7 +130,7 @@ zonal_files <- c('zonal_3nm' =  file.path(dir_goal, 'int', 'zonal_stats_3nm.csv'
                  'zonal_1km' =  file.path(dir_goal, 'int', 'zonal_stats_1km.csv'),
                  'zonal_eez' =  file.path(dir_goal, 'int', 'zonal_stats_eez.csv'))
 
-rast_wdpa <- raster::raster(file.path(dir_goal_anx, 'rast', 'wdpa_2019_moll_500m.tif'))
+rast_wdpa <- raster::raster(file.path(dir_goal_anx, 'rast', 'wdpa_2020_moll_500m.tif'))
 
 
 
@@ -164,14 +169,14 @@ rgn_rast_list <- rgn_rast_list[!file.exists(zonal_files)]
   }
   
 ### Processing & saving zonal statistics for a single raster 
-x <- lsp_crosstab(rgn_rast_list[1], rast_values = rast_wdpa) #18 minutes to run #3nm
-y <- lsp_crosstab(rgn_rast_list[2], rast_values = rast_wdpa) #16 minutes to run #1km
-z <- lsp_crosstab(rgn_rast_list[3], rast_values = rast_wdpa) #35 minutes to run #eez
+x <- lsp_crosstab(rgn_rast_list[1], rast_values = rast_wdpa) #~20 minutes to run #3nm
+y <- lsp_crosstab(rgn_rast_list[2], rast_values = rast_wdpa) #19 minutes to run #1km
+z <- lsp_crosstab(rgn_rast_list[3], rast_values = rast_wdpa) #~1hr minutes to run #eez
 
 ## Save these files to the int folder
-#write_csv(x, zonal_files_to_run[1])
-#write_csv(y, zonal_files_to_run[2])
-#write_csv(z, zonal_files_to_run[3])
+write_csv(x, zonal_files_to_run[1])
+write_csv(y, zonal_files_to_run[2])
+write_csv(z, zonal_files_to_run[3])
 
 ```
 
@@ -216,6 +221,7 @@ stats_3nm <- read_csv(zonal_files['zonal_3nm'])
 stats_1km <- read_csv(zonal_files['zonal_1km'])
 stats_eez <- read_csv(zonal_files['zonal_eez'])
 
+rgn_eez <- region_data() ##added this
 max_year <- max(c(stats_1km$year, stats_3nm$year, stats_eez$year), na.rm = TRUE)
 
 ### Determine total cells per region (n_cells_tot) and then a cumulative
@@ -227,13 +233,13 @@ calc_areas <- function(stats_df) {
   area_df <- stats_df %>%
     group_by(rgn_id) %>%
     mutate(n_cells_tot = sum(n_cells),
-           a_tot_km2   = n_cells_tot / 4) %>%
-    filter(!is.na(year) & !is.na(rgn_id)) %>%
+           a_tot_km2   = n_cells_tot / 4) %>% 
+    filter(!is.na(year) & !is.na(rgn_id)) %>% 
     mutate(n_cells_cum = cumsum(n_cells),
-           a_prot_km2  = n_cells_cum / 4) %>%
-    complete(year = 2000:max_year) %>%
-    fill(-year, .direction = 'down') %>%
+            a_prot_km2  = n_cells_cum / 4) %>% 
+    complete(year = 2000:max_year) %>% 
     ungroup() %>%
+    fill(-year, .direction = 'down') %>% 
     select(-contains('cell')) %>%
     distinct() %>%
     left_join(rgns_eez, by = 'rgn_id') %>%
@@ -355,7 +361,7 @@ write.csv(offshore, "output/lsp_prot_area_offshore3nm_gf.csv", row.names=FALSE)
 
 # Data checking
 
-Plot scores for 2019 vs 2018 assessment years
+Plot scores for 2020 vs 2019 assessment years
 
 * 2018 AY data goes through June 2018
 * 2019 AY data goes through March (downloaded on April 1) 2019
