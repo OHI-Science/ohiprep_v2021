@@ -1,5 +1,5 @@
 ---
-title: 'OHI 2019 - Iconic species subgoal'
+title: 'OHI 2020 - Iconic species subgoal'
 author: "*Compiled on `r date()` by `r Sys.info()['user']`*"
 output: 
   html_document:
@@ -11,6 +11,8 @@ output:
       in_header: '../../../workflow/templates/ohi_hdr.html'
   pdf_document:
     toc: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -46,7 +48,7 @@ ICO trend is calculated in a similar manner, but weightings are assigned accordi
 # Updates from previous assessment
 
 Additional year of IUCN Red List data added. 
-In 2019, we stopped using the regions list to merge IUCN and iconic species region IDs and switched to the name_2_rgn() funciton in ohicore. However, this function reports regions that don't have a match in OHI region list, so we report certain reported regions at a higher spatial scale, based on the listed regions in the error message. 
+In 2019, we stopped using the regions list to merge IUCN and iconic species region IDs and switched to the name_2_rgn() function in ohicore. However, this function reports regions that don't have a match in OHI region list, so we report certain reported regions at a higher spatial scale, based on the listed regions in the error message. 
 
 
 ## Future improvements?
@@ -61,10 +63,10 @@ In 2019, we stopped using the regions list to merge IUCN and iconic species regi
 **Species native country information:**
 
 * __Reference__: 
-    * IUCN 2019. IUCN Red List of Threatened Species. Version 2019-2 <www.iucnredlist.org>
-        * __Accessed__: 15 May 2019 
+    * IUCN 2020. IUCN Red List of Threatened Species. Version 2020-1 <www.iucnredlist.org>
+        * __Accessed__: 6 May 2020 
 * __Native data resolution__: Country level (by country name)
-* __Time range__: 1965-2019 (discrete past assessments by species) 
+* __Time range__: 1965-2020 (discrete past assessments by species) 
 * __Format__:  JSON
 
 ***
@@ -91,9 +93,9 @@ library(ohicore)
 # Set up sourcing and storage 
 
 goal          <- 'globalprep/ico'
-scenario      <- 'v2019'
-previous_scen <- 'v2018'
-source('http://ohi-science.org/ohiprep_v2019/workflow/R/common.R')
+scenario      <- 'v2020'
+previous_scen <- 'v2019'
+source('http://ohi-science.org/ohiprep_v2020/workflow/R/common.R')
 
 # Changed these names to dir_server and dir_github from dir_anx and dir_goal, updated them in ico_fxn.R also
 dir_server      <- file.path(dir_M, 'git-annex', goal)
@@ -218,7 +220,7 @@ spp_ico <- spp_df_all %>%
 
 # Is everything we see in the iconic list in the IUCN list?
 spp_missing <- ico_list_raw %>% 
-  filter(!sciname %in% spp_ico$sciname) # no data here for v2019
+  filter(!sciname %in% spp_ico$sciname) # no data here for v2020
 
 ico_list <- ico_list_raw %>%
   left_join(spp_ico %>% 
@@ -226,14 +228,69 @@ ico_list <- ico_list_raw %>%
             by = 'sciname') %>%
   filter(!is.na(iucn_sid))
 
-write_csv(ico_list, file.path(dir_github, 'int/ico_list_prepped.csv')) # 270 in v2019
+write_csv(ico_list, file.path(dir_github, 'int/ico_list_prepped.csv')) # 269 in v2020
 ```
 
 For each of these species, use the IUCN API to gather a list of countries in which it is present.
 
 ``` {r get_country_list, eval= F}
 
-## for each species ID, get country list
+ico_list <- read_csv(file.path(dir_github, 'int/ico_list_prepped.csv'))
+
+ico_country_url <- 'http://apiv3.iucnredlist.org/api/v3/species/countries/id/%s?token=%s'
+
+  n_chunks <- ceiling(unique(ico_list$iucn_sid))
+  
+  cat_msg <- function(x, ...) {
+  if(is.null(knitr:::.knitEnv$input.dir)) {
+    ### not in knitr environment, so use cat()
+    cat(x, ..., '\n')
+  } else {
+    ### in knitr env, so use message()
+    message(x, ...)
+  }
+  return(invisible(NULL))
+}
+
+  ## for each species ID, get country list
+for(j in 1:n_chunks){
+   #j = 2
+
+    chunk_file <- file.path(dir_github, 'tmp', 
+                    sprintf('spp_countries_chunk_%s.csv', 
+                            n_chunks[j]))
+    
+     if(!file.exists(chunk_file)) {
+      cat_msg('Getting habitat info for species ', min(n_chunks[j]), ' row number ', j, ' out of ', 146)
+      
+      #spp_ids_chunk <- ico_list$iucn_sid[n_chunks[j]]
+ico_spp_countries_chunk <- mc_get_from_api(url = ico_country_url, param_vec = n_chunks[j], api_key = api_key, delay = 0.5)
+      cat_msg('... found ', nrow(ico_spp_countries_chunk), ' countries for these species')
+      
+            write_csv(ico_spp_countries_chunk, chunk_file)
+     }else {
+      
+      cat_msg('Chunk file ', chunk_file, ' already exists; skipping these spp')
+      
+    }
+  }
+  
+  
+  spp_countries_chunk_files <- list.files(file.path(dir_github, 'tmp'), 
+                                    pattern = 'spp_countries_chunk', 
+                                    full.names = TRUE)
+  
+  spp_countries_df <- lapply(spp_countries_chunk_files, FUN = function(x) {
+    read.csv(x) %>%
+      mutate(code = as.character(code))}) %>%
+    bind_rows()
+  
+write_csv(spp_countries_df, file.path(dir_github, 'int/ico_spp_countries.csv')) # save this as an intermediate data file since it takes so long to create the df
+  
+
+#### STOPPED HERE ORIGINAL IS BELOW ####
+
+#### ORIGINAL ####
 ico_country_url <- 'http://apiv3.iucnredlist.org/api/v3/species/countries/id/%s?token=%s'
 
 ico_spp_countries <- mc_get_from_api(url = ico_country_url, param_vec = unique(ico_list$iucn_sid), api_key = api_key, delay = 0.5)
