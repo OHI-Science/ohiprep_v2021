@@ -39,7 +39,7 @@ library(rgeos)
 source(here('workflow/R/common.R'))
 
 goal     <- 'spp'
-scenario <- 'v2019'
+scenario <- 'v2020'
 dir_goal <- here('globalprep', goal, scenario)
 
 ### goal specific folders and info
@@ -52,10 +52,10 @@ dir_spatial <- file.path(dir_goal, '_spatial')
 
 source(file.path(dir_setup, 'common_fxns.R'))
 
-dir_bli <- file.path(dir_M, 'git-annex/globalprep/_raw_data/birdlife_intl/d2019')
-dir_shp <- file.path(dir_M, 'git-annex/globalprep/_raw_data/iucn_spp/d2019')
+dir_bli <- file.path(dir_M, 'git-annex/globalprep/_raw_data/birdlife_intl/d2020')
+dir_shp <- file.path(dir_M, 'git-annex/globalprep/_raw_data/iucn_spp/d2020-1')
   ### in this folder are shapefiles at a taxonomic level, both from
-  ### IUCN spatial data download (version 2019-1)
+  ### IUCN spatial data download (version 2020-1)
 
 
 ```
@@ -113,14 +113,8 @@ if(reload == FALSE) {
 # maps_to_rasterize <- maps_to_rasterize %>%
 #   filter(str_detect(dbf_file, 'CHONDR'))
 # 
-# asdf <- paste0('iucn_sid_', maps_to_rasterize$iucn_sid, '.csv')
-# zxcv <- list.files(file.path(dir_o_anx, 'spp_rasters'), 
-#                    full.names = TRUE, 
-#                    pattern = paste0(asdf, collapse = '|'))
-# zzz <- file.mtime(zxcv)
-# tmp_df <- data.frame(f = zxcv,
-#                      t = zzz)
-# 2018-09-12 12:38:31 check to make sure they're all later than this!
+
+#### STOPPED HERE MAY 8 1PM ####
 
 if(nrow(maps_to_rasterize) == 0) { ### all maps accounted for as .csvs
   

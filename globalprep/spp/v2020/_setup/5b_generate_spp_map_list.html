@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Thu Aug 29 15:38:39 2019 by sgclawson" />
+<meta name="author" content="Compiled on Fri May 8 12:39:40 2020 by sgclawson" />
 
 
 <title>Generate IUCN spp map list</title>
@@ -1288,7 +1287,7 @@ window.initializeCodeFolding = function(show) {
 
     // create a collapsable div to wrap the code in
     var div = $('<div class="collapse r-code-collapse"></div>');
-    if (show)
+    if (show || $(this)[0].classList.contains('fold-show'))
       div.addClass('in');
     var id = 'rcode-643E0F36' + currentIndex++;
     div.attr('id', id);
@@ -1468,7 +1467,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -1530,6 +1528,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -1561,6 +1560,12 @@ summary {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -1640,7 +1645,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Generate IUCN spp map list</h1>
-<h4 class="author"><em>Compiled on Thu Aug 29 15:38:39 2019 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Fri May 8 12:39:40 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -1661,7 +1666,7 @@ div.tocify {
 <a class="sourceLine" id="cb2-13" title="13"><span class="kw">source</span>(<span class="kw">here</span>(<span class="st">&#39;workflow/R/common.R&#39;</span>))</a>
 <a class="sourceLine" id="cb2-14" title="14"></a>
 <a class="sourceLine" id="cb2-15" title="15">goal     &lt;-<span class="st"> &#39;spp&#39;</span></a>
-<a class="sourceLine" id="cb2-16" title="16">scenario &lt;-<span class="st"> &#39;v2019&#39;</span></a>
+<a class="sourceLine" id="cb2-16" title="16">scenario &lt;-<span class="st"> &#39;v2020&#39;</span></a>
 <a class="sourceLine" id="cb2-17" title="17">dir_goal &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&#39;globalprep&#39;</span>, goal, scenario)</a>
 <a class="sourceLine" id="cb2-18" title="18"></a>
 <a class="sourceLine" id="cb2-19" title="19"><span class="co">### goal specific folders and info</span></a>
@@ -1673,10 +1678,10 @@ div.tocify {
 <a class="sourceLine" id="cb2-25" title="25"></a>
 <a class="sourceLine" id="cb2-26" title="26"><span class="kw">source</span>(<span class="kw">file.path</span>(dir_setup, <span class="st">&#39;common_fxns.R&#39;</span>))</a>
 <a class="sourceLine" id="cb2-27" title="27"></a>
-<a class="sourceLine" id="cb2-28" title="28">dir_bli &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&#39;git-annex/globalprep/_raw_data/birdlife_intl/d2019&#39;</span>)</a>
-<a class="sourceLine" id="cb2-29" title="29">dir_shp &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&#39;git-annex/globalprep/_raw_data/iucn_spp/d2019&#39;</span>)</a>
+<a class="sourceLine" id="cb2-28" title="28">dir_bli &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&#39;git-annex/globalprep/_raw_data/birdlife_intl/d2020&#39;</span>)</a>
+<a class="sourceLine" id="cb2-29" title="29">dir_shp &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&#39;git-annex/globalprep/_raw_data/iucn_spp/d2020-1&#39;</span>)</a>
 <a class="sourceLine" id="cb2-30" title="30">  <span class="co">### in this folder are shapefiles at a taxonomic level, both from</span></a>
-<a class="sourceLine" id="cb2-31" title="31">  <span class="co">### IUCN spatial data download (version 2019-1)</span></a></code></pre></div>
+<a class="sourceLine" id="cb2-31" title="31">  <span class="co">### IUCN spatial data download (version 2020-1)</span></a></code></pre></div>
 <div id="summary" class="section level1">
 <h1><span class="header-section-number">1</span> Summary</h1>
 <ul>
@@ -1687,6 +1692,7 @@ div.tocify {
 <div id="data-source" class="section level1">
 <h1><span class="header-section-number">2</span> Data source</h1>
 <p>IUCN Red List: Spatial Data Download</p>
+<p>BirdLife International</p>
 </div>
 <div id="methods" class="section level1">
 <h1><span class="header-section-number">3</span> Methods</h1>
@@ -1698,7 +1704,7 @@ div.tocify {
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="co">### convert BirdLife Int&#39;l .gdb to shapefile, after filtering to species in the &quot;marine&quot; list.</span></a>
 <a class="sourceLine" id="cb3-2" title="2"><span class="co">### Here we also standardize the column names to match the IUCN column names.</span></a>
 <a class="sourceLine" id="cb3-3" title="3"></a>
-<a class="sourceLine" id="cb3-4" title="4">bli_marine_shp &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_bli, <span class="st">&#39;bli_marine_v2018.shp&#39;</span>)</a>
+<a class="sourceLine" id="cb3-4" title="4">bli_marine_shp &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_bli, <span class="st">&#39;bli_marine_v2019.shp&#39;</span>)</a>
 <a class="sourceLine" id="cb3-5" title="5"></a>
 <a class="sourceLine" id="cb3-6" title="6"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(bli_marine_shp)) {</a>
 <a class="sourceLine" id="cb3-7" title="7">  </a>
@@ -1723,23 +1729,25 @@ div.tocify {
 <a class="sourceLine" id="cb3-26" title="26">  </a>
 <a class="sourceLine" id="cb3-27" title="27">  <span class="kw">st_write</span>(bli_marine_sf, bli_marine_shp)</a>
 <a class="sourceLine" id="cb3-28" title="28">  </a>
-<a class="sourceLine" id="cb3-29" title="29">  <span class="co">### clean column names</span></a>
-<a class="sourceLine" id="cb3-30" title="30">  bli_marine_dbf &lt;-<span class="st"> </span><span class="kw">str_replace</span>(bli_marine_shp, <span class="st">&#39;</span><span class="ch">\\</span><span class="st">.shp$&#39;</span>, <span class="st">&#39;</span><span class="ch">\\</span><span class="st">.dbf&#39;</span>)</a>
-<a class="sourceLine" id="cb3-31" title="31">  </a>
-<a class="sourceLine" id="cb3-32" title="32">  att_table &lt;-<span class="st"> </span>foreign<span class="op">::</span><span class="kw">read.dbf</span>(bli_marine_dbf) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-33" title="33"><span class="st">    </span><span class="kw">setNames</span>(<span class="kw">names</span>(bli_marine_sf)[<span class="dv">1</span><span class="op">:</span>(<span class="kw">ncol</span>(bli_marine_sf) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)]) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-34" title="34"><span class="st">    </span><span class="kw">rename</span>(<span class="dt">iucn_sid =</span> sisid, <span class="dt">binomial =</span> sciname, <span class="dt">year =</span> date, <span class="dt">tax_comm =</span> tax_com) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-35" title="35"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">year =</span> <span class="kw">as.integer</span>(<span class="kw">as.character</span>(year)))</a>
-<a class="sourceLine" id="cb3-36" title="36">    <span class="co">#  [1] &quot;sisid&quot;        &quot;sciname&quot;      &quot;date&quot;         &quot;source&quot;       &quot;presence&quot;     &quot;origin&quot;       &quot;seasonal&quot;    </span></a>
-<a class="sourceLine" id="cb3-37" title="37">    <span class="co">#  [8] &quot;data_sens&quot;    &quot;sens_comm&quot;    &quot;compiler&quot;     &quot;tax_com&quot;      &quot;dist_com&quot;     &quot;reviewers&quot;    &quot;citation&quot;    </span></a>
-<a class="sourceLine" id="cb3-38" title="38">    <span class="co"># [15] &quot;version&quot;      &quot;shape_length&quot; &quot;shape_area&quot;  </span></a>
-<a class="sourceLine" id="cb3-39" title="39">  <span class="co">### from IUCN shapefiles:</span></a>
-<a class="sourceLine" id="cb3-40" title="40">    <span class="co">#  [1] &quot;id_no&quot;      &quot;binomial&quot;   &quot;presence&quot;   &quot;origin&quot;     &quot;seasonal&quot;   &quot;compiler&quot;   &quot;year&quot;       &quot;citation&quot;  </span></a>
-<a class="sourceLine" id="cb3-41" title="41">    <span class="co">#  [9] &quot;source&quot;     &quot;dist_comm&quot;  &quot;island&quot;     &quot;subspecies&quot; &quot;subpop&quot;     &quot;legend&quot;     &quot;tax_comm&quot;   &quot;kingdom&quot;   </span></a>
-<a class="sourceLine" id="cb3-42" title="42">    <span class="co"># [17] &quot;phylum&quot;     &quot;class&quot;      &quot;order_&quot;     &quot;family&quot;     &quot;genus&quot;      &quot;code&quot;       &quot;marine&quot;     &quot;terrestial&quot;</span></a>
-<a class="sourceLine" id="cb3-43" title="43">    <span class="co"># [25] &quot;freshwater&quot; &quot;shape_Leng&quot; &quot;shape_Area&quot;</span></a>
-<a class="sourceLine" id="cb3-44" title="44">  foreign<span class="op">::</span><span class="kw">write.dbf</span>(att_table, bli_marine_dbf)</a>
-<a class="sourceLine" id="cb3-45" title="45">}</a></code></pre></div>
+<a class="sourceLine" id="cb3-29" title="29">  bli_marine_dbf &lt;-<span class="st"> </span><span class="kw">str_replace</span>(bli_marine_shp, <span class="st">&#39;</span><span class="ch">\\</span><span class="st">.shp$&#39;</span>, <span class="st">&#39;</span><span class="ch">\\</span><span class="st">.dbf&#39;</span>)</a>
+<a class="sourceLine" id="cb3-30" title="30">  </a>
+<a class="sourceLine" id="cb3-31" title="31">  att_table &lt;-<span class="st"> </span>foreign<span class="op">::</span><span class="kw">read.dbf</span>(bli_marine_dbf) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb3-32" title="32"><span class="st">    </span><span class="kw">setNames</span>(<span class="kw">names</span>(bli_marine_sf)[<span class="dv">1</span><span class="op">:</span>(<span class="kw">ncol</span>(bli_marine_sf) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)]) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb3-33" title="33"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">rename</span>(<span class="dt">iucn_sid =</span> sisid, <span class="dt">binomial =</span> sciname, <span class="dt">year =</span> date, <span class="dt">tax_comm =</span> tax_com) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb3-34" title="34"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">year =</span> <span class="kw">as.integer</span>(<span class="kw">as.character</span>(year)))</a>
+<a class="sourceLine" id="cb3-35" title="35">  </a>
+<a class="sourceLine" id="cb3-36" title="36"><span class="co">#   [1] &quot;iucn_sid&quot;     &quot;binomial&quot;     &quot;year&quot;         &quot;source&quot;       &quot;presence&quot;     &quot;origin&quot;       &quot;seasonal&quot;    </span></a>
+<a class="sourceLine" id="cb3-37" title="37"><span class="co">#  [8] &quot;data_sens&quot;    &quot;sens_comm&quot;    &quot;compiler&quot;     &quot;tax_comm&quot;     &quot;dist_com&quot;     &quot;reviewers&quot;    &quot;citation&quot;    </span></a>
+<a class="sourceLine" id="cb3-38" title="38"><span class="co"># [15] &quot;version&quot;      &quot;shape_length&quot; &quot;shape_area&quot;</span></a>
+<a class="sourceLine" id="cb3-39" title="39">  </a>
+<a class="sourceLine" id="cb3-40" title="40"><span class="co">#    [1] &quot;iucn_sid&quot;   &quot;binomial&quot;   &quot;year&quot;       &quot;source&quot;     &quot;presence&quot;   &quot;origin&quot;     &quot;seasonal&quot;   &quot;data_sens&quot; </span></a>
+<a class="sourceLine" id="cb3-41" title="41"><span class="co">#  [9] &quot;sens_comm&quot;  &quot;compiler&quot;   &quot;tax_comm&quot;   &quot;dist_com&quot;   &quot;reviewers&quot;  &quot;citation&quot;   &quot;version&quot;    &quot;shape_leng&quot;</span></a>
+<a class="sourceLine" id="cb3-42" title="42"><span class="co"># [17] &quot;shape_area&quot;</span></a>
+<a class="sourceLine" id="cb3-43" title="43">  </a>
+<a class="sourceLine" id="cb3-44" title="44"></a>
+<a class="sourceLine" id="cb3-45" title="45">  foreign<span class="op">::</span><span class="kw">write.dbf</span>(att_table, bli_marine_dbf)</a>
+<a class="sourceLine" id="cb3-46" title="46">  <span class="co">#for some reason it is writing the column &quot;shape_length&quot; as &quot;shape_leng&quot;.</span></a>
+<a class="sourceLine" id="cb3-47" title="47">}</a></code></pre></div>
 <p>Note that there appear to be no subpopulation polygons within the BirdLife International map set; there is no “subpop” column in that attribute table. It appears that the individual files may not have “subpop” column either.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">iucn_dbfs &lt;-<span class="st"> </span><span class="kw">list.files</span>(dir_shp, <span class="dt">pattern =</span> <span class="st">&#39;</span><span class="ch">\\</span><span class="st">.dbf$&#39;</span>, <span class="dt">full.names =</span> <span class="ot">TRUE</span>)</a>
 <a class="sourceLine" id="cb4-2" title="2">bli_dbfs  &lt;-<span class="st"> </span><span class="kw">list.files</span>(dir_bli, <span class="dt">pattern =</span> <span class="st">&#39;</span><span class="ch">\\</span><span class="st">.dbf$&#39;</span>, <span class="dt">full.names =</span> <span class="ot">TRUE</span>)</a>
@@ -1850,16 +1858,11 @@ div.tocify {
 <a class="sourceLine" id="cb4-107" title="107"><span class="co">###                                    loilo-Guimaras Subpopulation  </span></a>
 <a class="sourceLine" id="cb4-108" title="108"><span class="co">### * Doesn&#39;t look like there is a shape for this subpop... Sorry dude!</span></a>
 <a class="sourceLine" id="cb4-109" title="109"> shp_subpops[<span class="op">!</span>shp_subpops<span class="op">$</span>shp_subpop <span class="op">%in%</span><span class="st"> </span>subpops_match<span class="op">$</span>shp_subpop, ]</a>
-<a class="sourceLine" id="cb4-110" title="110"><span class="co">### Shapefile subpop, not matched: 16285718 Chelonia mydas Hawaiian subpopulation</span></a>
-<a class="sourceLine" id="cb4-111" title="111"><span class="co">### * OK: the shapefile ID matches the API ID - will match automatically</span></a>
-<a class="sourceLine" id="cb4-112" title="112"><span class="co">### Dermochelys coriacea Southeast Atlantic is 6494</span></a>
-<a class="sourceLine" id="cb4-113" title="113"><span class="co">### * Not in API subpops; Data deficient; ok to drop it</span></a>
-<a class="sourceLine" id="cb4-114" title="114"><span class="co">### Orcaella brevirostris Chilika Lake, Mekong River, Songkhla Lake</span></a>
-<a class="sourceLine" id="cb4-115" title="115"><span class="co">### * In shapefile, but not showing up in assessments</span></a>
-<a class="sourceLine" id="cb4-116" title="116"> </a>
-<a class="sourceLine" id="cb4-117" title="117"><span class="kw">write_csv</span>(subpops_match, </a>
-<a class="sourceLine" id="cb4-118" title="118">          <span class="kw">file.path</span>(dir_setup, <span class="kw">sprintf</span>(<span class="st">&#39;int/subpops_match_api_to_shp_%s.csv&#39;</span>, </a>
-<a class="sourceLine" id="cb4-119" title="119">                                     api_version)))</a></code></pre></div>
+<a class="sourceLine" id="cb4-110" title="110"><span class="co"># all matched</span></a>
+<a class="sourceLine" id="cb4-111" title="111"> </a>
+<a class="sourceLine" id="cb4-112" title="112"><span class="kw">write_csv</span>(subpops_match, </a>
+<a class="sourceLine" id="cb4-113" title="113">          <span class="kw">file.path</span>(dir_setup, <span class="kw">sprintf</span>(<span class="st">&#39;int/subpops_match_api_to_shp_%s.csv&#39;</span>, </a>
+<a class="sourceLine" id="cb4-114" title="114">                                     api_version)))</a></code></pre></div>
 </div>
 <div id="get-info-on-comprehensive-assessments" class="section level3">
 <h3><span class="header-section-number">3.1.2</span> get info on comprehensive assessments</h3>
@@ -1918,7 +1921,7 @@ div.tocify {
 <a class="sourceLine" id="cb6-31" title="31"></a>
 <a class="sourceLine" id="cb6-32" title="32">map_info_sans_dupes &lt;-<span class="st"> </span>map_info_raw <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb6-33" title="33"><span class="st">  </span><span class="kw">group_by</span>(shp_iucn_sid) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb6-34" title="34"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>(<span class="kw">str_detect</span>(dbf_file, <span class="st">&#39;MARINEFISH|REPTILE|CORALS_PART_2_1|MANGROVES&#39;</span>) <span class="op">&amp;</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb6-34" title="34"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>(<span class="kw">str_detect</span>(dbf_file, <span class="st">&#39;MARINEFISH|REPTILE|REEF_FORMING_CORALS_PART2|REEF_FORMING_CORALS_PART1|MANGROVES&#39;</span>) <span class="op">&amp;</span><span class="st"> </span></a>
 <a class="sourceLine" id="cb6-35" title="35"><span class="st">             </span><span class="kw">length</span>(<span class="kw">unique</span>(dbf_file)) <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>)) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb6-36" title="36"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>(shp_iucn_sid <span class="op">==</span><span class="st"> </span><span class="dv">196026</span> <span class="op">&amp;</span><span class="st"> </span><span class="kw">str_detect</span>(dbf_file, <span class="st">&#39;SEASNAKE&#39;</span>))) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb6-37" title="37"><span class="st">    </span><span class="co">### in REPTILES, SEASNAKES, and HAGFISH - ditch any dupes</span></a>
@@ -1983,11 +1986,11 @@ div.tocify {
 <a class="sourceLine" id="cb7-4" title="4"><span class="st">  </span><span class="kw">distinct</span>()</a>
 <a class="sourceLine" id="cb7-5" title="5"></a>
 <a class="sourceLine" id="cb7-6" title="6">taxa_info &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(dir_goal_anx, <span class="st">&#39;iucn&#39;</span>, </a>
-<a class="sourceLine" id="cb7-7" title="7">                                <span class="st">&#39;spp_info_from_api_2019-1.csv&#39;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb7-7" title="7">                                <span class="st">&#39;spp_info_from_api_2020-1.csv&#39;</span>)) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb7-8" title="8"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(iucn_sid, kingdom<span class="op">:</span>family)</a>
 <a class="sourceLine" id="cb7-9" title="9"></a>
 <a class="sourceLine" id="cb7-10" title="10">cat_info &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(dir_data, </a>
-<a class="sourceLine" id="cb7-11" title="11">                               <span class="st">&#39;iucn_risk_current_2019-1.csv&#39;</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb7-11" title="11">                               <span class="st">&#39;iucn_risk_current_2020-1.csv&#39;</span>)) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb7-12" title="12"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(iucn_sid, cat_score) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb7-13" title="13"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(cat_score))</a>
 <a class="sourceLine" id="cb7-14" title="14"></a>
@@ -2036,10 +2039,21 @@ div.tocify {
 <a class="sourceLine" id="cb7-57" title="57"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">family =</span> <span class="kw">ifelse</span>(family <span class="op">==</span><span class="st"> &#39;NA&#39;</span>, <span class="ot">NA</span>, family),</a>
 <a class="sourceLine" id="cb7-58" title="58">         <span class="dt">subpops =</span> <span class="kw">ifelse</span>(subpops <span class="op">==</span><span class="st"> </span><span class="dv">0</span>, <span class="ot">NA</span>, subpops))</a>
 <a class="sourceLine" id="cb7-59" title="59"></a>
-<a class="sourceLine" id="cb7-60" title="60"><span class="kw">write_csv</span>(all_sum, <span class="kw">file.path</span>(dir_goal, <span class="st">&#39;_output&#39;</span>, </a>
-<a class="sourceLine" id="cb7-61" title="61">                             <span class="st">&#39;spp_included_summary.csv&#39;</span>))</a>
-<a class="sourceLine" id="cb7-62" title="62"><span class="kw">write_csv</span>(all_in_the_fam, <span class="kw">file.path</span>(dir_goal, <span class="st">&#39;_output&#39;</span>, </a>
-<a class="sourceLine" id="cb7-63" title="63">                                    <span class="st">&#39;spp_included_by_family.csv&#39;</span>))</a></code></pre></div>
+<a class="sourceLine" id="cb7-60" title="60"><span class="co">## Check against last year to see if you have all of the same species. </span></a>
+<a class="sourceLine" id="cb7-61" title="61"><span class="co">## 2020: We do. Some of the files have been renamed to different things. Ex: Corals (2019) --&gt; Reef_forming_corals (2020); Instead of downloading individual fish files, we just downloaded &quot;marine fish&quot;... etc.</span></a>
+<a class="sourceLine" id="cb7-62" title="62"></a>
+<a class="sourceLine" id="cb7-63" title="63">old_sum &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(dir_goal, <span class="st">&#39;_output&#39;</span>, </a>
+<a class="sourceLine" id="cb7-64" title="64">                             <span class="st">&#39;spp_included_summary.csv&#39;</span>))</a>
+<a class="sourceLine" id="cb7-65" title="65"></a>
+<a class="sourceLine" id="cb7-66" title="66"><span class="kw">setdiff</span>(old_sum<span class="op">$</span>spp_gp, all_sum<span class="op">$</span>spp_gp)</a>
+<a class="sourceLine" id="cb7-67" title="67"></a>
+<a class="sourceLine" id="cb7-68" title="68"><span class="co">## end check</span></a>
+<a class="sourceLine" id="cb7-69" title="69"></a>
+<a class="sourceLine" id="cb7-70" title="70"><span class="co">## write to github</span></a>
+<a class="sourceLine" id="cb7-71" title="71"><span class="kw">write_csv</span>(all_sum, <span class="kw">file.path</span>(dir_goal, <span class="st">&#39;_output&#39;</span>, </a>
+<a class="sourceLine" id="cb7-72" title="72">                             <span class="st">&#39;spp_included_summary.csv&#39;</span>))</a>
+<a class="sourceLine" id="cb7-73" title="73"><span class="kw">write_csv</span>(all_in_the_fam, <span class="kw">file.path</span>(dir_goal, <span class="st">&#39;_output&#39;</span>, </a>
+<a class="sourceLine" id="cb7-74" title="74">                                    <span class="st">&#39;spp_included_by_family.csv&#39;</span>))</a></code></pre></div>
 </div>
 </div>
 </div>

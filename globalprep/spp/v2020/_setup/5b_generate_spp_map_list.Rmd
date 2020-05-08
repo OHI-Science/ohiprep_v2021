@@ -39,7 +39,7 @@ library(rgeos)
 source(here('workflow/R/common.R'))
 
 goal     <- 'spp'
-scenario <- 'v2019'
+scenario <- 'v2020'
 dir_goal <- here('globalprep', goal, scenario)
 
 ### goal specific folders and info
@@ -107,22 +107,24 @@ if(!file.exists(bli_marine_shp)) {
   
   st_write(bli_marine_sf, bli_marine_shp)
   
-  ### clean column names
   bli_marine_dbf <- str_replace(bli_marine_shp, '\\.shp$', '\\.dbf')
   
   att_table <- foreign::read.dbf(bli_marine_dbf) %>%
     setNames(names(bli_marine_sf)[1:(ncol(bli_marine_sf) - 1)]) %>%
-    rename(iucn_sid = sisid, binomial = sciname, year = date, tax_comm = tax_com) %>%
-    mutate(year = as.integer(as.character(year)))
-    #  [1] "sisid"        "sciname"      "date"         "source"       "presence"     "origin"       "seasonal"    
-    #  [8] "data_sens"    "sens_comm"    "compiler"     "tax_com"      "dist_com"     "reviewers"    "citation"    
-    # [15] "version"      "shape_length" "shape_area"  
-  ### from IUCN shapefiles:
-    #  [1] "id_no"      "binomial"   "presence"   "origin"     "seasonal"   "compiler"   "year"       "citation"  
-    #  [9] "source"     "dist_comm"  "island"     "subspecies" "subpop"     "legend"     "tax_comm"   "kingdom"   
-    # [17] "phylum"     "class"      "order_"     "family"     "genus"      "code"       "marine"     "terrestial"
-    # [25] "freshwater" "shape_Leng" "shape_Area"
+    dplyr::rename(iucn_sid = sisid, binomial = sciname, year = date, tax_comm = tax_com) %>%
+    dplyr::mutate(year = as.integer(as.character(year)))
+  
+#   [1] "iucn_sid"     "binomial"     "year"         "source"       "presence"     "origin"       "seasonal"    
+#  [8] "data_sens"    "sens_comm"    "compiler"     "tax_comm"     "dist_com"     "reviewers"    "citation"    
+# [15] "version"      "shape_length" "shape_area"
+  
+#    [1] "iucn_sid"   "binomial"   "year"       "source"     "presence"   "origin"     "seasonal"   "data_sens" 
+#  [9] "sens_comm"  "compiler"   "tax_comm"   "dist_com"   "reviewers"  "citation"   "version"    "shape_leng"
+# [17] "shape_area"
+  
+
   foreign::write.dbf(att_table, bli_marine_dbf)
+  #for some reason it is writing the column "shape_length" as "shape_leng".
 }
 
 ```
@@ -239,12 +241,7 @@ subpops_match <- subpops_match_raw %>%
 ###                                    loilo-Guimaras Subpopulation  
 ### * Doesn't look like there is a shape for this subpop... Sorry dude!
  shp_subpops[!shp_subpops$shp_subpop %in% subpops_match$shp_subpop, ]
-### Shapefile subpop, not matched: 16285718 Chelonia mydas Hawaiian subpopulation
-### * OK: the shapefile ID matches the API ID - will match automatically
-### Dermochelys coriacea Southeast Atlantic is 6494
-### * Not in API subpops; Data deficient; ok to drop it
-### Orcaella brevirostris Chilika Lake, Mekong River, Songkhla Lake
-### * In shapefile, but not showing up in assessments
+# all matched
  
 write_csv(subpops_match, 
           file.path(dir_setup, sprintf('int/subpops_match_api_to_shp_%s.csv', 
@@ -316,7 +313,7 @@ map_info_raw <- lapply(map_files, get_dbf) %>%
 
 map_info_sans_dupes <- map_info_raw %>%
   group_by(shp_iucn_sid) %>%
-  filter(!(str_detect(dbf_file, 'MARINEFISH|REPTILE|CORALS_PART_2_1|MANGROVES') & 
+  filter(!(str_detect(dbf_file, 'MARINEFISH|REPTILE|REEF_FORMING_CORALS_PART2|REEF_FORMING_CORALS_PART1|MANGROVES') & 
              length(unique(dbf_file)) > 1)) %>%
   filter(!(shp_iucn_sid == 196026 & str_detect(dbf_file, 'SEASNAKE'))) %>%
     ### in REPTILES, SEASNAKES, and HAGFISH - ditch any dupes
@@ -386,11 +383,11 @@ marine_map_info <- read_csv(file.path(dir_data,
   distinct()
 
 taxa_info <- read_csv(file.path(dir_goal_anx, 'iucn', 
-                                'spp_info_from_api_2019-1.csv')) %>%
+                                'spp_info_from_api_2020-1.csv')) %>%
   dplyr::select(iucn_sid, kingdom:family)
 
 cat_info <- read_csv(file.path(dir_data, 
-                               'iucn_risk_current_2019-1.csv')) %>%
+                               'iucn_risk_current_2020-1.csv')) %>%
   dplyr::select(iucn_sid, cat_score) %>%
   filter(!is.na(cat_score))
 
@@ -439,6 +436,17 @@ all_sum <- bind_rows(fish_sum, nonfish_sum, basic_sum) %>%
   mutate(family = ifelse(family == 'NA', NA, family),
          subpops = ifelse(subpops == 0, NA, subpops))
 
+## Check against last year to see if you have all of the same species. 
+## 2020: We do. Some of the files have been renamed to different things. Ex: Corals (2019) --> Reef_forming_corals (2020); Instead of downloading individual fish files, we just downloaded "marine fish"... etc.
+
+old_sum <- read_csv(file.path(dir_goal, '_output', 
+                             'spp_included_summary.csv'))
+
+setdiff(old_sum$spp_gp, all_sum$spp_gp)
+
+## end check
+
+## write to github
 write_csv(all_sum, file.path(dir_goal, '_output', 
                              'spp_included_summary.csv'))
 write_csv(all_in_the_fam, file.path(dir_goal, '_output', 
