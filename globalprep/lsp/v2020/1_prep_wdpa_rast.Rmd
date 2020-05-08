@@ -216,10 +216,10 @@ writeRasterBlocks <- function(rast, filename) {
 
 library(sf)
 library(fasterize) ### devtools::install_github('ecohealthalliance/fasterize')
-rast_wdpa_file   <- file.path(dir_goal_anx, 'rast', 'wdpa_2019_moll_500m.tif')
+rast_wdpa_file   <- file.path(dir_goal_anx, 'rast', 'wdpa_2020_moll_500m.tif')
 
 if(!file.exists(rast_wdpa_file)) {
-shp_xformed_file <- file.path(dir_data, 'shps', 'WDPA_Apr2019_shp_xformed')
+shp_xformed_file <- file.path(dir_data, 'shps', 'WDPA_Apr2020_shp_xformed')
   
   ptm <- proc.time()
   wdpa_poly <- sf::st_read(dsn = dirname(shp_xformed_file),
@@ -263,11 +263,21 @@ shp_xformed_file <- file.path(dir_data, 'shps', 'WDPA_Apr2019_shp_xformed')
 }
 
 check <- raster::raster(rast_wdpa_file)
+
+#From 2020;
+# Reading layer `WDPA_Apr2020_shp_xformed' from data source `/home/shares/ohi/git-annex/globalprep/_raw_data/wdpa_mpa/d2020/shps' using driver `ESRI Shapefile' -->
+# Simple feature collection with 222501 features and 18 fields
+# geometry type:  MULTIPOLYGON
+# dimension:      XY
+# bbox:           xmin: -17784490 ymin: -8846134 xmax: 17827600 ymax: 8756123
+# CRS:            unknown
+# elapsed:  55.604fasterize elapsed:  27.485
+
 ```
 
 ## Data Checking
 
-Compare shapfile 2018 v 2019.
+Compare shapfile 2019 v 2020.
 
 ```{r}
 
@@ -292,11 +302,11 @@ library(raster)
 
 
 ## Read in as sf
-wdpa_sf <- st_read(dsn = file.path(dir_data, 'shps'), layer = "WDPA_Apr2019_shp_ordered")
-wdpa_sf_18 <- st_read(dsn = file.path(dir_data, '../d2018', 'shps'), layer = 'WDPA_June2018_shp_ordered')
+wdpa_sf <- st_read(dsn = file.path(dir_data, 'shps'), layer = "WDPA_Apr2020_shp_ordered")
+wdpa_sf_19 <- st_read(dsn = file.path(dir_data, '../d2019', 'shps'), layer = 'WDPA_Apr2019_shp_ordered')
 
 plot(wdpa_sf[1])
-plot(wdpa_sf_18[1])
+plot(wdpa_sf_19[1])
 
 ## Convert back to 'Spatial' object
 # wdpa_order <- as(variable, "Spatial")
