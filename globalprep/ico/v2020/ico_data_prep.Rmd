@@ -519,7 +519,7 @@ v2020 <- ico_assess_raw %>%
   filter(iucn_sid == 12419) %>% 
   group_by(year) %>% 
   count()
-# okay so the years of assessment are all the same (1996-2000-2004-2008-2015) but there were 9 assessments in every year for the 2019 data and only one assessment per year in the 2020 data, when I look at the tmp csv file it just shows one assessment for every year - might be a problem with the "duplicates" part of the workaround code 
+# okay so the years of assessment are all the same (1996-2000-2004-2008-2015) but there were 9 assessments in every year for the 2019 data and only one assessment per year in the 2020 data, when I look at the tmp csv file it just shows one assessment for every year. After looking at specific species on the IUCN it doesn't look like there should be more than one assessment for any given year. Plus in the 'clean_up_category_list' chunk the code uses distinct() which should reduce the number. Will compare the 2020 to 2019 after this step and make sure it makes sense.  
 
 ######
 
@@ -583,6 +583,10 @@ ico_assess <- ico_assess %>%
   distinct() %>%
   arrange(iucn_sid, year)
 
+# v2020 341 species in the list - compare to v2019 to double check 
+v2019_assess_clean <- read_csv(file = file.path(here(),"/globalprep/ico/v2019/int/ico_assess_clean.csv")) 
+# v2019 had 334 species, makes sense that v2020 is more since there are some newer years of assessments in the updated data
+
 write_csv(ico_assess, file.path(dir_github, 'int/ico_assess_clean.csv'))
 
 ```
@@ -607,6 +611,7 @@ ico_assess_full <- ico_assess %>%
   ungroup()
 
 # does it make sense that there are 4818 NAs here for cat_score and eval_yr? 
+# v2020 4907 NAs in cat_score and eval_yr: ex 2468 has earliest assessment in 1996 so all assessments after this should be filled using the 1996 data, but before 1996 would be NAs 
 
 ico_spp_cat <- ico_list %>% 
   rename(cat_2016 = cat) %>%
@@ -635,6 +640,8 @@ ico_spp_cat <- ico_spp_cat %>%
   fill(cat, cat_score, cat_txt, .direction = 'up') %>%
   ungroup() %>%
   distinct()
+# v2020 still has 715-10118-1540 NAs for cat_score, eval_yr, cat_2016_score; compare against v2019
+v2019_cat <- read_csv(file = file.path(here(),"/globalprep/ico/v2019/int/ico_spp_cat.csv")) #has 770-10084-1650 NAs
   
 write_csv(ico_spp_cat, file.path(dir_github, 'int/ico_spp_cat.csv'))
 
@@ -664,6 +671,7 @@ ico_spp_rgn_cat <- ico_spp_rgn_cat %>%
          cat_score = ifelse(cat == 'EX', 1, cat_score)) %>%
   filter(ico_gl | ico_rgn_id == rgn_id) %>% # keep (all globally iconic) and (regionally iconic in region only)
   distinct()
+
 
 write_csv(ico_spp_rgn_cat, file.path(dir_github, 'int/ico_spp_rgn_cat.csv'))
 # csv retaining data in ico_rgn_id column, but not when it is re-imported
@@ -777,7 +785,7 @@ status_ts_plot <- ggplot(ico_sum %>%
        y = 'ICO status',
        title = 'ICO status over time',
        color = 'Region')
-ggplotly(status_ts_plot)
+plotly::ggplotly(status_ts_plot)
 
 trend_ts_plot <- ggplot(ico_sum %>%
                            filter(!is.na(rgn_id) &!is.na(ico_trend)),
@@ -787,34 +795,34 @@ trend_ts_plot <- ggplot(ico_sum %>%
        y = 'ICO trend',
        title = 'ICO trend over time',
        color = 'Region')
-ggplotly(trend_ts_plot)
+plotly::ggplotly(trend_ts_plot)
 
 ```
 
 ***
 
-## Compare OHI 2019 vs OHI 2018 assessment results
+## Compare OHI 2020 vs OHI 2019 assessment results
 
-Plot the estimated status and trends for 2016 from assessments v2017, v2018, and v2019.
+Plot the estimated status and trends for 2016 from assessments v2019 and v2020.
 
 
-``` {r spp_plot_scores_vs_2015, fig.height = 4, fig.width = 6, fig.align = 'center', eval=FALSE}
+``` {r spp_plot_scores_vs_2016, fig.height = 4, fig.width = 6, fig.align = 'center', eval=FALSE}
 
 ico_sum <- read_csv(file.path(dir_github, 'summary/ico_summary.csv'))
 
 status_trend <- ico_sum %>% # status and trend in this year's assessment
-  filter(year == max(year)-1) %>%  # max year of ico_sum is 2019; want to compare the most recent shared year (2018)
+  filter(year == max(year)) %>%  # max year of ico_sum is 2019; want to compare the most recent shared year (also 2019 in v2019)
   select(rgn_id, ico_status, ico_trend, n_spp) %>% 
   distinct() # because removing iucn_sid, cat, cat_score, and species name, results in duplicates
   
 ico_compare <- read_csv(here('globalprep/ico',previous_scen,'/summary/ico_summary.csv')) %>% 
-  filter(year == max(year)) %>% # 2018 data is max of last year's data
+  filter(year == max(year)) %>% # 2019 data is max of last year's data
   select(rgn_id, rgn_name, ico_status, ico_trend, n_spp) %>% 
   distinct() %>% 
   rename(previous_status = ico_status, previous_trend = ico_trend, previous_nspp = n_spp) %>% 
   left_join(status_trend, by = 'rgn_id') %>% 
   mutate(d_nspp = as.factor(n_spp - previous_nspp))
-# one region has NAs 
+# four regions have NAs 
 
 compare_status_plot <- ggplot(ico_compare) + 
   geom_point(aes(previous_status, ico_status, color = d_nspp, label = rgn_id), alpha = 0.6) + 
@@ -822,7 +830,7 @@ compare_status_plot <- ggplot(ico_compare) +
   labs(x = sprintf('ICO status %s', previous_scen),
        y = sprintf('ICO status %s', scenario),
        title = 'ICO Status Comparison')
-ggplotly(compare_status_plot)
+plotly::ggplotly(compare_status_plot)
 
 trend_compare_plot <- ggplot(ico_compare) +
   geom_point(aes(previous_trend, ico_trend, color = d_nspp, label = rgn_id), alpha = .6) +
@@ -830,13 +838,14 @@ trend_compare_plot <- ggplot(ico_compare) +
   labs(x = sprintf('ICO trend %s', previous_scen),
        y = sprintf('ICO trend %s', scenario),
        title = 'ICO Trend Comparison')
-ggplotly(trend_compare_plot)
+plotly::ggplotly(trend_compare_plot)
 
 ```
 
 ***
 
-## Data forensics - why are outliers occurring?
+## Data forensics - why are outliers occurring? 
+v2019
 *No need to run this section of the code; for data exploration purposes only*.
 
 Region ID | Region Name | Status | Prev Status | d_nspp | Insights
@@ -1113,4 +1122,36 @@ hmd <- rbind(hmd1, hmd2)
 
 ```
 
+## v2020 Outlier Check
+*As with the above code, no need to run this, I just want to investigate some of the changes from the plot*   
+
+```{r v2020-outliers}
+# Read in ico_spp_countries from v2019
+ico_spp_v2019 <- read.csv(here('globalprep/ico/v2019/int/ico_spp_rgn_prepped.csv')) %>%
+  mutate(year = 2019)
+
+# Read in ico_spp_countries for v2020
+ico_spp_v2020 <- read.csv(here('globalprep/ico/v2020/int/ico_spp_rgn_prepped.csv')) %>%
+  mutate(year = 2020)
+
+## Status comparison - check region 185 (Monaco)
+rgn185_v2019 <- ico_spp_v2019 %>% 
+  filter(rgn_id == 185)
+rgn185_v2020 <- ico_spp_v2020 %>% 
+  filter(rgn_id == 185)
+# There were seven species included in the 2019 assessment and only 3 species in the 2020 assessment - the four sharks (Blue, Great White, Thresher, and Basking) were not included in the 2020 assessment for Monaco even though they are "Globally Iconic" 
+# one of the species decreased in status from VU to CR
+
+# make sure sharks are in the v2020
+shark <- ico_spp_v2020 %>% 
+  filter(iucn_sid == 3855 | iucn_sid == 39339 | iucn_sid == 39381 | iucn_sid == 4292)
+# all four sharks are included but none of them are included in Monaco
+
+## Trend comparison - check region 215 (Jordan)
+rgn215_v2019 <- ico_spp_v2019 %>% 
+  filter(rgn_id == 215)
+rgn215_v2020 <- ico_spp_v2020 %>% 
+  filter(rgn_id == 215)
+# There were two species in 2019 no change is status for theses species in the 2020 assessment but 2020 assessment added thresher sharks with a VU status  
+```
 
