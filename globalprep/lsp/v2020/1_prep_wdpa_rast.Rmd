@@ -316,3 +316,19 @@ plot(wdpa_sf_19[1])
 
 ```
 
+## Filtering for export (added due to server issues in 2020)
+
+```{r}
+
+
+#2020
+wdpa_rus_20 <- wdpa_sf %>%
+  select(parent_iso, geometry) %>% 
+  filter(parent_iso == "RUS")
+#2019
+wdpa_rus_19 <- wdpa_sf %>%
+  select(parent_iso, geometry) %>% 
+  filter(parent_iso == "RUS")
+
+```
+
