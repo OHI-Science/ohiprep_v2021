@@ -21,13 +21,13 @@ pdf_document:
 The Ultraviolet Radiation pressure layer is generated from daily data on Local Noon Erythemal UV Irradiance (mW/m2) derived from satellite observations. 
 
 1. Average the data for each week/year/cell  
-1. For each week/year/cell, calculate the mean and sd, so each cell would have ~624 (12*52) values (2004-2016)  
-1. Determine which of these were anomalous, defined as greater than the mean plus 1 standard deviation  
-1. Sum weekly anomalies for each year/cell (for a total of 52 possible anomalies per year/cell)  
-1. Calculate the total number of anomalies in the reference period (in our case, 2004-2009, for a total of 52*5 anomalies per cell)  
-1. Calculate the total number of anomalies in 5-year periods (e.g. 2013-2017)    
-1. then for each cell, get the difference between current anomalies and reference anomalies (total over the reference period 2005-2009)    
-1. Rescale the data to be between 0-1 by using the 99.99th quantile as the reference point
+2. For each week/year/cell, calculate the mean and sd, so each cell would have ~624 (12*52) values (2004-2016)  
+3. Determine which of these were anomalous, defined as greater than the mean plus 1 standard deviation  
+4. Sum weekly anomalies for each year/cell (for a total of 52 possible anomalies per year/cell)  
+5. Calculate the total number of anomalies in the reference period (in our case, 2004-2009, for a total of 52*5 anomalies per cell)  
+6. Calculate the total number of anomalies in 5-year periods (e.g. 2014-2018, 2013 - 2017, etc.)    
+7. then for each cell, get the difference between current anomalies and reference anomalies (total over the reference period 2005-2009)    
+8. Rescale the data to be between 0-1 by using the 99.99th quantile as the reference point
 
 # Updates from previous assessment
 
@@ -41,9 +41,9 @@ https://acdisc.gesdisc.eosdis.nasa.gov/data/Aura_OMI_Level3/OMUVBd.003/
 **Reference**: The Ultraviolet Radiation pressures layer uses the [Aura OMI Global Surface UVB Data Product](http://disc.sci.gsfc.nasa.gov/Aura/data-holdings/OMI/omuvbd_v003.shtml).  
 **Native Data Resolution**: 1 degree  
 **Values**: Level-3 OMI Surface UV Irradiance and Erythemal Dose- OMUVBd  
-**Time Range**: Daily data from 2005 - 2017 (10/1/2004 through 7/14/2018, but only full years of data are used)
+**Time Range**: Daily data from 2005 - 2018 (10/1/2004 through 8/6/2019, but only full years of data are used)
 **Format**: NetCDF HDF5 (.he5.nc)
-**Downloaded**: August 6, 2018
+**Downloaded**: August 6, 2019
 
 ***
   

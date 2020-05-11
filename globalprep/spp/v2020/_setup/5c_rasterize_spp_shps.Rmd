@@ -247,6 +247,8 @@ if(nrow(maps_to_rasterize) == 0) { ### all maps accounted for as .csvs
   } ### end of for loop over each species group
 } ### end of "if" check to make sure there are any maps to rasterize
 
+## Note: v2020: This got to the end and didn't indicate it was finished. I only knew because I periodically stopped the loop and checked after it got to the last couple of sfs and then looked at maps_to_rasterize that it was finished. 
+
 ```
 
 ``` {r file size testing}
@@ -281,8 +283,8 @@ z <- y %>%
   arrange(desc(csv))
 
  #sum(z$tif * z$n_spp) ### 0
- #sum(z$csv * z$n_spp) ### 3,383,380,232
- #sum(z$csv * z$n_spp) ### 3,383,380,232
+ #sum(z$csv * z$n_spp) ### 3,509,926,367
+
 
 zz <- data.frame(spp_group = 'TOTAL: all available spp maps',
                 n_spp = sum(z$n_spp),

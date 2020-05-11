@@ -30,7 +30,7 @@ For this year, consider only including commodities with USD value > 1.  This may
 **Reference**:      
     http://www.fao.org/fishery/statistics/software/fishstatj/en#downlApp
      App release date: July 2019
-FAO raw commodities quantity 1976_20167
+FAO raw commodities quantity 1976_2017
 FAO raw commodities value 1976_2017
 FAO metadata found [here](http://www.fao.org/fishery/statistics/global-commodities-production/en)
 
@@ -62,7 +62,7 @@ library(plotly)
 ## Load FAO-specific user-defined functions
 source(here('workflow/R/fao_fxn.R')) # function for cleaning FAO files
 source(here('workflow/R/common.R')) # directory locations
-source(here('globalprep/np/v2019/R/np_fxn.R')) 
+source(here('globalprep/np/v2020/R/np_fxn.R')) 
 
 ```
 
@@ -74,7 +74,7 @@ Simultaneously read and process FAO commodities value and quantity data.
 ## NOTE: This can be run as a loop, but the "value" and "quant" datasets need to be run individually to make sure
 ## there are no problems (after this check, they can be looped for efficiency)
 
-dir_fao_data <- file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_commodities/d2019')
+dir_fao_data <- file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_commodities/d2020')
 
 files <- list.files(dir_fao_data, pattern=glob2rx('*.csv'), full.names=TRUE)
 
@@ -112,7 +112,7 @@ for (f in files){ # f = files[2]
   ##   commodities in data vs commodities in lookup table
   
   ## load lookup for converting commodities to products
-  com2prod <- read.csv(here('globalprep/np/v2019/raw/commodities2products.csv'), na.strings='')
+  com2prod <- read.csv(here('globalprep/np/v2020/raw/commodities2products.csv'), na.strings='')
 
   ## Check the current commodity-to-product lookup table.  If necessary, make changes to     "raw/commodities2products.csv"
   np_commodity_lookup(m, com2prod)
@@ -146,7 +146,7 @@ for (f in files){ # f = files[2]
                       flds_unique=c('commodity', 'product', 'year'))
     
 # v2019 unmatched: eswatini, palestine, yugoslavia (all of these are landlocked)  
-# v2019 duplicates: china, HK SAR, Macao SAR, Guadeloupe, Serbia and Montenegro, etc - these are addressed below in the group_by/summarize pipe
+# v2020 duplicates: China, Hong Kong SAR, Macao SAR, Guadeloupe, Serbia and Montenegro, etc - these are addressed below in the group_by/summarize pipe
   
   ## combine composite regions
   ## When summarizing the dataset, this function provides a modified way to sum the value column while maintaining NA values when both variables are NA (rather than turning to zero values). The function will sum non-NA values normally.
@@ -166,7 +166,7 @@ for (f in files){ # f = files[2]
   names(m_rgn)[names(m_rgn) == 'value'] <- units  
   
   ## output to .csv - should create two csvs (tonnes.csv and usd.csv) 
-  harvest_out <- sprintf(here('globalprep/np/v2019/int/%s.csv'), units)
+  harvest_out <- sprintf(here('globalprep/np/v2020/int/%s.csv'), units)
   write.csv(m_rgn, harvest_out, row.names = FALSE, na = '')
   
 }
@@ -177,9 +177,9 @@ for (f in files){ # f = files[2]
 Combining the quantity and value data and a bit of cleaning to remove data prior to first reporting year for each commodity and region.
 ```{r}
 
-h_tonnes <- read.csv(here('globalprep/np/v2019/int/tonnes.csv'))
+h_tonnes <- read.csv(here('globalprep/np/v2020/int/tonnes.csv'))
 
-h_usd <- read.csv(here('globalprep/np/v2019/int/usd.csv'))
+h_usd <- read.csv(here('globalprep/np/v2020/int/usd.csv'))
 
 ## concatenates h_tonnes and h_usd data
 ## h includes rgn_name, rgn_id, commodity, product, year, tonnes, usd.
@@ -217,11 +217,11 @@ Summary of gapfilling that is performed:
 
 ```{r}
 
-commodities <- commodities %>% np_harvest_gapflag  
+commodities <- commodities %>% np_harvest_gapflag
 ## Adds flag for required gap-filling, based upon NAs in data. 
 ## NOTE: Does not perform any gap-filling.
-## At this point, h includes: 
-## rgn_name   rgn_id   commodity   product   year   tonnes   usd   gapfill
+## At this point, commodities includes: 
+## rgn_id   rgn_name   commodity   product   year   usd   tonnes   gapfill
 ## 'gapfill' will be in (zerofill, endfill, tbd, none)
 
 data_check <- commodities %>% np_datacheck()
@@ -270,7 +270,7 @@ commodities <- commodities %>% np_end_fill()
 h_comm <- commodities
 ## Store commodity-level data, before moving on to the product-level smoothing.
 ```
-# Final Data Wranglng
+# Final Data Wrangling
 
 ## Summarize values
 Summarize each product per country per year, e.g., all corals in Albania in 2011. And, do some error checking.
@@ -311,24 +311,24 @@ australia <- h_x_usd %>%
   filter(product == "shells", rgn_name == "Australia") 
 
 
-## Compare old and new (v2019)
-h_x_usd_old <- read_csv(here("globalprep/np/v2018/int/np_harvest_usd_wide.csv"))
+## Compare old and new (v2020)
+h_x_usd_old <- read_csv(here("globalprep/np/v2019/int/np_harvest_usd_wide.csv"))
 
 aus_old <- h_x_usd_old %>% 
   filter(product == "shells", rgn_name == "Australia", commodity == "Z_TOTAL")
 
 australia <- australia %>%
   filter(commodity == "Z_TOTAL") %>% 
-  tidyr::gather(key = "year", value = "value_v2019", -(rgn_name), -(commodity), -(rgn_id), -(product))
+  tidyr::gather(key = "year", value = "value_v2020", -(rgn_name), -(commodity), -(rgn_id), -(product))
 
 
 aus_compare <- aus_old %>% 
-  tidyr::gather(key = "year", value = "value_v2018", -(rgn_name), -(commodity), -(rgn_id), -(product)) %>% 
+  tidyr::gather(key = "year", value = "value_v2019", -(rgn_name), -(commodity), -(rgn_id), -(product)) %>% 
   full_join(australia, by = c("rgn_id","rgn_name","commodity","product", "year"))
 
 ## Can open up in Excel to compare subtotals per country-product-year
-write.csv(h_x_tonnes, here('globalprep/np/v2019/int/np_harvest_tonnes_wide.csv'), row.names = FALSE, na = 'NA')
-write.csv(h_x_usd,    here('globalprep/np/v2019/int/np_harvest_usd_wide.csv'),    row.names = FALSE, na = 'NA')
+write.csv(h_x_tonnes, here('globalprep/np/v2020/int/np_harvest_tonnes_wide.csv'), row.names = FALSE, na = 'NA')
+write.csv(h_x_usd, here('globalprep/np/v2020/int/np_harvest_usd_wide.csv'), row.names = FALSE, na = 'NA')
 ```
 
 
@@ -395,21 +395,21 @@ prod_weights <- peak_prod %>%
 ```{r}
 
 ## Write entire data frame to .csv:
-write.csv(smooth_prod, here('globalprep/np/v2019/int/np_harvest_smoothed_data.csv'), row.names = FALSE, na = '')
+write.csv(smooth_prod, here('globalprep/np/v2020/int/np_harvest_smoothed_data.csv'), row.names = FALSE, na = '')
 
 ## Write individual data layers:
 ## Write NP weights layer also used to calculate pressures and resilience:
-write.csv(prod_weights, here('globalprep/np/v2019/output/np_harvest_weights_from_usd.csv'), row.names = FALSE, na = '')
+write.csv(prod_weights, here('globalprep/np/v2020/output/np_harvest_weights_from_usd.csv'), row.names = FALSE, na = '')
 
 ## Save tonnes data
 tonnes <- smooth_prod %>%
-  select(rgn_id, product, year, tonnes) 
-write.csv(tonnes, here('globalprep/np/v2019/output/np_harvest_tonnes.csv'), row.names = FALSE, na = '')
+  select(rgn_id, product, year, tonnes)
+write.csv(tonnes, here('globalprep/np/v2020/output/np_harvest_tonnes.csv'), row.names = FALSE, na = '')
 
 ## Save relative tonnes data
 tonnes_rel <- smooth_prod %>%
-  select(rgn_id, product, year, tonnes_rel) 
-write.csv(tonnes_rel, here('globalprep/np/v2019/output/np_harvest_tonnes_rel.csv'), row.names = FALSE, na = '')
+  select(rgn_id, product, year, tonnes_rel)
+write.csv(tonnes_rel, here('globalprep/np/v2020/output/np_harvest_tonnes_rel.csv'), row.names = FALSE, na = '')
 
 ```
 
@@ -424,53 +424,54 @@ region_id   | region name  | change in status  | explanation
 78        |         Lebanon          | +24         |  Big changes to ornamentals from 2012-2015 between v2018 and v2019 (raw data had some fish oil values that were zero in v2018 that are now NA, otherwise all raw values matched up). Ornamental fish nei values were zerofilled from 2011-2013 , ornamental saltwater fish zerofilled in 2014
 43        |         Kenya            | + 18        | Again, big jump in ornamental tonnes from 2013-2015, with no changes in the raw data between v2018 and v2019. None of these data were gapfilled.
 191       |           Iran           | -30         | In raw data, ornamental fish nei had zeroes for 2014-2015 in v2019 and NAs in v2019; no other changes, including in output tonnes data between v2018 and v2019 (must have gapfilled based on previous years' data).
+
 ```{r exploration, include=FALSE}
 
 ## Look at Commodities TONNES for a few countries
 
 
-## Libya
+## Bahamas
 
 # Look at raw data:
-new <- read.csv(here('globalprep/np/v2019/int/tonnes.csv'))
-old <- read.csv(here('globalprep/np/v2018/int/tonnes.csv')) 
-new_libya <- filter(new, rgn_id==110) %>%
+new <- read.csv(here('globalprep/np/v2020/int/tonnes.csv'))
+old <- read.csv(here('globalprep/np/v2019/int/tonnes.csv'))
+new_bahamas <- filter(new, rgn_id==110) %>%
   arrange(commodity, year) %>% 
   rename(tonnes_new = "tonnes")
-old_libya <- filter(old, rgn_id==110) %>%
-  full_join(new_libya) %>%
+old_bahamas <- filter(old, rgn_id==110) %>%
+  full_join(new_bahamas) %>%
   arrange(commodity, year) %>%
   filter(year>2000)
+
+read.csv(here("globalprep/np/v2020/output/np_harvest_weights_from_usd.csv")) %>%
+  filter(rgn_id==110)
 
 read.csv(here("globalprep/np/v2019/output/np_harvest_weights_from_usd.csv")) %>%
   filter(rgn_id==110)
 
-read.csv(here("globalprep/np/v2018/output/np_harvest_weights_from_usd.csv")) %>%
-  filter(rgn_id==110)
-
-old <- read.csv(here("globalprep/np/v2018/output/np_harvest_tonnes.csv")) %>%
+old <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>%
   filter(rgn_id==123) %>%
   rename(old_tonnes=tonnes)
 
-tmp <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>%
+tmp <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes.csv")) %>%
   filter(rgn_id==123) %>%
   full_join(old) %>%
   arrange(product, year)
-tmp  
+tmp
 
-libya_compare <- old_libya %>% 
-left_join(new_libya, by = c("commodity","year","rgn_id","rgn_name","product"))
+bahamas_compare <- old_bahamas %>% 
+left_join(new_bahamas, by = c("commodity","year","rgn_id","rgn_name","product"))
 
-plot(libya_compare$tonnes_new, libya_compare$tonnes)
+plot(bahamas_compare$tonnes_new.x, bahamas_compare$tonnes)
 abline(0,1, col="red")
 
 # No changes at all in raw data, look into smoothed data: 
 
 ## Libya harvest smoothed data to see rel tonnes
-smooth_new <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>%
+smooth_new <- read.csv(here("globalprep/np/v2020/int/np_harvest_smoothed_data.csv")) %>%
   filter(rgn_id==67, year %in% c(2010:2014)) %>% 
   select(rgn_id, product, year, tonnes, tonnes_rel)
-smooth_old <- read.csv(here("globalprep/np/v2018/int/np_harvest_smoothed_data.csv")) %>% 
+smooth_old <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>% 
   filter(rgn_id==67, year %in% c(2010:2014)) %>%
   select(rgn_id, product, year, tonnes, tonnes_rel) %>% 
   rename(tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
@@ -479,9 +480,9 @@ smoothed <- smooth_old %>%
   full_join(smooth_new, by = c("rgn_id","product","year"))
 
 # Compare output files:
-new_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
+new_tonnes <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes.csv")) %>% 
   filter(rgn_id==67, year %in% c(2010:2015))
-old_tonnes <- read.csv(here("globalprep/np/v2018/output/np_harvest_tonnes.csv")) %>% 
+old_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
   filter(rgn_id==67, year %in% c(2010:2015)) %>% 
   rename(tonnes_old = tonnes)
 
@@ -492,10 +493,10 @@ plot(compare$tonnes, compare$tonnes_old)
 abline(0,1, col="red")
 
 # Were they gapfilled?
-new_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
+new_tonnes_gf <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes_gf.csv")) %>% 
   filter(rgn_id==67, year %in% c(2010:2015))
 
-old_tonnes_gf <- read.csv(here("globalprep/np/v2018/output/np_harvest_tonnes_gf.csv")) %>% 
+old_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
   filter(rgn_id==67, year %in% c(2010:2015))
 
 # not gapfilled in either year
@@ -522,10 +523,10 @@ abline(0,1, col="red")
 # No changes at all in raw data, look into smoothed data: 
 
 ## Cook Islands harvest smoothed data to see rel tonnes
-smooth_new <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>%
+smooth_new <- read.csv(here("globalprep/np/v2020/int/np_harvest_smoothed_data.csv")) %>%
   filter(rgn_id==153, year %in% c(2010:2014)) %>% 
   select(rgn_id, product, year, tonnes, tonnes_rel)
-smooth_old <- read.csv(here("globalprep/np/v2018/int/np_harvest_smoothed_data.csv")) %>% 
+smooth_old <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>% 
   filter(rgn_id==153, year %in% c(2010:2014)) %>%
   select(rgn_id, product, year, tonnes, tonnes_rel) %>% 
   rename(tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
@@ -536,9 +537,9 @@ smoothed <- smooth_old %>%
 # some small changes to smoothed data, but nothing drastic 
 
 # Compare output files:
-new_cook <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
+new_cook <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes.csv")) %>% 
   filter(rgn_id==153, year %in% c(2010:2015))
-old_cook <- read.csv(here("globalprep/np/v2018/output/np_harvest_tonnes.csv")) %>% 
+old_cook <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
   filter(rgn_id==153, year %in% c(2010:2015)) %>% 
   rename(tonnes_old = tonnes)
 
@@ -549,10 +550,10 @@ plot(compare_cook$tonnes, compare_cook$tonnes_old)
 abline(0,1, col="red")
 
 # Were they gapfilled?
-new_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
+new_tonnes_gf <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes_gf.csv")) %>% 
   filter(rgn_id==153, year %in% c(2010:2015))
 
-old_tonnes_gf <- read.csv(here("globalprep/np/v2018/output/np_harvest_tonnes_gf.csv")) %>% 
+old_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
   filter(rgn_id==153, year %in% c(2010:2015))
 
 
@@ -576,10 +577,10 @@ abline(0,1, col="red")
 # Some points were zero that are now NA 
 
 ## Lebanon harvest smoothed data to see rel tonnes
-smooth_new <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>%
+smooth_new <- read.csv(here("globalprep/np/v2020/int/np_harvest_smoothed_data.csv")) %>%
   filter(rgn_id==78, year %in% c(2010:2015)) %>% 
   select(rgn_id, product, year, tonnes, tonnes_rel)
-smooth_old <- read.csv(here("globalprep/np/v2018/int/np_harvest_smoothed_data.csv")) %>% 
+smooth_old <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>% 
   filter(rgn_id==78, year %in% c(2010:2015)) %>%
   select(rgn_id, product, year, tonnes, tonnes_rel) %>% 
   rename(tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
@@ -593,9 +594,9 @@ abline(0,1, col="red")
 # ornamentals for were 0 for 2014-2015 in v2018 but >1 in v2019 data; changes in relative tons for ornamentals overall by an order of magnitude or more for several years
 
 # Compare output files:
-new_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
+new_tonnes <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes.csv")) %>% 
   filter(rgn_id==78, year %in% c(2010:2015))
-old_tonnes <- read.csv(here("globalprep/np/v2018/output/np_harvest_tonnes.csv")) %>% 
+old_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
   filter(rgn_id==78, year %in% c(2010:2015)) %>% 
   rename(tonnes_old = tonnes)
 
@@ -605,9 +606,9 @@ full_join(new_tonnes, by = c("rgn_id","product","year"))
 # Big change in ornamentals data from 2012-2015 between v2018 and v2019
 
 # were they gapfilled? 
-new_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
+new_tonnes_gf <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes_gf.csv")) %>% 
   filter(rgn_id==78, year %in% c(2010:2015))
-old_tonnes_gf <- read.csv(here("globalprep/np/v2018/output/np_harvest_tonnes_gf.csv")) %>% 
+old_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
   filter(rgn_id==78, year %in% c(2010:2015))
 
 # both had zerofill 2011-2013, otherwise no gapfilling
@@ -630,10 +631,10 @@ abline(0,1, col="red")
 # No changes to raw data at all 
 
 ## Kenya harvest smoothed data to see rel tonnes
-smooth_new <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>%
+smooth_new <- read.csv(here("globalprep/np/v2020/int/np_harvest_smoothed_data.csv")) %>%
   filter(rgn_id==43, year %in% c(2010:2015)) %>% 
   select(rgn_id, product, year, tonnes, tonnes_rel)
-smooth_old <- read.csv(here("globalprep/np/v2018/int/np_harvest_smoothed_data.csv")) %>% 
+smooth_old <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>% 
   filter(rgn_id==43, year %in% c(2010:2015)) %>%
   select(rgn_id, product, year, tonnes, tonnes_rel) %>% 
   rename(tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
@@ -647,10 +648,10 @@ abline(0,1, col="red")
 
 
 # Compare output files:
-new_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
+new_tonnes <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes.csv")) %>% 
   filter(rgn_id==43, year %in% c(2010:2015))
 
-old_tonnes <- read.csv(here("globalprep/np/v2018/output/np_harvest_tonnes.csv")) %>% 
+old_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
   filter(rgn_id==43, year %in% c(2010:2015)) %>% 
   rename(tonnes_old = tonnes)
 
@@ -662,10 +663,10 @@ abline(0,1, col="red")
 # again we're seeing the changes in ornamentals only 
 
 # Were they gapfilled?
-new_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
+new_tonnes_gf <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes_gf.csv")) %>% 
   filter(rgn_id==43, year %in% c(2010:2015))
 
-old_tonnes_gf <- read.csv(here("globalprep/np/v2018/output/np_harvest_tonnes_gf.csv")) %>% 
+old_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
   filter(rgn_id==43, year %in% c(2010:2015))
 
 # ...nope
@@ -689,10 +690,10 @@ abline(0,1, col="red")
 # Ornamental nei have NAs for v2019 in 2014-2015, 0 for v2018
 
 ## Iran harvest smoothed data to see rel tonnes
-smooth_new <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>%
+smooth_new <- read.csv(here("globalprep/np/v2020/int/np_harvest_smoothed_data.csv")) %>%
   filter(rgn_id==191, year %in% c(2010:2015)) %>% 
   select(rgn_id, product, year, tonnes, tonnes_rel)
-smooth_old <- read.csv(here("globalprep/np/v2018/int/np_harvest_smoothed_data.csv")) %>% 
+smooth_old <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>% 
   filter(rgn_id==191, year %in% c(2010:2015)) %>%
   select(rgn_id, product, year, tonnes, tonnes_rel) %>% 
   rename(tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
@@ -705,9 +706,9 @@ abline(0,1, col="red")
 # no changes !
 
 # Compare output files:
-new_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
+new_tonnes <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes.csv")) %>% 
   filter(rgn_id==191, year %in% c(2010:2015))
-old_tonnes <- read.csv(here("globalprep/np/v2018/output/np_harvest_tonnes.csv")) %>% 
+old_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
   filter(rgn_id==191, year %in% c(2010:2015)) %>% 
   rename(tonnes_old = tonnes)
 
@@ -719,10 +720,10 @@ abline(0,1, col="red")
 # no changes
 
 # Were they gapfilled?
-new_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
+new_tonnes_gf <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes_gf.csv")) %>% 
   filter(rgn_id==191, year %in% c(2010:2015))
 
-old_tonnes_gf <- read.csv(here("globalprep/np/v2018/output/np_harvest_tonnes_gf.csv")) %>% 
+old_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
   filter(rgn_id==191, year %in% c(2010:2015))
 
 # zerofilling for 2014-2015, based on data from last year 
