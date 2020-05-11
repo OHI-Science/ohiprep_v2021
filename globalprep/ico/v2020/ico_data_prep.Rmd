@@ -1127,31 +1127,29 @@ hmd <- rbind(hmd1, hmd2)
 
 ```{r v2020-outliers}
 # Read in ico_spp_countries from v2019
-ico_spp_v2019 <- read.csv(here('globalprep/ico/v2019/int/ico_spp_rgn_prepped.csv')) %>%
-  mutate(year = 2019)
+ico_spp_v2019 <- read.csv(here('globalprep/ico/v2019/int/ico_spp_rgn_cat.csv'))
 
 # Read in ico_spp_countries for v2020
-ico_spp_v2020 <- read.csv(here('globalprep/ico/v2020/int/ico_spp_rgn_prepped.csv')) %>%
-  mutate(year = 2020)
+ico_spp_v2020 <- read.csv(here('globalprep/ico/v2020/int/ico_spp_rgn_cat.csv'))
 
 ## Status comparison - check region 185 (Monaco)
 rgn185_v2019 <- ico_spp_v2019 %>% 
-  filter(rgn_id == 185)
+  filter(rgn_id == 185) %>% 
+  filter(year == 2019)
 rgn185_v2020 <- ico_spp_v2020 %>% 
-  filter(rgn_id == 185)
-# There were seven species included in the 2019 assessment and only 3 species in the 2020 assessment - the four sharks (Blue, Great White, Thresher, and Basking) were not included in the 2020 assessment for Monaco even though they are "Globally Iconic" 
-# one of the species decreased in status from VU to CR
+  filter(rgn_id == 185) %>% 
+  filter(year == 2019)
+# There were 3 species included in the 2019 assessment and 7 species in the 2020 assessment - the four sharks (Blue, Great White, Thresher, and Basking) were added (but range in status from NT to EN)
+# one of the species increased in status from CR to VU after an updated assessement in 2019
 
-# make sure sharks are in the v2020
-shark <- ico_spp_v2020 %>% 
-  filter(iucn_sid == 3855 | iucn_sid == 39339 | iucn_sid == 39381 | iucn_sid == 4292)
-# all four sharks are included but none of them are included in Monaco
 
 ## Trend comparison - check region 215 (Jordan)
 rgn215_v2019 <- ico_spp_v2019 %>% 
-  filter(rgn_id == 215)
+  filter(rgn_id == 215) %>% 
+  filter(year == 2019)
 rgn215_v2020 <- ico_spp_v2020 %>% 
-  filter(rgn_id == 215)
-# There were two species in 2019 no change is status for theses species in the 2020 assessment but 2020 assessment added thresher sharks with a VU status  
+  filter(rgn_id == 215) %>% 
+  filter(year == 2019)
+# There were 3 species in 2019 but 2020 assessment removed thresher sharks (no change to other species) 
 ```
 
