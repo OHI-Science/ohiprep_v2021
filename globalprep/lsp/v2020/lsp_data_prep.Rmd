@@ -371,7 +371,7 @@ Plot scores for 2020 vs 2019 assessment years
 ``` {r plot_scores_vs_v2016, plotly = TRUE, eval = FALSE}
 
 library(ggplot2)
-library(plotly)
+#library(plotly)
 
 ## Calculates this year and last year's coastal marine protected area ratio (CMPA/Ref-CMPA) for plotting
 status_3nm_new <- read_csv(file.path(dir_goal, 'output', 'lsp_prot_area_offshore3nm.csv')) %>%
@@ -457,3 +457,15 @@ write.csv(x, "output/major_changes_2020.csv" ) #added this so I could come back 
 ``` {r results = 'asis'}
 # prov_wrapup()
 ```
+
+
+###Individual investigation
+```{r}
+
+lsp_russia <- lsp_new_old %>% 
+  filter(rgn_name == "Russia")
+
+
+
+```
+
