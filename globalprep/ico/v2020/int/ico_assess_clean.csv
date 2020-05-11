@@ -50,6 +50,7 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 3855,1996,VU,Vulnerable,Carcharodon carcharias,0.4
 3855,2000,VU,Vulnerable,Carcharodon carcharias,0.4
 3855,2009,VU,Vulnerable,Carcharodon carcharias,0.4
+3855,2019,VU,Vulnerable,Carcharodon carcharias,0.4
 3897,1982,VU,Vulnerable,Caretta caretta,0.4
 3897,1986,VU,Vulnerable,Caretta caretta,0.4
 3897,1988,VU,Vulnerable,Caretta caretta,0.4
@@ -65,6 +66,7 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 4292,1996,VU,Vulnerable,Cetorhinus maximus,0.4
 4292,2000,VU,Vulnerable,Cetorhinus maximus,0.4
 4292,2009,VU,Vulnerable,Cetorhinus maximus,0.4
+4292,2019,EN,Endangered,Cetorhinus maximus,0.6
 4592,1996,VU,Vulnerable,Cheilinus undulatus,0.4
 4592,2004,EN,Endangered,Cheilinus undulatus,0.6
 4615,1982,EN,Endangered,Chelonia mydas,0.6
@@ -134,12 +136,14 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 11200,1996,VU,Vulnerable,Lamna nasus,0.4
 11200,2000,NT,Lower Risk/near threatened,Lamna nasus,0.2
 11200,2006,VU,Vulnerable,Lamna nasus,0.4
+11200,2019,VU,Vulnerable,Lamna nasus,0.4
 11533,1982,EN,Endangered,Lepidochelys kempii,0.6
 11533,1986,EN,Endangered,Lepidochelys kempii,0.6
 11533,1988,EN,Endangered,Lepidochelys kempii,0.6
 11533,1990,EN,Endangered,Lepidochelys kempii,0.6
 11533,1994,EN,Endangered,Lepidochelys kempii,0.6
 11533,1996,CR,Critically Endangered,Lepidochelys kempii,0.8
+11533,2019,CR,Critically Endangered,Lepidochelys kempii,0.8
 11534,1982,EN,Endangered,Lepidochelys olivacea,0.6
 11534,1986,EN,Endangered,Lepidochelys olivacea,0.6
 11534,1988,EN,Endangered,Lepidochelys olivacea,0.6
@@ -182,6 +186,7 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 15421,1996,CD,Lower Risk/conservation dependent,Orcinus orca,0.3
 16564,1996,LC,Lower Risk/least concern,Peponocephala electra,0
 16564,2008,LC,Least Concern,Peponocephala electra,0
+16564,2019,LC,Least Concern,Peponocephala electra,0
 16580,1996,LC,Lower Risk/least concern,Perca fluviatilis,0
 16580,2008,LC,Least Concern,Perca fluviatilis,0
 17013,1996,LC,Lower Risk/least concern,Phoca vitulina,0
@@ -222,6 +227,7 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 20733,2018,LC,Least Concern,Stenella longirostris,0
 20738,2008,LC,Least Concern,Steno bredanensis,0
 20738,2012,LC,Least Concern,Steno bredanensis,0
+20738,2019,LC,Least Concern,Steno bredanensis,0
 22563,2008,LC,Least Concern,Tursiops truncatus,0
 22563,2012,LC,Least Concern,Tursiops truncatus,0
 22563,2019,LC,Least Concern,Tursiops truncatus,0
@@ -239,15 +245,10 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 39338,2015,LC,Least Concern,Megachasma pelagios,0
 39338,2019,LC,Least Concern,Megachasma pelagios,0
 39339,2009,VU,Vulnerable,Alopias vulpinus,0.4
-39340,2000,EN,Endangered,Cetorhinus maximus,0.6
-39340,2009,EN,Endangered,Cetorhinus maximus,0.6
+39339,2019,VU,Vulnerable,Alopias vulpinus,0.4
 39341,2000,NT,Lower Risk/near threatened,Isurus oxyrinchus,0.2
 39341,2009,VU,Vulnerable,Isurus oxyrinchus,0.4
 39341,2019,EN,Endangered,Isurus oxyrinchus,0.6
-39343,2000,VU,Vulnerable,Lamna nasus,0.4
-39343,2006,CR,Critically Endangered,Lamna nasus,0.8
-39344,2000,CD,Lower Risk/conservation dependent,Lamna nasus,0.3
-39344,2006,EN,Endangered,Lamna nasus,0.6
 39365,2000,NT,Lower Risk/near threatened,Carcharhinus amblyrhynchos,0.2
 39365,2009,NT,Near Threatened,Carcharhinus amblyrhynchos,0.2
 39375,2000,NT,Lower Risk/near threatened,Carcharhinus melanopterus,0.2
@@ -257,14 +258,13 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 39378,2019,NT,Near Threatened,Galeocerdo cuvier,0.2
 39381,2000,NT,Lower Risk/near threatened,Prionace glauca,0.2
 39381,2009,NT,Near Threatened,Prionace glauca,0.2
+39381,2019,NT,Near Threatened,Prionace glauca,0.2
 39384,2000,NT,Lower Risk/near threatened,Triaenodon obesus,0.2
 39384,2009,NT,Near Threatened,Triaenodon obesus,0.2
 39427,2000,CR,Critically Endangered,Cephalorhynchus hectori ssp. maui,0.8
 39427,2013,CR,Critically Endangered,Cephalorhynchus hectori ssp. maui,0.8
 39428,2000,CR,Critically Endangered,Orcaella brevirostris,0.8
 39428,2008,CR,Critically Endangered,Orcaella brevirostris,0.8
-39545,2000,EN,Endangered,Cetorhinus maximus,0.6
-39545,2009,EN,Endangered,Cetorhinus maximus,0.6
 41672,1996,LC,Lower Risk/least concern,Pusa hispida,0
 41672,2008,LC,Least Concern,Pusa hispida,0
 41672,2016,LC,Least Concern,Pusa hispida,0
@@ -274,6 +274,7 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 41712,2008,EN,Endangered,Eubalaena glacialis,0.6
 41712,2012,EN,Endangered,Eubalaena glacialis,0.6
 41712,2018,EN,Endangered,Eubalaena glacialis,0.6
+41714,2019,NT,Near Threatened,Tursiops aduncus,0.2
 41715,2018,LC,Least Concern,Phocoena dioptrica,0
 41755,1996,VU,Vulnerable,Physeter macrocephalus,0.4
 41755,2008,VU,Vulnerable,Physeter macrocephalus,0.4
@@ -287,7 +288,6 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 60217,2006,NT,Near Threatened,Carcharhinus perezi,0.2
 60225,2006,VU,Vulnerable,Isurus paucus,0.4
 60225,2019,EN,Endangered,Isurus paucus,0.6
-61420,2006,CR,Critically Endangered,Lamna nasus,0.8
 132832,2008,EN,Endangered,Megaptera novaeangliae,0.6
 132835,2008,EN,Endangered,Megaptera novaeangliae,0.6
 133704,2008,CR,Critically Endangered,Eubalaena australis,0.8
@@ -297,6 +297,7 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 133706,2018,CR,Critically Endangered,Eubalaena japonica,0.8
 135631,2008,LC,Least Concern,Esox lucius,0
 135631,2013,LC,Least Concern,Esox lucius,0
+135631,2018,LC,Least Concern,Esox lucius,0
 135717,2008,LC,Least Concern,Platichthys flesus,0
 135717,2010,LC,Least Concern,Platichthys flesus,0
 136315,2008,NT,Near Threatened,Orcaella heinsohni,0.2
@@ -310,6 +311,7 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 198583,2018,LC,Least Concern,Sprattus sprattus,0
 16208224,2012,VU,Vulnerable,Balaenoptera physalus,0.4
 16285718,2012,LC,Least Concern,Chelonia mydas,0
+16285718,2019,LC,Least Concern,Chelonia mydas,0
 16369383,2012,VU,Vulnerable,Tursiops truncatus,0.4
 16370739,2012,EN,Endangered,Physeter macrocephalus,0.6
 16381144,2018,VU,Vulnerable,Ziphius cavirostris,0.4
@@ -317,6 +319,7 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 46967807,2013,CR,Critically Endangered,Dermochelys coriacea,0.8
 46967817,2013,CR,Critically Endangered,Dermochelys coriacea,0.8
 46967827,2013,LC,Least Concern,Dermochelys coriacea,0
+46967827,2019,EN,Endangered,Dermochelys coriacea,0.6
 46967838,2013,CR,Critically Endangered,Dermochelys coriacea,0.8
 46967863,2013,CR,Critically Endangered,Dermochelys coriacea,0.8
 74491261,2016,LC,Least Concern,Halichoerus grypus,0
@@ -332,4 +335,8 @@ iucn_sid,year,cat,cat_txt,sciname,cat_score
 84191235,2015,LC,Least Concern,Caretta caretta,0
 84199475,2015,NT,Near Threatened,Caretta caretta,0.2
 117636167,2017,CR,Critically Endangered,Balaenoptera edeni,0.8
+120868935,2019,EN,Endangered,Monachus monachus,0.6
 123095978,2018,CR,Critically Endangered,Orcaella brevirostris,0.8
+132948040,2019,CR,Critically Endangered,Orcinus orca,0.8
+142121108,2019,VU,Vulnerable,Chelonia mydas,0.4
+142121866,2019,LC,Least Concern,Chelonia mydas,0
