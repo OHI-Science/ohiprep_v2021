@@ -54,7 +54,7 @@ source(file.path(dir_setup, 'common_fxns.R'))
 dir_bli <- file.path(dir_M, 'git-annex/globalprep/_raw_data/birdlife_intl/d2019')
 dir_shp <- file.path(dir_M, 'git-annex/globalprep/_raw_data/iucn_spp/d2019')
   ### in this folder are shapefiles at a taxonomic level, both from
-  ### IUCN spatial data download (version 2019-1)
+  ### IUCN spatial data download (version 2020-1)
 
 ```
 
@@ -166,11 +166,13 @@ spp_shps <- spp_dbfs %>%
 
 polygon_areas_file <- file.path(dir_setup, 'int/polygon_areas.csv')
 
+poly_range_list <- list()
+
 reload <- FALSE
 if(!file.exists(polygon_areas_file) | reload) {
   
   poly_range_list <- parallel::mclapply(seq_along(spp_shps), mc.cores = 36,
-                          FUN = function(i) { ### i <- 5
+                          FUN = function(i) { ### i <- 4
                             x <- spp_shps[i]
                             cat_msg(i, ': Processing ', x)
                             shp <- st_read(x)
@@ -200,7 +202,7 @@ if(!file.exists(polygon_areas_file) | reload) {
 
   write_csv(poly_range_df, polygon_areas_file)
 }
-    
+
 ```
 
 ### plot raster-calculated ranges vs polygon-calculated ranges
@@ -285,7 +287,7 @@ taxa <- spp_maps %>%
   basename() %>% unique() %>%
   str_replace('\\.dbf$', '')
 
-# taxa <- taxa[str_detect(taxa, 'acipenser|bli_marine|TERR|SEAGRASS')] #no acipenser in this... not comp assessed? 
+# taxa <- taxa[str_detect(taxa, 'acipenser|bli_marine|TERR|SEAGRASS')] 
 
 reload <- FALSE
 

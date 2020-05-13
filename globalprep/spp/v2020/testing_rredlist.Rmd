@@ -1,0 +1,74 @@
+---
+title: "Untitled"
+author: "Gage Clawson"
+date: "5/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(rredlist)
+library(tidyverse)
+library(dplyr)
+library(rgdal)
+library(raster)
+library(here)
+library(ggridges)
+library(ggplot2)
+library(stringr)
+
+```
+
+
+get all species from iucn 
+```{r}
+rl_sp_count(key = api_key)
+
+out <- rl_sp(all = TRUE, key = api_key)
+all_df <- do.call(rbind, lapply(out, "[[", "result"))
+
+all_df_comp <- all_df %>%
+  dplyr::select(-infra_rank, -infra_name) %>%
+    dplyr::rename(iucn_sid = taxonid, sciname = scientific_name) %>%
+    setNames(names(.) %>%
+               stringr::str_replace('_name', ''))
+```
+
+get all species habitats from iucn
+todo: add api_error column and grab the error
+
+```{r}
+spp_ids_all <- all_df_comp %>%
+    .$iucn_sid
+
+  n_chunks <- ceiling(unique(spp_ids_all))
+
+for(i in spp_ids_all){
+  #i = 43
+  
+  chunk_file <- file.path(dir_goal, 'tmp', 
+                    sprintf('spp_habs_chunk_%s.csv', 
+                            i))
+  
+  if(!file.exists(chunk_file)) {
+    
+     cat_msg('Getting habitat info for species ', i, ' to ', max(spp_ids_all))
+    
+spp_hab_tmp <- rl_habitats(id = i, key = api_key)
+  
+spp_hab_tmp_2 <- data.frame(cbind(id = spp_hab_tmp$id, spp_hab_tmp$result)) %>%
+  mutate(param_id = ifelse(is.na(id), i, id))
+
+cat_msg('... found ', nrow(spp_hab_tmp_2), ' habitat rows for these species')
+
+write_csv(spp_hab_tmp_2, chunk_file)
+  
+}else {
+   cat_msg('Chunk file ', chunk_file, ' already exists; skipping these spp')
+      
+}
+}
+
+```
+

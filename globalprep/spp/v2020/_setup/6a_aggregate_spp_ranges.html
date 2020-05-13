@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Thu Aug 29 15:39:04 2019 by sgclawson" />
+<meta name="author" content="Compiled on Wed May 13 12:48:02 2020 by sgclawson" />
 
 
 <title>Aggregate IUCN spp ranges</title>
@@ -1288,7 +1287,7 @@ window.initializeCodeFolding = function(show) {
 
     // create a collapsable div to wrap the code in
     var div = $('<div class="collapse r-code-collapse"></div>');
-    if (show)
+    if (show || $(this)[0].classList.contains('fold-show'))
       div.addClass('in');
     var id = 'rcode-643E0F36' + currentIndex++;
     div.attr('id', id);
@@ -1468,7 +1467,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -1530,6 +1528,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -1561,6 +1560,12 @@ summary {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -1640,7 +1645,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Aggregate IUCN spp ranges</h1>
-<h4 class="author"><em>Compiled on Thu Aug 29 15:39:04 2019 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Wed May 13 12:48:02 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -1661,7 +1666,7 @@ div.tocify {
 <a class="sourceLine" id="cb2-13" title="13"><span class="kw">source</span>(<span class="kw">here</span>(<span class="st">&#39;workflow/R/common.R&#39;</span>))</a>
 <a class="sourceLine" id="cb2-14" title="14"></a>
 <a class="sourceLine" id="cb2-15" title="15">goal     &lt;-<span class="st"> &#39;spp&#39;</span></a>
-<a class="sourceLine" id="cb2-16" title="16">scenario &lt;-<span class="st"> &#39;v2019&#39;</span></a>
+<a class="sourceLine" id="cb2-16" title="16">scenario &lt;-<span class="st"> &#39;v2020&#39;</span></a>
 <a class="sourceLine" id="cb2-17" title="17">dir_goal &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&#39;globalprep&#39;</span>, goal, scenario)</a>
 <a class="sourceLine" id="cb2-18" title="18"></a>
 <a class="sourceLine" id="cb2-19" title="19"><span class="co">### goal specific folders and info</span></a>
@@ -1674,10 +1679,10 @@ div.tocify {
 <a class="sourceLine" id="cb2-26" title="26"></a>
 <a class="sourceLine" id="cb2-27" title="27"><span class="kw">source</span>(<span class="kw">file.path</span>(dir_setup, <span class="st">&#39;common_fxns.R&#39;</span>))</a>
 <a class="sourceLine" id="cb2-28" title="28"></a>
-<a class="sourceLine" id="cb2-29" title="29">dir_bli &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&#39;git-annex/globalprep/_raw_data/birdlife_intl/d2019&#39;</span>)</a>
-<a class="sourceLine" id="cb2-30" title="30">dir_shp &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&#39;git-annex/globalprep/_raw_data/iucn_spp/d2019&#39;</span>)</a>
+<a class="sourceLine" id="cb2-29" title="29">dir_bli &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&#39;git-annex/globalprep/_raw_data/birdlife_intl/d2020&#39;</span>)</a>
+<a class="sourceLine" id="cb2-30" title="30">dir_shp &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&#39;git-annex/globalprep/_raw_data/iucn_spp/d2020-1&#39;</span>)</a>
 <a class="sourceLine" id="cb2-31" title="31">  <span class="co">### in this folder are shapefiles at a taxonomic level, both from</span></a>
-<a class="sourceLine" id="cb2-32" title="32">  <span class="co">### IUCN spatial data download (version 2019-1)</span></a></code></pre></div>
+<a class="sourceLine" id="cb2-32" title="32">  <span class="co">### IUCN spatial data download (version 2020-1)</span></a></code></pre></div>
 <div id="summary" class="section level1">
 <h1><span class="header-section-number">1</span> Summary</h1>
 <p>Using individual species range data (csv outputs from <code>5_process_spp_shps.Rmd</code>), collect into species groups. In each species group, process range and risk information to get mean risk, variance of risk, species richness, and threatened species count per cell. These will then be analyzed in the context of species range rarity weighting as well in a sister script.</p>
@@ -1747,7 +1752,7 @@ div.tocify {
 <a class="sourceLine" id="cb4-13" title="13"><span class="co">### Looping over taxonomic groups -----</span></a>
 <a class="sourceLine" id="cb4-14" title="14"><span class="co">##########################################################.</span></a>
 <a class="sourceLine" id="cb4-15" title="15"><span class="cf">for</span>(taxon <span class="cf">in</span> taxa) {</a>
-<a class="sourceLine" id="cb4-16" title="16">  <span class="co">### taxon &lt;- taxa[16]</span></a>
+<a class="sourceLine" id="cb4-16" title="16">   <span class="co">#taxon &lt;- taxa[15]</span></a>
 <a class="sourceLine" id="cb4-17" title="17">  </a>
 <a class="sourceLine" id="cb4-18" title="18">  taxon_sum_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_goal_anx, <span class="st">&#39;taxa_summaries&#39;</span>,</a>
 <a class="sourceLine" id="cb4-19" title="19">                                   <span class="kw">sprintf</span>(<span class="st">&#39;%s_cell_sum_comp_%s.csv&#39;</span>, <span class="kw">tolower</span>(taxon), api_version))</a>
