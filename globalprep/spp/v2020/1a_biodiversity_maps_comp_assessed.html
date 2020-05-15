@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Thu Aug 29 15:40:33 2019 by sgclawson" />
+<meta name="author" content="Compiled on Fri May 15 12:23:31 2020 by sgclawson" />
 
 
 <title>Biodiversity risk maps</title>
@@ -1288,7 +1287,7 @@ window.initializeCodeFolding = function(show) {
 
     // create a collapsable div to wrap the code in
     var div = $('<div class="collapse r-code-collapse"></div>');
-    if (show)
+    if (show || $(this)[0].classList.contains('fold-show'))
       div.addClass('in');
     var id = 'rcode-643E0F36' + currentIndex++;
     div.attr('id', id);
@@ -1468,7 +1467,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -1530,6 +1528,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -1561,6 +1560,12 @@ summary {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -1640,7 +1645,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Biodiversity risk maps</h1>
-<h4 class="author"><em>Compiled on Thu Aug 29 15:40:33 2019 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Fri May 15 12:23:31 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -1658,7 +1663,7 @@ div.tocify {
 <a class="sourceLine" id="cb2-10" title="10"><span class="kw">source</span>(<span class="kw">here</span>(<span class="st">&#39;workflow/R/common.R&#39;</span>))</a>
 <a class="sourceLine" id="cb2-11" title="11"></a>
 <a class="sourceLine" id="cb2-12" title="12">goal     &lt;-<span class="st"> &#39;spp&#39;</span></a>
-<a class="sourceLine" id="cb2-13" title="13">scenario &lt;-<span class="st"> &#39;v2019&#39;</span></a>
+<a class="sourceLine" id="cb2-13" title="13">scenario &lt;-<span class="st"> &#39;v2020&#39;</span></a>
 <a class="sourceLine" id="cb2-14" title="14">dir_goal &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&#39;globalprep&#39;</span>, goal, scenario)</a>
 <a class="sourceLine" id="cb2-15" title="15"></a>
 <a class="sourceLine" id="cb2-16" title="16"><span class="co">### goal specific folders and info</span></a>
@@ -1718,7 +1723,7 @@ div.tocify {
 \end{align*}\]</span> Because of file sizes, the intermediate files will be stored outside of GitHub.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">cell_summary_file &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_goal_anx, <span class="st">&#39;cell_summary_unweighted_comp.csv&#39;</span>)</a>
 <a class="sourceLine" id="cb3-2" title="2"><span class="co">### unlink(cell_summary_file)</span></a>
-<a class="sourceLine" id="cb3-3" title="3">reload &lt;-<span class="st"> </span><span class="ot">TRUE</span></a>
+<a class="sourceLine" id="cb3-3" title="3">reload &lt;-<span class="st"> </span><span class="ot">FALSE</span></a>
 <a class="sourceLine" id="cb3-4" title="4"></a>
 <a class="sourceLine" id="cb3-5" title="5"><span class="cf">if</span>(<span class="op">!</span><span class="kw">file.exists</span>(cell_summary_file) <span class="op">|</span><span class="st"> </span>reload <span class="op">==</span><span class="st"> </span><span class="ot">TRUE</span>) {</a>
 <a class="sourceLine" id="cb3-6" title="6">  dir_taxa_summaries &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_goal_anx, <span class="st">&#39;taxa_summaries&#39;</span>)</a>
@@ -1735,7 +1740,7 @@ div.tocify {
 <a class="sourceLine" id="cb3-17" title="17">                                            }) <span class="op">%&gt;%</span></a>
 <a class="sourceLine" id="cb3-18" title="18"><span class="st">      </span><span class="kw">bind_rows</span>()</a>
 <a class="sourceLine" id="cb3-19" title="19">  }) <span class="co">### end of system.time</span></a>
-<a class="sourceLine" id="cb3-20" title="20">  <span class="kw">message</span>(<span class="st">&#39;... processing time &#39;</span>, ptm[<span class="dv">3</span>], <span class="st">&#39; sec&#39;</span>)</a>
+<a class="sourceLine" id="cb3-20" title="20">  <span class="kw">message</span>(<span class="st">&#39;... processing time &#39;</span>, ptm[<span class="dv">3</span>], <span class="st">&#39; sec&#39;</span>) <span class="co"># ... processing time 12.6359999999986 sec</span></a>
 <a class="sourceLine" id="cb3-21" title="21">    </a>
 <a class="sourceLine" id="cb3-22" title="22">  <span class="co">### chunk into smaller bits for mclapply usage in the summarizing step.  Use mclapply to chunk,</span></a>
 <a class="sourceLine" id="cb3-23" title="23">  <span class="co">### then pass result to mclapply to calculate weighted average values</span></a>
@@ -1745,79 +1750,78 @@ div.tocify {
 <a class="sourceLine" id="cb3-27" title="27">  </a>
 <a class="sourceLine" id="cb3-28" title="28">  <span class="kw">message</span>(<span class="st">&#39;going into the second mclapply...&#39;</span>)</a>
 <a class="sourceLine" id="cb3-29" title="29">  <span class="co"># system.time({ </span></a>
-<a class="sourceLine" id="cb3-30" title="30">    <span class="co">### standard:  3 sec for 5, 12.5 sec for 20... 32 sec for 50... 479 chunks ~ 6 min.</span></a>
-<a class="sourceLine" id="cb3-31" title="31">    <span class="co">### mclapply: 4 sec for 50, with 32 cores. 52 sec for the whole shebang.</span></a>
-<a class="sourceLine" id="cb3-32" title="32">  ptm &lt;-<span class="st"> </span><span class="kw">system.time</span>({</a>
-<a class="sourceLine" id="cb3-33" title="33">    cell_vals_list &lt;-<span class="st"> </span>parallel<span class="op">::</span><span class="kw">mclapply</span>(<span class="dv">1</span><span class="op">:</span>n_chunks, <span class="dt">mc.cores =</span> <span class="dv">12</span>,</a>
-<a class="sourceLine" id="cb3-34" title="34">        <span class="dt">FUN =</span> <span class="cf">function</span>(x) { <span class="co">### x &lt;- 1</span></a>
-<a class="sourceLine" id="cb3-35" title="35">          btm_i &lt;-<span class="st"> </span>(x <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span><span class="st"> </span>chunksize <span class="op">+</span><span class="st"> </span><span class="dv">1</span></a>
-<a class="sourceLine" id="cb3-36" title="36">          top_i &lt;-<span class="st"> </span><span class="kw">min</span>(x <span class="op">*</span><span class="st"> </span>chunksize, <span class="kw">length</span>(cell_ids))</a>
-<a class="sourceLine" id="cb3-37" title="37">          ids &lt;-<span class="st"> </span>cell_ids[btm_i<span class="op">:</span>top_i]</a>
-<a class="sourceLine" id="cb3-38" title="38">          </a>
-<a class="sourceLine" id="cb3-39" title="39">          df &lt;-<span class="st"> </span>cell_values_all <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-40" title="40"><span class="st">           </span><span class="kw">filter</span>(cell_id <span class="op">%in%</span><span class="st"> </span>ids)</a>
-<a class="sourceLine" id="cb3-41" title="41">        }) <span class="co">### end of mclapply</span></a>
-<a class="sourceLine" id="cb3-42" title="42">  }) <span class="co">### end of system.time</span></a>
-<a class="sourceLine" id="cb3-43" title="43">  <span class="kw">message</span>(<span class="st">&#39;... processing time &#39;</span>, ptm[<span class="dv">3</span>], <span class="st">&#39; sec&#39;</span>)</a>
-<a class="sourceLine" id="cb3-44" title="44">  </a>
-<a class="sourceLine" id="cb3-45" title="45">  <span class="kw">message</span>(<span class="st">&#39;going into the third mclapply...&#39;</span>)</a>
-<a class="sourceLine" id="cb3-46" title="46">  </a>
-<a class="sourceLine" id="cb3-47" title="47">  ptm &lt;-<span class="st"> </span><span class="kw">system.time</span>({</a>
-<a class="sourceLine" id="cb3-48" title="48">    cell_summary_list &lt;-<span class="st"> </span>parallel<span class="op">::</span><span class="kw">mclapply</span>(cell_vals_list, <span class="dt">mc.cores =</span> <span class="dv">24</span>,</a>
-<a class="sourceLine" id="cb3-49" title="49">                                       <span class="dt">FUN =</span> <span class="cf">function</span>(x) {</a>
-<a class="sourceLine" id="cb3-50" title="50">      <span class="co">### x &lt;- cell_vals_list[[250]]</span></a>
-<a class="sourceLine" id="cb3-51" title="51">      y &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-52" title="52"><span class="st">        </span><span class="kw">group_by</span>(cell_id) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-53" title="53"><span class="st">        </span><span class="kw">summarize</span>(<span class="dt">mean_risk   =</span> <span class="kw">sum</span>(mean_risk <span class="op">*</span><span class="st"> </span>n_spp_risk) <span class="op">/</span><span class="st"> </span><span class="kw">sum</span>(n_spp_risk),</a>
-<a class="sourceLine" id="cb3-54" title="54">                  <span class="dt">n_spp_risk  =</span> <span class="kw">sum</span>(n_spp_risk), <span class="co">### n_total</span></a>
-<a class="sourceLine" id="cb3-55" title="55">                  <span class="dt">n_spp_threatened =</span> <span class="kw">sum</span>(n_spp_threatened, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</a>
-<a class="sourceLine" id="cb3-56" title="56">                  <span class="dt">pct_threatened   =</span> n_spp_threatened <span class="op">/</span><span class="st"> </span>n_spp_risk,</a>
-<a class="sourceLine" id="cb3-57" title="57">                  <span class="dt">mean_trend  =</span> <span class="kw">sum</span>(mean_trend <span class="op">*</span><span class="st"> </span>n_spp_trend, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>) <span class="op">/</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb3-58" title="58"><span class="st">                                  </span><span class="kw">sum</span>(n_spp_trend, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</a>
-<a class="sourceLine" id="cb3-59" title="59">                  <span class="dt">n_spp_trend =</span> <span class="kw">sum</span>(n_spp_trend, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</a>
-<a class="sourceLine" id="cb3-60" title="60">      </a>
-<a class="sourceLine" id="cb3-61" title="61">      z &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-62" title="62"><span class="st">        </span><span class="kw">mutate</span>(<span class="dt">mean_risk_g =</span> mean_risk,   <span class="co">### protect it</span></a>
-<a class="sourceLine" id="cb3-63" title="63">               <span class="dt">n_spp_risk_g =</span> n_spp_risk, <span class="co">### protect it</span></a>
-<a class="sourceLine" id="cb3-64" title="64">               <span class="dt">var_risk_g  =</span> <span class="kw">ifelse</span>(var_risk <span class="op">&lt;</span><span class="st"> </span><span class="dv">0</span> <span class="op">|</span><span class="st"> </span><span class="kw">is.na</span>(var_risk) <span class="op">|</span><span class="st"> </span><span class="kw">is.infinite</span>(var_risk), </a>
-<a class="sourceLine" id="cb3-65" title="65">                                    <span class="dv">0</span>, var_risk)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-66" title="66"><span class="st">        </span><span class="co">### any non-valid variances probably due to only one observation, which</span></a>
-<a class="sourceLine" id="cb3-67" title="67"><span class="st">        </span><span class="co">### results in corrected var of infinity... set to zero and proceed!</span></a>
-<a class="sourceLine" id="cb3-68" title="68"><span class="st">        </span><span class="kw">group_by</span>(cell_id) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-69" title="69"><span class="st">        </span><span class="kw">summarize</span>(<span class="dt">mean_risk_t =</span> <span class="kw">sum</span>(mean_risk_g <span class="op">*</span><span class="st"> </span>n_spp_risk_g) <span class="op">/</span><span class="st"> </span><span class="kw">sum</span>(n_spp_risk_g),</a>
-<a class="sourceLine" id="cb3-70" title="70">                  <span class="dt">n_spp_risk_t  =</span> <span class="kw">sum</span>(n_spp_risk_g), <span class="co">### n_total</span></a>
-<a class="sourceLine" id="cb3-71" title="71">                  <span class="dt">var_risk    =</span> <span class="dv">1</span> <span class="op">/</span><span class="st"> </span>(n_spp_risk_t <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span></a>
-<a class="sourceLine" id="cb3-72" title="72"><span class="st">                    </span>(<span class="kw">sum</span>(var_risk_g <span class="op">*</span><span class="st"> </span>(n_spp_risk_g <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">+</span><span class="st"> </span>n_spp_risk_g <span class="op">*</span><span class="st"> </span>mean_risk_g<span class="op">^</span><span class="dv">2</span>) <span class="op">-</span></a>
-<a class="sourceLine" id="cb3-73" title="73"><span class="st">                         </span>n_spp_risk_t <span class="op">*</span><span class="st"> </span>mean_risk_t<span class="op">^</span><span class="dv">2</span>),</a>
-<a class="sourceLine" id="cb3-74" title="74">                  <span class="dt">var_risk =</span> <span class="kw">ifelse</span>(var_risk <span class="op">&lt;</span><span class="st"> </span><span class="dv">0</span>, <span class="dv">0</span>, var_risk),</a>
-<a class="sourceLine" id="cb3-75" title="75">                  <span class="dt">var_risk =</span> <span class="kw">ifelse</span>(<span class="kw">is.nan</span>(var_risk) <span class="op">|</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb3-76" title="76"><span class="st">                                      </span><span class="kw">is.infinite</span>(var_risk), </a>
-<a class="sourceLine" id="cb3-77" title="77">                                    <span class="ot">NA</span>, var_risk)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-78" title="78"><span class="st">                    </span><span class="co">### get rid of negative (tiny) variances and infinite variances</span></a>
-<a class="sourceLine" id="cb3-79" title="79"><span class="st">        </span>dplyr<span class="op">::</span><span class="kw">select</span>(cell_id, var_risk)</a>
-<a class="sourceLine" id="cb3-80" title="80">      </a>
-<a class="sourceLine" id="cb3-81" title="81">        yz &lt;-<span class="st"> </span><span class="kw">left_join</span>(y, z, <span class="dt">by =</span> <span class="st">&#39;cell_id&#39;</span>)</a>
-<a class="sourceLine" id="cb3-82" title="82">        <span class="kw">return</span>(yz)</a>
-<a class="sourceLine" id="cb3-83" title="83">      }) <span class="co">### end of mclapply</span></a>
-<a class="sourceLine" id="cb3-84" title="84">  }) <span class="co">### end of system.time</span></a>
-<a class="sourceLine" id="cb3-85" title="85">  <span class="kw">message</span>(<span class="st">&#39;... processing time &#39;</span>, ptm[<span class="dv">3</span>], <span class="st">&#39; sec&#39;</span>)</a>
-<a class="sourceLine" id="cb3-86" title="86">  <span class="kw">message</span>(<span class="st">&#39;done!&#39;</span>)</a>
-<a class="sourceLine" id="cb3-87" title="87">  </a>
-<a class="sourceLine" id="cb3-88" title="88">  cell_summary &lt;-<span class="st"> </span>cell_summary_list <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-89" title="89"><span class="st">    </span><span class="kw">bind_rows</span>()</a>
-<a class="sourceLine" id="cb3-90" title="90">  </a>
-<a class="sourceLine" id="cb3-91" title="91">  <span class="kw">write_csv</span>(cell_summary, cell_summary_file)</a>
-<a class="sourceLine" id="cb3-92" title="92">  </a>
-<a class="sourceLine" id="cb3-93" title="93">} <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb3-94" title="94">  </a>
-<a class="sourceLine" id="cb3-95" title="95">  <span class="kw">message</span>(<span class="st">&#39;Reading existing cell summary file: &#39;</span>, cell_summary_file)</a>
-<a class="sourceLine" id="cb3-96" title="96">  cell_summary &lt;-<span class="st"> </span><span class="kw">read_csv</span>(cell_summary_file, <span class="dt">col_types =</span> <span class="st">&#39;ddiiddid&#39;</span>)</a>
-<a class="sourceLine" id="cb3-97" title="97"></a>
-<a class="sourceLine" id="cb3-98" title="98">}</a></code></pre></div>
+<a class="sourceLine" id="cb3-30" title="30">    <span class="co">### mclapply: 32 secs</span></a>
+<a class="sourceLine" id="cb3-31" title="31">  ptm &lt;-<span class="st"> </span><span class="kw">system.time</span>({</a>
+<a class="sourceLine" id="cb3-32" title="32">    cell_vals_list &lt;-<span class="st"> </span>parallel<span class="op">::</span><span class="kw">mclapply</span>(<span class="dv">1</span><span class="op">:</span>n_chunks, <span class="dt">mc.cores =</span> <span class="dv">12</span>,</a>
+<a class="sourceLine" id="cb3-33" title="33">        <span class="dt">FUN =</span> <span class="cf">function</span>(x) { <span class="co">### x &lt;- 1</span></a>
+<a class="sourceLine" id="cb3-34" title="34">          btm_i &lt;-<span class="st"> </span>(x <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span><span class="st"> </span>chunksize <span class="op">+</span><span class="st"> </span><span class="dv">1</span></a>
+<a class="sourceLine" id="cb3-35" title="35">          top_i &lt;-<span class="st"> </span><span class="kw">min</span>(x <span class="op">*</span><span class="st"> </span>chunksize, <span class="kw">length</span>(cell_ids))</a>
+<a class="sourceLine" id="cb3-36" title="36">          ids &lt;-<span class="st"> </span>cell_ids[btm_i<span class="op">:</span>top_i]</a>
+<a class="sourceLine" id="cb3-37" title="37">          </a>
+<a class="sourceLine" id="cb3-38" title="38">          df &lt;-<span class="st"> </span>cell_values_all <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb3-39" title="39"><span class="st">           </span><span class="kw">filter</span>(cell_id <span class="op">%in%</span><span class="st"> </span>ids)</a>
+<a class="sourceLine" id="cb3-40" title="40">        }) <span class="co">### end of mclapply</span></a>
+<a class="sourceLine" id="cb3-41" title="41">  }) <span class="co">### end of system.time</span></a>
+<a class="sourceLine" id="cb3-42" title="42">  <span class="kw">message</span>(<span class="st">&#39;... processing time &#39;</span>, ptm[<span class="dv">3</span>], <span class="st">&#39; sec&#39;</span>)</a>
+<a class="sourceLine" id="cb3-43" title="43">  </a>
+<a class="sourceLine" id="cb3-44" title="44">  <span class="kw">message</span>(<span class="st">&#39;going into the third mclapply...&#39;</span>)</a>
+<a class="sourceLine" id="cb3-45" title="45">  </a>
+<a class="sourceLine" id="cb3-46" title="46">  ptm &lt;-<span class="st"> </span><span class="kw">system.time</span>({ <span class="co">#processing time 7.82700000000477 sec</span></a>
+<a class="sourceLine" id="cb3-47" title="47">    cell_summary_list &lt;-<span class="st"> </span>parallel<span class="op">::</span><span class="kw">mclapply</span>(cell_vals_list, <span class="dt">mc.cores =</span> <span class="dv">24</span>,</a>
+<a class="sourceLine" id="cb3-48" title="48">                                       <span class="dt">FUN =</span> <span class="cf">function</span>(x) {</a>
+<a class="sourceLine" id="cb3-49" title="49">      <span class="co">### x &lt;- cell_vals_list[[250]]</span></a>
+<a class="sourceLine" id="cb3-50" title="50">      y &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb3-51" title="51"><span class="st">        </span><span class="kw">group_by</span>(cell_id) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb3-52" title="52"><span class="st">        </span><span class="kw">summarize</span>(<span class="dt">mean_risk   =</span> <span class="kw">sum</span>(mean_risk <span class="op">*</span><span class="st"> </span>n_spp_risk) <span class="op">/</span><span class="st"> </span><span class="kw">sum</span>(n_spp_risk),</a>
+<a class="sourceLine" id="cb3-53" title="53">                  <span class="dt">n_spp_risk  =</span> <span class="kw">sum</span>(n_spp_risk), <span class="co">### n_total</span></a>
+<a class="sourceLine" id="cb3-54" title="54">                  <span class="dt">n_spp_threatened =</span> <span class="kw">sum</span>(n_spp_threatened, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</a>
+<a class="sourceLine" id="cb3-55" title="55">                  <span class="dt">pct_threatened   =</span> n_spp_threatened <span class="op">/</span><span class="st"> </span>n_spp_risk,</a>
+<a class="sourceLine" id="cb3-56" title="56">                  <span class="dt">mean_trend  =</span> <span class="kw">sum</span>(mean_trend <span class="op">*</span><span class="st"> </span>n_spp_trend, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>) <span class="op">/</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb3-57" title="57"><span class="st">                                  </span><span class="kw">sum</span>(n_spp_trend, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</a>
+<a class="sourceLine" id="cb3-58" title="58">                  <span class="dt">n_spp_trend =</span> <span class="kw">sum</span>(n_spp_trend, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</a>
+<a class="sourceLine" id="cb3-59" title="59">      </a>
+<a class="sourceLine" id="cb3-60" title="60">      z &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb3-61" title="61"><span class="st">        </span><span class="kw">mutate</span>(<span class="dt">mean_risk_g =</span> mean_risk,   <span class="co">### protect it</span></a>
+<a class="sourceLine" id="cb3-62" title="62">               <span class="dt">n_spp_risk_g =</span> n_spp_risk, <span class="co">### protect it</span></a>
+<a class="sourceLine" id="cb3-63" title="63">               <span class="dt">var_risk_g  =</span> <span class="kw">ifelse</span>(var_risk <span class="op">&lt;</span><span class="st"> </span><span class="dv">0</span> <span class="op">|</span><span class="st"> </span><span class="kw">is.na</span>(var_risk) <span class="op">|</span><span class="st"> </span><span class="kw">is.infinite</span>(var_risk), </a>
+<a class="sourceLine" id="cb3-64" title="64">                                    <span class="dv">0</span>, var_risk)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb3-65" title="65"><span class="st">        </span><span class="co">### any non-valid variances probably due to only one observation, which</span></a>
+<a class="sourceLine" id="cb3-66" title="66"><span class="st">        </span><span class="co">### results in corrected var of infinity... set to zero and proceed!</span></a>
+<a class="sourceLine" id="cb3-67" title="67"><span class="st">        </span><span class="kw">group_by</span>(cell_id) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb3-68" title="68"><span class="st">        </span><span class="kw">summarize</span>(<span class="dt">mean_risk_t =</span> <span class="kw">sum</span>(mean_risk_g <span class="op">*</span><span class="st"> </span>n_spp_risk_g) <span class="op">/</span><span class="st"> </span><span class="kw">sum</span>(n_spp_risk_g),</a>
+<a class="sourceLine" id="cb3-69" title="69">                  <span class="dt">n_spp_risk_t  =</span> <span class="kw">sum</span>(n_spp_risk_g), <span class="co">### n_total</span></a>
+<a class="sourceLine" id="cb3-70" title="70">                  <span class="dt">var_risk    =</span> <span class="dv">1</span> <span class="op">/</span><span class="st"> </span>(n_spp_risk_t <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">*</span></a>
+<a class="sourceLine" id="cb3-71" title="71"><span class="st">                    </span>(<span class="kw">sum</span>(var_risk_g <span class="op">*</span><span class="st"> </span>(n_spp_risk_g <span class="op">-</span><span class="st"> </span><span class="dv">1</span>) <span class="op">+</span><span class="st"> </span>n_spp_risk_g <span class="op">*</span><span class="st"> </span>mean_risk_g<span class="op">^</span><span class="dv">2</span>) <span class="op">-</span></a>
+<a class="sourceLine" id="cb3-72" title="72"><span class="st">                         </span>n_spp_risk_t <span class="op">*</span><span class="st"> </span>mean_risk_t<span class="op">^</span><span class="dv">2</span>),</a>
+<a class="sourceLine" id="cb3-73" title="73">                  <span class="dt">var_risk =</span> <span class="kw">ifelse</span>(var_risk <span class="op">&lt;</span><span class="st"> </span><span class="dv">0</span>, <span class="dv">0</span>, var_risk),</a>
+<a class="sourceLine" id="cb3-74" title="74">                  <span class="dt">var_risk =</span> <span class="kw">ifelse</span>(<span class="kw">is.nan</span>(var_risk) <span class="op">|</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb3-75" title="75"><span class="st">                                      </span><span class="kw">is.infinite</span>(var_risk), </a>
+<a class="sourceLine" id="cb3-76" title="76">                                    <span class="ot">NA</span>, var_risk)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb3-77" title="77"><span class="st">                    </span><span class="co">### get rid of negative (tiny) variances and infinite variances</span></a>
+<a class="sourceLine" id="cb3-78" title="78"><span class="st">        </span>dplyr<span class="op">::</span><span class="kw">select</span>(cell_id, var_risk)</a>
+<a class="sourceLine" id="cb3-79" title="79">      </a>
+<a class="sourceLine" id="cb3-80" title="80">        yz &lt;-<span class="st"> </span><span class="kw">left_join</span>(y, z, <span class="dt">by =</span> <span class="st">&#39;cell_id&#39;</span>)</a>
+<a class="sourceLine" id="cb3-81" title="81">        <span class="kw">return</span>(yz)</a>
+<a class="sourceLine" id="cb3-82" title="82">      }) <span class="co">### end of mclapply</span></a>
+<a class="sourceLine" id="cb3-83" title="83">  }) <span class="co">### end of system.time</span></a>
+<a class="sourceLine" id="cb3-84" title="84">  <span class="kw">message</span>(<span class="st">&#39;... processing time &#39;</span>, ptm[<span class="dv">3</span>], <span class="st">&#39; sec&#39;</span>)</a>
+<a class="sourceLine" id="cb3-85" title="85">  <span class="kw">message</span>(<span class="st">&#39;done!&#39;</span>)</a>
+<a class="sourceLine" id="cb3-86" title="86">  </a>
+<a class="sourceLine" id="cb3-87" title="87">  cell_summary &lt;-<span class="st"> </span>cell_summary_list <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb3-88" title="88"><span class="st">    </span><span class="kw">bind_rows</span>()</a>
+<a class="sourceLine" id="cb3-89" title="89">  </a>
+<a class="sourceLine" id="cb3-90" title="90">  <span class="kw">write_csv</span>(cell_summary, cell_summary_file)</a>
+<a class="sourceLine" id="cb3-91" title="91">  </a>
+<a class="sourceLine" id="cb3-92" title="92">} <span class="cf">else</span> {</a>
+<a class="sourceLine" id="cb3-93" title="93">  </a>
+<a class="sourceLine" id="cb3-94" title="94">  <span class="kw">message</span>(<span class="st">&#39;Reading existing cell summary file: &#39;</span>, cell_summary_file)</a>
+<a class="sourceLine" id="cb3-95" title="95">  cell_summary &lt;-<span class="st"> </span><span class="kw">read_csv</span>(cell_summary_file, <span class="dt">col_types =</span> <span class="st">&#39;ddiiddid&#39;</span>)</a>
+<a class="sourceLine" id="cb3-96" title="96"></a>
+<a class="sourceLine" id="cb3-97" title="97">}</a></code></pre></div>
 </div>
 <div id="and-now-the-rasters" class="section level3">
 <h3><span class="header-section-number">3.1.2</span> And now, the rasters</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">reload &lt;-<span class="st"> </span><span class="ot">TRUE</span></a>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">reload &lt;-<span class="st"> </span><span class="ot">FALSE</span></a>
 <a class="sourceLine" id="cb4-2" title="2"></a>
 <a class="sourceLine" id="cb4-3" title="3">rast_base &lt;-<span class="st"> </span><span class="kw">raster</span>(<span class="kw">file.path</span>(dir_spatial, <span class="st">&#39;cell_id_rast.tif&#39;</span>))</a>
 <a class="sourceLine" id="cb4-4" title="4"></a>
