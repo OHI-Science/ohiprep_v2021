@@ -38,7 +38,7 @@ library(rgeos)
 source(here('workflow/R/common.R'))
 
 goal     <- 'spp'
-scenario <- 'v2019'
+scenario <- 'v2020'
 dir_goal <- here('globalprep', goal, scenario)
 
 ### goal specific folders and info
@@ -51,10 +51,10 @@ dir_spatial <- file.path(dir_goal, '_spatial')
 
 source(file.path(dir_setup, 'common_fxns.R'))
 
-dir_bli <- file.path(dir_M, 'git-annex/globalprep/_raw_data/birdlife_intl/d2019')
-dir_shp <- file.path(dir_M, 'git-annex/globalprep/_raw_data/iucn_spp/d2019')
+dir_bli <- file.path(dir_M, 'git-annex/globalprep/_raw_data/birdlife_intl/d2020')
+dir_shp <- file.path(dir_M, 'git-annex/globalprep/_raw_data/iucn_spp/d2020-1')
   ### in this folder are shapefiles at a taxonomic level, both from
-  ### IUCN spatial data download (version 2019-1)
+  ### IUCN spatial data download (version 2020-1)
 
 ```
 
