@@ -175,7 +175,7 @@ for (f in files){ # f = files[2]
   names(m_rgn)[names(m_rgn) == 'value'] <- units  
   
   ## output to .csv - should create two csvs (tonnes.csv and usd.csv)
-  harvest_out <- sprintf(here('globalprep/np/v2020/int/%s.csv'), units) # used in v2018: sprintf('int/%s.csv', units)
+  harvest_out <- sprintf(here('globalprep/np/v2020/int/%s.csv'), units)
   write.csv(m_rgn, harvest_out, row.names = FALSE, na = '')
 }
 
