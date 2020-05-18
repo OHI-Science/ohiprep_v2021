@@ -8,20 +8,18 @@ output:
     theme: cerulean
     highlight: haddock
     includes: 
-      in_header: '../../../workflow/templates/ohi_hdr.html'
+      in_header: '../../../src/templates/ohi_hdr.html'
   pdf_document:
     toc: true
 ---
 
-[REFERENCE RMD FILE](https://cdn.rawgit.com/OHI-Science/ohiprep_v2020/master/globalprep/np/v2020/np_dataprep.html)
+[REFERENCE RMD FILE: https://cdn.rawgit.com/OHI-Science/ohiprep_v2020/master/globalprep/np/v2020/np_dataprep.html]
 
 # Summary
-This analysis converts FAO commodities data into data layers used to calculate OHI 2019 global natural products scores.  
+This analysis converts FAO commodities data into data layers used to calculate OHI 2020 global natural products scores.  
 
 # Updates from previous assessment
-New year of FAO data (1976-2017). To stabilize the model, we include only commodities with >= 4 non-zero/non-NA values within the most recent 10 years (vs. the entire time frame we previously used).
-
-For this year, consider only including commodities with USD value > 1.  This may further improve the stability of the model. Also want to narrow the products to just fish oil and seaweed to mitigate model instability.
+New year of FAO data (1976-2017), but no changes to general methods. Based on v2018 instead of v2019 due to gapfilling issues in v2019.
 
 ***
 
@@ -29,7 +27,7 @@ For this year, consider only including commodities with USD value > 1.  This may
 
 **Reference**:      
     http://www.fao.org/fishery/statistics/software/fishstatj/en#downlApp
-     App release date: July 2019
+    App release date: July 2019 
 FAO raw commodities quantity 1976_2017
 FAO raw commodities value 1976_2017
 FAO metadata found [here](http://www.fao.org/fishery/statistics/global-commodities-production/en)
@@ -62,7 +60,7 @@ library(plotly)
 ## Load FAO-specific user-defined functions
 source(here('workflow/R/fao_fxn.R')) # function for cleaning FAO files
 source(here('workflow/R/common.R')) # directory locations
-source(here('globalprep/np/v2020/R/np_fxn.R')) 
+source(here('globalprep/np/v2020/R/np_fxn.R'))
 
 ```
 
@@ -72,7 +70,7 @@ Simultaneously read and process FAO commodities value and quantity data.
 ```{r}
 
 ## NOTE: This can be run as a loop, but the "value" and "quant" datasets need to be run individually to make sure
-##   there are no problems (after this check, they can be looped for efficiency)
+##  there are no problems (after this check, they can be looped for efficiency)
 
 ## describe where the raw data are located:
 dir_fao_data <- file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_commodities/d2020')
@@ -80,13 +78,17 @@ dir_fao_data <- file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_commodities
 ## list files included in d2020 folder (value and quant datasets)
 files <- list.files(dir_fao_data, pattern=glob2rx('*.csv'), full.names=TRUE)
 
+## To compare to old data:
+# dir_fao_data <- file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_commodities/d2018')
+# files <- list.files(dir_fao_data, pattern=glob2rx('*.csv'), full.names=T)
+
+## loop
 for (f in files){ # f = files[2]
   cat(sprintf('\n\n\n====\nfile: %s\n', basename(f)))
   
   
   d <- read.csv(f, check.names=FALSE, strip.white=TRUE, stringsAsFactors = FALSE) # stringsAsFactors=T
   # checks names syntactically, strips leading and trailing whitespace, prevents conversion of characters to factors 
-
   
   ## Specifies that units are tonnes if we are reading in the Commodities Quantity data csv, and usd if we are reading in the Commodities Value data csv
   units <- c('tonnes','usd')[str_detect(f, c('quant','value'))] # detect unit name using lowercase American English
@@ -108,13 +110,23 @@ for (f in files){ # f = files[2]
     select(-trade, -Unit) %>% # eliminate 'trade' column
   arrange(country, commodity, is.na(value), year)
 
-  ## Products join: attach product categories from com2prod, and filter out all entries that do not match a product category.
-  ## Note: commodity_lookup is user-defined function to compare commodities in data vs commodities in lookup table
+  
+  ## Products join: attach product categories from com2prod, and
+  ##   filter out all entries that do not match a product category.
+  ## Note: commodity_lookup is user-defined function to compare 
+  ##   commodities in data vs commodities in lookup table
   
   ## load lookup for converting commodities to products
   com2prod <- read.csv(here('globalprep/np/v2020/raw/commodities2products.csv'), na.strings='')
-
-  ## Check the current commodity-to-product lookup table. If necessary, make changes to "raw/commodities2products.csv"
+  
+  ## version used in 2019:
+  ##    read.csv(here('globalprep/np/v2019/raw/commodities2products.csv'), na.strings='')
+  ## version used in 2018:
+  ##    com2prod <- read.csv('raw/commodities2products.csv', na.strings='')
+  ## version used in 2015: use when testing....
+  ##    com2prod <- read.csv('../v2014_test/commodities2products.csv', na.strings='')
+    
+  ## Check the current commodity-to-product lookup table.  If necessary, make changes to     "raw/commodities2products.csv"
   np_commodity_lookup(m, com2prod)
     
   ## inner_join will attach product names to matching commodities according to
@@ -123,7 +135,8 @@ for (f in files){ # f = files[2]
       inner_join(com2prod, by='commodity')
     
     
-  ## Special case: user-defined function deals with breaking up Antilles into separate reported rgns
+  ## Special case: user-defined function deals with 
+  ##   breaking up Antilles into separate reported rgns
   m <- np_split_antilles(m)
     
   ## Some changes to region names that aren't working in name_2_rgn()
@@ -138,14 +151,13 @@ for (f in files){ # f = files[2]
     mutate(country = ifelse(country == "Réunion", "Reunion", country)) %>% 
     mutate(country = ifelse(country == "R<e9>union", "Reunion", country)) %>% 
     filter(country != "Azerbaijan") # landlocked, but not being removed by name_2_rgn?
-                   
+               
     
   m_rgn <- name_2_rgn(df_in = m,
                       fld_name='country', 
                       flds_unique=c('commodity', 'product', 'year'))
     
-# v2020 unmatched: eswatini, palestine, yugoslavia (all of these are landlocked)  
-# v2020 duplicates: China, Hong Kong SAR, Macao SAR, Guadeloupe, Serbia and Montenegro, etc - these are addressed below in the group_by/summarize pipe
+# v2020 duplicates: China, Hong Kong SAR, Macao SAR, Guadeloupe, Serbia and Montenegro, etc - these are addressed below in the group_by/summarize pipe  
   
   ## combine composite regions
   ## When summarizing the dataset, this function provides a modified way to sum the value column while maintaining NA values when both variables are NA (rather than turning to zero values). The function will sum non-NA values normally.
@@ -159,15 +171,12 @@ for (f in files){ # f = files[2]
     summarize(value = sum_function(value)) %>%
     ungroup()
 
-# number of lines of data go down here^
-
-## units: rename value field to units based on filename
+  ## units: rename value field to units based on filename
   names(m_rgn)[names(m_rgn) == 'value'] <- units  
   
-  ## output to .csv - should create two csvs (tonnes.csv and usd.csv) 
-  harvest_out <- sprintf(here('globalprep/np/v2020/int/%s.csv'), units)
+  ## output to .csv - should create two csvs (tonnes.csv and usd.csv)
+  harvest_out <- sprintf(here('globalprep/np/v2020/int/%s.csv'), units) # used in v2018: sprintf('int/%s.csv', units)
   write.csv(m_rgn, harvest_out, row.names = FALSE, na = '')
-  
 }
 
 ```
@@ -177,30 +186,21 @@ for (f in files){ # f = files[2]
 Combining the quantity and value data and a bit of cleaning to remove data prior to first reporting year for each commodity and region.
 ```{r}
 
-## Read in quant dataset from int folder
+## Read in quant dataset from intermediate folder
 h_tonnes <- read.csv(here('globalprep/np/v2020/int/tonnes.csv'))
 
-## Read in value dataset from int folder
+## Read in value dataset from intermediate folder
 h_usd <- read.csv(here('globalprep/np/v2020/int/usd.csv'))
 
-## Concatenates h_tonnes and h_usd data
-## commodities includes rgn_name, rgn_id, commodity, product, year, tonnes, usd.
-commodities <- h_usd %>%
+## concatenates h_tonnes and h_usd data
+## h includes rgn_name, rgn_id, commodity, product, year, tonnes, usd.
+h <- h_usd %>%
     full_join(h_tonnes, by=c('rgn_name', 'rgn_id', 'commodity', 'product', 'year')) %>%
     mutate(commodity = as.character(commodity)) %>%
     arrange(rgn_id, product, commodity, year)
 
-## Clips out years prior to first reporting year, for each commodity per region
-commodities <- commodities %>% np_harvest_preclip
-
-## To see example below for Cook Islands
-# filter(commodities, rgn_id==153 & year>2000)
-
-## Correct a seeming error in FAO data, when one value is >0 and the other is 0
-## eg. rgn_id 153 Cook Islands, Ornamental saltwater fish, 2016, 12 USD and 0 tonnes
-commodities <- commodities %>%
-  mutate(usd = ifelse(tonnes>0 & usd==0, NA, usd)) %>%
-  mutate(tonnes = ifelse(usd>0 & tonnes == 0, NA, tonnes))
+## clips out years prior to first reporting year, for each commodity per region
+h <- h %>% np_harvest_preclip
 
 ```
 
@@ -216,16 +216,17 @@ Summary of gapfilling that is performed:
  * Regression fill third pass: Where passes 1 and 2 failed, use global-scale data to create  regression models (tonnes ~ usd + year, and vice versa) for gapfilling.  100% success.
  * End-fill:  For years where NAs still exist in final year, carry forward data from prior year (after other gapfilling techniques).
 
-```{r}
+```{r}  
 
+h <- h %>% np_harvest_gapflag
 ## Adds flag for required gap-filling, based upon NAs in data. 
 ## NOTE: Does not perform any gap-filling.
-## At this point, commodities includes: 
-## rgn_id   rgn_name   commodity   product   year   usd   tonnes   gapfill
+## At this point, h includes: 
+##    rgn_name   rgn_id   commodity   product   year   tonnes   usd   gapfill
 ## 'gapfill' will be in (zerofill, endfill, tbd, none)
-commodities <- commodities %>% np_harvest_gapflag
 
-## For each commodity within each region, creates (but doesn't save...) summary info:
+data_check <- h %>% np_datacheck()
+## for each commodity within each region, creates (but doesn't save...) summary info:
 ##   num_years:        the length of the data series for this commodity in this region
 ##   usd_unique_nz:    (or 'tns') number of unique non-zero values for usd or tonnes 
 ##   usd_na & tns_na:  number of NA occurrences
@@ -233,62 +234,65 @@ commodities <- commodities %>% np_harvest_gapflag
 ##   usd_unique_pairs: (or 'tns') within set of paired observations, count of unique usd and tonnes
 ##   unique_pairs:     lesser of usd_unique_pairs and tns_unique_pairs
 ##   count_no_data:    number of paired NAs - years with no value reported
-data_check <- commodities %>% np_datacheck()
 
-## For post-reporting years with NA for both tonnes and USD, fill zero - 
+h <- h %>% np_zerofill
+## for post-reporting years with NA for both tonnes and USD, fill zero - 
 ##    assumes that non-reporting indicates zero harvest to report.
 ## Also cross-fills zeros where one side is 0, other is NA (not flagged as gapfill)
-commodities <- commodities %>% np_zerofill
 
-## Exclude commodities (within a region) that have few non-zero data points during past 10 years.
+h <- h %>% np_lowdata_filter()
+## Exclude commodities (within a region) that have few non-zero data points.
 ## Optional parameter with default: nonzero_h_yr_min = 4
 ## NOTE: This filter has consequences for the regression, but also has meaning in terms of 
-## not inflicting a penalty on regions trying, and then stopping, an experimental harvest.
-commodities <- commodities %>% np_lowdata_filter()
+##    not inflicting a penalty on regions trying, and then stopping, an experimental harvest.
 
-## Loads a dataframe identifying UN geogregions based on geopolitical data. Typically used for gapfilling.
-UNgeorgn()
+###### NOT WORKING:
+# ## Melanie's script to add a georegional ID tag based on country keys and IDs.
+# h <- h %>% 
+#   add_georegion_id()
 
-## Melanie's script to add a georegional ID tag based on country keys and IDs. Used to gapfill based on decreasing granularity. 
-commodities <- commodities %>% 
-  add_georegion_id() %>%
-  select(-territory, -admin_rgn_id, -admin_country_name, -Notes) %>% 
-    rename(georgn_id = r2_label)
 
+h <- h %>% np_regr_fill(years_back = 10, vars = 'td', scope = 'rgn_id')
+h <- h %>% np_regr_fill(vars = 'tdy', scope = 'georgn_id')
+h <- h %>% np_regr_fill(vars = 'tdy', scope = 'global')
 ## np_regr_fill() is a generalized regression gapfill function. Parameters (with defaults):
 ## * years_back=50 (int):     This determines how far back in the time series to include within the regression.
 ## * min_paired_obs=4 (int):  This determines how many paired observations are required to attempt a regression.
 ## * scope = 'rgn_id' (str):  ('rgn_id', 'georgn_id', 'global') Determines grouping scale for regression.
 ## * vars = 'tdy' (str):      ('td', 'tdy') Determines model: (tonnes ~ usd) or (tonnes ~ usd + year) [and vice versa]
-commodities <- commodities %>% np_regr_fill(years_back = 10, vars = 'td', scope = 'rgn_id')
-commodities <- commodities %>% np_regr_fill(vars = 'tdy', scope = 'georgn_id')
-commodities <- commodities %>% np_regr_fill(vars = 'tdy', scope = 'global')
 
+
+h <- h %>% np_end_fill()
 ## For final year of data, if both usd and tonnes originally reported as NA, pull forward
-##    values for usd and tonnes from the previous year.  This should happen after regression fill.
-commodities <- commodities %>% np_end_fill()
+## values for usd and tonnes from the previous year.  This should happen after regression fill.
 
+h_comm <- h
 ## Store commodity-level data, before moving on to the product-level smoothing.
-h_comm <- commodities
+
+
+## Output gapfilling report to .csv files.
+## Very few usd gapfilling, and none in recent years (data used to weight contributions), so will ignore this: gapfill=="r2_u_gr"
+h_gap <- h %>%
+  mutate(gapfill = ifelse(gapfill == "r2_u_gr", "none", gapfill)) %>%   # focusing only on tonnes gapfilling
+  select(rgn_id, commodity, product, year, gapfill)
+
+write.csv(h_gap, 'output/np_harvest_tonnes_gf.csv', row.names = FALSE, na = '')
 
 ```
-# Final Data Wrangling
+
+# Final Data Wranglng
 
 ## Summarize values
-
 Summarize each product per country per year, e.g., all corals in Albania in 2011. And, do some error checking.
 ```{r}
 
-## Summarize each product's value and quantity by country and year
 h_prod <- h_comm %>%
   group_by(rgn_name, rgn_id, product, year) %>%
   summarize(tonnes = sum(tonnes, na.rm = TRUE), 
-            usd = sum(usd, na.rm = TRUE)) %>% 
-  ungroup() # v2019: Added ungroup() above
-
+            usd = sum(usd, na.rm = TRUE))
+          
 ## Error-checking and table exports to see if there are duplicates
 stopifnot(sum(duplicated(h_prod[ , c('rgn_id', 'product', 'year')])) == 0)
-
 ```
 
 ## Quick Data Check
@@ -297,14 +301,12 @@ Look at wide format with all commmodities and product subtotal (where commodity 
 
 ```{r}
 
-## Look at wide format for quant
 h_x_tonnes <- h_comm %>% 
   bind_rows(mutate(h_prod, commodity='Z_TOTAL')) %>%
   select(rgn_name, rgn_id, commodity, product, year, tonnes) %>%
   arrange(rgn_name, product, commodity, year) %>%
   spread(year, tonnes)
 
-## Look at wide format for value
 h_x_usd <- h_comm %>% 
   bind_rows(mutate(h_prod, commodity='Z_TOTAL')) %>%
   select(rgn_name, rgn_id, commodity, product, year, usd) %>%
@@ -312,41 +314,24 @@ h_x_usd <- h_comm %>%
   spread(year, usd)
 
 ## Check a random country and commodity
-australia <- h_x_usd %>% 
-  filter(product == "shells", rgn_name == "Australia") 
-
-
-## Compare old and new (v2020)
-h_x_usd_old <- read_csv(here("globalprep/np/v2019/int/np_harvest_usd_wide.csv"))
-
-aus_old <- h_x_usd_old %>% 
-  filter(product == "shells", rgn_name == "Australia", commodity == "Z_TOTAL")
-
-australia <- australia %>%
-  filter(commodity == "Z_TOTAL") %>% 
-  tidyr::gather(key = "year", value = "value_v2020", -(rgn_name), -(commodity), -(rgn_id), -(product))
-
-## Compare old and new for Australia
-aus_compare <- aus_old %>% 
-  tidyr::gather(key = "year", value = "value_v2019", -(rgn_name), -(commodity), -(rgn_id), -(product)) %>% 
-  full_join(australia, by = c("rgn_id","rgn_name","commodity","product", "year"))
+australia <- h_x_usd %>% filter(product == "ornamentals", rgn_name == "Australia") 
+australia
 
 ## Can open up in Excel to compare subtotals per country-product-year
-write.csv(h_x_tonnes, here('globalprep/np/v2020/int/np_harvest_tonnes_wide.csv'), row.names = FALSE, na = 'NA')
-write.csv(h_x_usd, here('globalprep/np/v2020/int/np_harvest_usd_wide.csv'), row.names = FALSE, na = 'NA')
+write.csv(h_x_tonnes, 'int/np_harvest_tonnes_wide.csv', row.names = FALSE, na = 'NA')
+write.csv(h_x_usd,    'int/np_harvest_usd_wide.csv',    row.names = FALSE, na = 'NA')
+
 ```
 
 
 ## Calculate Rolling Averages
-
 Determine rolling averages for tonnes and USD in order to determine peak values.  This is based upon total harvests by product group, not individual commodity.  
 
 ```{r}
 
-## Find max year in the summarized data table
+# Find max year in the summarized data table
 year_max <- max(h_prod$year)
 
-## Determine rolling averages for quant and value
 roll_prod <- h_prod %>%
   arrange(rgn_id, product, year) %>%
   group_by(rgn_id, product) %>%
@@ -380,9 +365,9 @@ peak_prod <- roll_prod %>%
     mutate(usd_peak = max(usd[year >= (year_max - recent_years)], na.rm=T)) %>%
     ungroup() 
 
-## For each product, all years (within a region) have the same usd_peak values, but some years don't have all the products. Use the most recent year as this is considered the most current product list. 
+## for each product, all years (within a region) have the same usd_peak values, but some years don't have all the products. Use the most recent year as this is considered the most current product list. 
 prod_weights <- peak_prod %>%
-    filter(year==year_max) %>% # v2020: most recent year is 2017
+    filter(year==year_max) %>% 
     group_by(rgn_id) %>%
     mutate(
       usd_peak_allproducts = sum(usd_peak, na.rm=T),
@@ -392,8 +377,8 @@ prod_weights <- peak_prod %>%
   select(rgn_id, year, product, weight = prod_weight)
 
 ## Determine relative status:
-smooth_prod <- peak_prod %>% 
-  mutate(tonnes_rel = ifelse(tonnes >= tonnes_peak, 1, tonnes / tonnes_peak))
+  smooth_prod <- peak_prod %>% 
+    mutate(tonnes_rel = ifelse(tonnes >= tonnes_peak, 1, tonnes / tonnes_peak))
   
 ```
 
@@ -402,321 +387,333 @@ smooth_prod <- peak_prod %>%
 ```{r}
 
 ## Write entire data frame to .csv:
-write.csv(smooth_prod, here('globalprep/np/v2020/int/np_harvest_smoothed_data.csv'), row.names = FALSE, na = '')
+write.csv(smooth_prod, 'int/np_harvest_smoothed_data.csv', row.names = FALSE, na = '')
 
 ## Write individual data layers:
 ## Write NP weights layer also used to calculate pressures and resilience:
-write.csv(prod_weights, here('globalprep/np/v2020/output/np_harvest_weights_from_usd.csv'), row.names = FALSE, na = '')
+write.csv(prod_weights, 'output/np_harvest_weights_from_usd.csv', row.names = FALSE, na = '')
 
 ## Save tonnes data
 tonnes <- smooth_prod %>%
-  select(rgn_id, product, year, tonnes)
-
-## Write tonnes data to .csv:
-write.csv(tonnes, here('globalprep/np/v2020/output/np_harvest_tonnes.csv'), row.names = FALSE, na = '')
+  select(rgn_id, product, year, tonnes) 
+write.csv(tonnes, 'output/np_harvest_tonnes.csv', row.names = FALSE, na = '')
 
 ## Save relative tonnes data
 tonnes_rel <- smooth_prod %>%
-  select(rgn_id, product, year, tonnes_rel)
+  select(rgn_id, product, year, tonnes_rel) 
+write.csv(tonnes_rel, 'output/np_harvest_tonnes_rel.csv', row.names = FALSE, na = '')
 
-## Write relative tonnes data to .csv:
-write.csv(tonnes_rel, here('globalprep/np/v2020/output/np_harvest_tonnes_rel.csv'), row.names = FALSE, na = '')
 
 ```
 
 ## Final data check
 
-Checking out some outliers with large changes in status values (found after uploading to global):
+Comparing against last year's data. For example, compare the data for 1976-2013 for the 2017 and 2018 assessment year. Do not need to look at new years of data (2014-2015), which is only available in the 2018 assessment year, since those did not exist in the previous year's assessment.
 
-region_id   | region name  | change in status  | explanation
------------ | ---------------- | ------------------ | -------------------
-67         |       Libya             | +84         | Looks like there may have been a difference in calculation or mistake made somewhere - the v2018 final output file np_harvest_tonnes.csv had NA for shells in 2013-2015, whereas the same data file for v2019 had 3-5 tonnes for this product over the same span (tonnes values were 0 - 1 for previous years in both files, so big jump). Odd because the raw data have matching numbers for tonnes, so maybe something got messed up in either this year or last year's calculation (neither year gapfilled these data).
-153       |      Cook Islands        | +27         | No differences in raw data, but values for ornamentals are different between v2018 and v2019- minorly for 2010-11, and more significantly between 2012-2015. This is odd because the raw data for both v2018 and v2019 has 0 for ornamental fish nei and and NA for ornamental saltwater fish (the only ornamental items for this region) for 2012-2015. Note: ornamental saltwater fish values were gapfilled using UN georegions (in v2018 and v2019).
-78        |         Lebanon          | +24         |  Big changes to ornamentals from 2012-2015 between v2018 and v2019 (raw data had some fish oil values that were zero in v2018 that are now NA, otherwise all raw values matched up). Ornamental fish nei values were zerofilled from 2011-2013 , ornamental saltwater fish zerofilled in 2014
-43        |         Kenya            | + 18        | Again, big jump in ornamental tonnes from 2013-2015, with no changes in the raw data between v2018 and v2019. None of these data were gapfilled.
-191       |           Iran           | -30         | In raw data, ornamental fish nei had zeroes for 2014-2015 in v2019 and NAs in v2019; no other changes, including in output tonnes data between v2018 and v2019 (must have gapfilled based on previous years' data).
-
-```{r exploration, include=FALSE}
+Note: Republique du Congo, due to revision of 2011 data for ornamentals (and only one product that isn't a big producer)
+```{r}
 
 ## Look at Commodities TONNES for a few countries
+## Look at a few regions that previously had no scores: Malta, Cayman Islands, Curacao
+## Previous assessment only went up to 2013??
 
-## Load in raw data from this year and last year:
-new <- read.csv(here('globalprep/np/v2020/int/tonnes.csv'))
-old <- read.csv(here('globalprep/np/v2019/int/tonnes.csv'))
-
-## Bahamas (rgn #110)
-new_bahamas <- filter(new, rgn_id==110) %>%
-  arrange(commodity, year) %>% 
-  rename(tonnes_new = "tonnes")
-old_bahamas <- filter(old, rgn_id==110) %>%
-  full_join(new_bahamas) %>%
-  arrange(commodity, year) %>%
-  filter(year>2000)
-
-bahamas_compare <- old_bahamas %>% 
-left_join(new_bahamas, by = c("commodity","year","rgn_id","rgn_name","product", "tonnes_new"))
-
-plot(bahamas_compare$tonnes_new, bahamas_compare$tonnes)
-abline(0,1, col="red")
-
-# No changes at all in raw data, look into smoothed data: 
-
-## Bahamas harvest smoothed data to see rel tonnes
-smooth_new <- read.csv(here("globalprep/np/v2020/int/np_harvest_smoothed_data.csv")) %>%
-  filter(rgn_id==110, year %in% c(2010:2016)) %>% 
-  select(rgn_id, product, year, tonnes, tonnes_rel)
-smooth_old <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>% 
-  filter(rgn_id==110, year %in% c(2010:2016)) %>%
-  select(rgn_id, product, year, tonnes, tonnes_rel) %>% 
-  rename(tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
-
-smoothed <- smooth_old %>% 
-  full_join(smooth_new, by = c("rgn_id","product","year"))
-
-# Some small changes to smoothed data, but nothing drastic
-
-## Compare output files:
-new_tonnes <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes.csv")) %>% 
-  filter(rgn_id==110, year %in% c(2010:2016))
-old_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
-  filter(rgn_id==110, year %in% c(2010:2016)) %>% 
+## Malta
+new <- read.csv("int/tonnes.csv") %>% 
+  filter(rgn_id==68, year %in% c(1990:2015))
+old <- read.csv("../v2016/int/tonnes.csv") %>%  # CHANGE YEAR
+  filter(rgn_id==68, year %in% c(1990:2015)) %>% 
   rename(tonnes_old = tonnes)
 
-compare <- old_tonnes %>% 
-full_join(new_tonnes, by = c("rgn_id","product","year"))
+compare <- old %>% 
+full_join(new, by = c("rgn_id","rgn_name","commodity","product","year"))
 
-plot(compare$tonnes, compare$tonnes_old)
-abline(0,1, col="red")
+## Cayman Islands
+new <- read.csv("int/tonnes.csv") %>% 
+  filter(rgn_id==113, year %in% c(1976:2015))
+old <- read.csv("../v2016/int/tonnes.csv") %>%  # CHANGE YEAR
+  filter(rgn_id==113, year %in% c(1976:2015)) %>% 
+  rename(tonnes_old = tonnes)
 
-# Slight changes but still looks good
+compare <- old %>% 
+full_join(new, by = c("rgn_id","rgn_name","commodity","product","year"))
+
+## Curacao Islands
+new <- read.csv("int/tonnes.csv") %>% 
+  filter(rgn_id==244, year %in% c(1976:2015))
+old <- read.csv("../v2016/int/tonnes.csv") %>%  # CHANGE YEAR
+  filter(rgn_id==244, year %in% c(1976:2015)) %>% 
+  rename(tonnes_old = tonnes)
+
+compare <- old %>% 
+full_join(new, by = c("rgn_id","rgn_name","commodity","product","year"))
 
 
-## Cook Islands (rgn #153)
 
-## Compare raw data 
-new_cook <- filter(new, rgn_id==153) %>%
+## Look at a few regions that had large differences in status values: Vanuatu, Tunisia, Cuba, North Korea
+## Take a look at Vanuatu: no diff in int tonnes, but significant diff in np_harvest_tonnes, checked gapfilling - gapfilled all '0' and NA values for tonnes using regression with georegion
+new <- read.csv("int/tonnes.csv")
+old <- read.csv("../v2016/int/tonnes.csv") # CHANGE YEAR
+new_c <- filter(new, rgn_id==6) %>%
   arrange(commodity, year) %>% 
   rename(tonnes_new = "tonnes")
-old_cook <- filter(old, rgn_id==153) %>%
+old_c <- filter(old, rgn_id==6) %>%
   arrange(commodity, year)
 
-cook_compare <- old_cook %>% 
-left_join(new_cook, by = c("commodity","year","rgn_id","rgn_name","product"))
+compare <- old_c %>% 
+left_join(new_c, by = c("commodity","year","rgn_id","rgn_name","product"))
 
-plot(cook_compare$tonnes_new, cook_compare$tonnes)
+plot(compare$tonnes_new, compare$tonnes)
 abline(0,1, col="red")
 
-# No changes at all in raw data, look into smoothed data: 
-
-## Cook Islands harvest smoothed data to see rel tonnes
-smooth_new <- read.csv(here("globalprep/np/v2020/int/np_harvest_smoothed_data.csv")) %>%
-  filter(rgn_id==153, year %in% c(2010:2016)) %>% 
-  select(rgn_id, product, year, tonnes, tonnes_rel)
-smooth_old <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>% 
-  filter(rgn_id==153, year %in% c(2010:2016)) %>%
-  select(rgn_id, product, year, tonnes, tonnes_rel) %>% 
-  rename(tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
-
-smoothed <- smooth_old %>% 
-  full_join(smooth_new, by = c("rgn_id","product","year"))
-
-# Pretty big changes to smoothed data; due to FAO updating backfilling data or something else?
-
-## Compare output files:
-new_cook <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes.csv")) %>% 
-  filter(rgn_id==153, year %in% c(2010:2016))
-old_cook <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
-  filter(rgn_id==153, year %in% c(2010:2016)) %>% 
-  rename(tonnes_old = tonnes)
-
-compare_cook <- old_cook %>% 
-full_join(new_cook, by = c("rgn_id","product","year"))
-
-plot(compare_cook$tonnes, compare_cook$tonnes_old)
-abline(0,1, col="red")
-
-# Pretty big changes to final harvest tonnage data
-
-### v2019 used the "gf_alternative_rough_notes.Rmd" to check gapfilling:
-# Were they gapfilled?
-new_tonnes_gf <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes_gf.csv")) %>% 
-  filter(rgn_id==153, year %in% c(2010:2016))
-
-old_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
-  filter(rgn_id==153, year %in% c(2010:2016))
-
-# Values for ornamentals are different between v2018 and v2019- minorly for 2010-11, and more significantly between 2012-2015. This is odd because the raw data for both v2018 and v2019 has 0 for ornamental fish nei and and NA for ornamental saltwater fish (the only ornamental items for this region) for 2012-2015.
-
-
-## Lebanon (rgn #78)
-
-# Compare raw data 
-new_leb <- filter(new, rgn_id==78) %>%
-  arrange(commodity, year) %>% 
-  rename(tonnes_new = "tonnes")
-old_leb <- filter(old, rgn_id==78) %>%
-  arrange(commodity, year) %>% 
-    rename(tonnes_old = "tonnes")
-
-leb_compare <- old_leb %>% 
-left_join(new_leb, by = c("commodity","year","rgn_id","rgn_name","product"))
-
-plot(leb_compare$tonnes_new, leb_compare$tonnes_old)
-abline(0,1, col="red")
-
-# Some points were zero or 0.1 that are now NA 
-
-## Lebanon harvest smoothed data to see rel tonnes
-smooth_new <- read.csv(here("globalprep/np/v2020/int/np_harvest_smoothed_data.csv")) %>%
-  filter(rgn_id==78, year %in% c(2010:2016)) %>% 
-  select(rgn_id, product, year, tonnes, tonnes_rel)
-smooth_old <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>% 
-  filter(rgn_id==78, year %in% c(2010:2016)) %>%
-  select(rgn_id, product, year, tonnes, tonnes_rel) %>% 
-  rename(tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
-
-smoothed <- smooth_old %>% 
-  full_join(smooth_new, by = c("rgn_id","product","year"))
-
-plot(smoothed$tonnes_old, smoothed$tonnes)
-abline(0,1, col="red")
-
-# A few slight outliers but not too concerning
-
-## Compare output files:
-new_tonnes <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes.csv")) %>% 
-  filter(rgn_id==78, year %in% c(2010:2016))
-old_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
-  filter(rgn_id==78, year %in% c(2010:2016)) %>% 
-  rename(tonnes_old = tonnes)
-
-compare_leb <- old_tonnes %>% 
-full_join(new_tonnes, by = c("rgn_id","product","year"))
-
-# Fish oil data went from some tonnage to NA between v2019 and v2020
-
-# were they gapfilled? 
-new_tonnes_gf <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes_gf.csv")) %>% 
-  filter(rgn_id==78, year %in% c(2010:2016))
-old_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
-  filter(rgn_id==78, year %in% c(2010:2016))
-
-# both had zerofill 2011-2013, otherwise no gapfilling
-
-## Kenya (rgn #43)
-# Compare raw data 
-new_kenya <- filter(new, rgn_id==43) %>%
-  arrange(commodity, year) %>% 
-  rename(tonnes_new = "tonnes")
-old_kenya <- filter(old, rgn_id==43) %>%
-  arrange(commodity, year) %>% 
-    rename(tonnes_old = "tonnes")
-
-kenya_compare <- old_kenya %>% 
-left_join(new_kenya, by = c("commodity","year","rgn_id","rgn_name","product"))
-
-plot(kenya_compare$tonnes_new, kenya_compare$tonnes_old)
-abline(0,1, col="red")
-
-# No changes to raw data at all 
-
-## Kenya harvest smoothed data to see rel tonnes
-smooth_new <- read.csv(here("globalprep/np/v2020/int/np_harvest_smoothed_data.csv")) %>%
-  filter(rgn_id==43, year %in% c(2010:2016)) %>% 
-  select(rgn_id, product, year, tonnes, tonnes_rel)
-smooth_old <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>% 
-  filter(rgn_id==43, year %in% c(2010:2016)) %>%
-  select(rgn_id, product, year, tonnes, tonnes_rel) %>% 
-  rename(tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
-
-smoothed <- smooth_old %>% 
-  full_join(smooth_new, by = c("rgn_id","product","year"))
-
-plot(smoothed$tonnes_old, smoothed$tonnes)
-abline(0,1, col="red")
-# Large differences for ornamentals 2013-2015 between v2018 and v2019
-
-
-# Compare output files:
-new_tonnes <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes.csv")) %>% 
-  filter(rgn_id==43, year %in% c(2010:2016))
-
-old_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
-  filter(rgn_id==43, year %in% c(2010:2016)) %>% 
+## Look at Vanuatu final output: decreases in ornamental values from old assessment year to new assessment year
+new_tonnes <- read.csv("output/np_harvest_tonnes.csv") %>% 
+  filter(rgn_id==6, year %in% c(2010:2013))
+old_tonnes <- read.csv("../v2016/output/np_harvest_tonnes.csv") %>% 
+  filter(rgn_id==6, year %in% c(2010:2013)) %>% 
   rename(tonnes_old = tonnes)
 
 compare <- old_tonnes %>% 
 full_join(new_tonnes, by = c("rgn_id","product","year"))
 
-plot(compare$tonnes_old, compare$tonnes)
-abline(0,1, col="red")
-# again we're seeing the changes in ornamentals only 
 
-# Were they gapfilled?
-new_tonnes_gf <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes_gf.csv")) %>% 
-  filter(rgn_id==43, year %in% c(2010:2016))
 
-old_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
-  filter(rgn_id==43, year %in% c(2010:2016))
+## Take a look at Tunisia harvest tonnes:
+new <- read.csv("output/np_harvest_tonnes.csv") %>% 
+  filter(rgn_id==61, year %in% c(2010:2013))
+old <- read.csv("../v2016/output/np_harvest_tonnes.csv") %>% 
+  filter(rgn_id==61, year %in% c(2010:2013)) %>% 
+  rename(tonnes_old = tonnes)
 
-# ...nope
+compare <- old %>% 
+full_join(new, by = c("rgn_id","product","year"))
 
-## Iran (rgn #191)
-
-# Compare raw data 
-new_iran <- filter(new, rgn_id==191) %>%
-  arrange(commodity, year) %>% 
-  rename(tonnes_new = "tonnes")
-old_iran <- filter(old, rgn_id==191) %>%
-  arrange(commodity, year) %>% 
-    rename(tonnes_old = "tonnes")
-
-iran_compare <- old_iran %>% 
-left_join(new_iran, by = c("commodity","year","rgn_id","rgn_name","product"))
-
-plot(iran_compare$tonnes_new, iran_compare$tonnes_old)
-abline(0,1, col="red")
-
-# Ornamental nei have NAs for v2019 in 2014-2015, 0 for v2018
-
-## Iran harvest smoothed data to see rel tonnes
-smooth_new <- read.csv(here("globalprep/np/v2020/int/np_harvest_smoothed_data.csv")) %>%
-  filter(rgn_id==191, year %in% c(2010:2016)) %>% 
+## Tunisia harvest smoothed data to see rel tonnes
+smooth_new <- read.csv("int/np_harvest_smoothed_data.csv") %>% 
+  filter(rgn_id==61, year %in% c(2010:2013)) %>% 
   select(rgn_id, product, year, tonnes, tonnes_rel)
-smooth_old <- read.csv(here("globalprep/np/v2019/int/np_harvest_smoothed_data.csv")) %>% 
-  filter(rgn_id==191, year %in% c(2010:2016)) %>%
+smooth_old <- read.csv("../v2016/int/np_harvest_smoothed_data.csv") %>% 
+  filter(rgn_id==61, year %in% c(2010:2013)) %>%
   select(rgn_id, product, year, tonnes, tonnes_rel) %>% 
   rename(tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
 
 smoothed <- smooth_old %>% 
   full_join(smooth_new, by = c("rgn_id","product","year"))
 
-plot(smoothed$tonnes_old, smoothed$tonnes)
-abline(0,1, col="red")
-# no changes !
 
-# Compare output files:
-new_tonnes <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes.csv")) %>% 
-  filter(rgn_id==191, year %in% c(2010:2016))
-old_tonnes <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes.csv")) %>% 
-  filter(rgn_id==191, year %in% c(2010:2016)) %>% 
+
+
+## Take a look at Cuba: no diff in intermediate tonnes file
+new <- read.csv("int/tonnes.csv")
+old <- read.csv("../v2016/int/tonnes.csv") # CHANGE YEAR
+new_c <- new %>% 
+  filter(rgn_id==112, year %in% c(2007:2013)) %>%
+  arrange(commodity, year) %>% 
+  rename(tonnes_new = "tonnes")
+old_c <- old %>% 
+  filter(rgn_id==112, year %in% c(2007:2013)) %>%
+  arrange(commodity, year)
+
+compare <- old_c %>% 
+  left_join(new_c, by = c("commodity","year","rgn_id","rgn_name","product"))
+compare_full <- old_c %>% 
+  full_join(new_c, by = c("commodity","year","rgn_id","rgn_name","product"))
+
+plot(compare$tonnes_new, compare$tonnes)
+abline(0,1, col="red")
+
+## Just look at Cuba sponges, all years
+new <- read.csv("int/tonnes.csv")
+old <- read.csv("../v2016/int/tonnes.csv") # CHANGE YEAR
+new_c <- new %>% 
+  filter(rgn_id==112, product == "sponges") %>%
+  arrange(commodity, year) %>% 
+  rename(tonnes_new = "tonnes")
+old_c <- old %>% 
+  filter(rgn_id==112, product == "sponges") %>%
+  arrange(commodity, year)
+
+compare <- old_c %>% 
+left_join(new_c, by = c("rgn_id","rgn_name","commodity","product","year"))
+
+
+## Look at Cuba final tonnes output: minor diff in final output
+new_tonnes <- read.csv("output/np_harvest_tonnes.csv") %>% 
+  filter(rgn_id==112, year %in% c(2007:2013))
+old_tonnes <- read.csv("../v2016/output/np_harvest_tonnes.csv") %>% 
+  filter(rgn_id==112, year %in% c(2007:2013)) %>% 
+  rename(tonnes_old = tonnes)
+
+compare2 <- old_tonnes %>% 
+  left_join(new_tonnes, by = c("rgn_id","product","year"))
+
+
+
+
+
+## Take a look at Cuba smoothed data to find tonnes rel
+smooth_new <- read.csv("int/np_harvest_smoothed_data.csv") %>% 
+  filter(rgn_id==112, year %in% c(2010:2013)) %>% 
+  select(rgn_id, product, year, tonnes, tonnes_rel)
+smooth_old <- read.csv("../v2016/int/np_harvest_smoothed_data.csv") %>% 
+  filter(rgn_id==112, year %in% c(2010:2013)) %>% 
+  select(rgn_id, product, year, tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
+
+compare <- smooth_old %>% 
+left_join(smooth_new, by = c("rgn_id","product","year"))
+
+
+
+## Look at North Korea final tonnes output:
+new_tonnes <- read.csv("output/np_harvest_tonnes.csv") %>% 
+  filter(rgn_id==21)
+old_tonnes <- read.csv("../v2016/output/np_harvest_tonnes.csv") %>% 
+  filter(rgn_id==21) %>% 
   rename(tonnes_old = tonnes)
 
 compare <- old_tonnes %>% 
-full_join(new_tonnes, by = c("rgn_id","product","year"))
-
+left_join(new_tonnes, by = c("rgn_id","product","year"))
 plot(compare$tonnes_old, compare$tonnes)
 abline(0,1, col="red")
-# no changes
 
-# Were they gapfilled?
-new_tonnes_gf <- read.csv(here("globalprep/np/v2020/output/np_harvest_tonnes_gf.csv")) %>% 
-  filter(rgn_id==191, year %in% c(2010:2016))
+## Take a look at North Korea smoothed data to find tonnes rel
+smooth_new <- read.csv("int/np_harvest_smoothed_data.csv") %>% 
+  filter(rgn_id==21, year %in% c(2010:2013)) %>% 
+  select(rgn_id, product, year, tonnes, tonnes_rel)
+smooth_old <- read.csv("../v2016/int/np_harvest_smoothed_data.csv") %>% 
+  filter(rgn_id==21, year %in% c(2010:2013)) %>% 
+  select(rgn_id, product, year, tonnes_old = tonnes, tonnes_rel_old = tonnes_rel)
 
-old_tonnes_gf <- read.csv(here("globalprep/np/v2019/output/np_harvest_tonnes_gf.csv")) %>% 
-  filter(rgn_id==191, year %in% c(2010:2016))
+compare <- smooth_old %>% 
+left_join(smooth_new, by = c("rgn_id","product","year"))
 
-# zerofilling for 2014-2015, based on data from last year 
+
+
+
+
+
+## Look at a few random regions
+## Take a look at Dominican Republic
+new_c <- filter(new, rgn_id==115) %>%
+  arrange(commodity, year) %>% 
+  rename(tonnes_new = "tonnes")
+old_c <- filter(old, rgn_id==115) %>%
+  arrange(commodity, year)
+
+compare <- old_c %>% 
+left_join(new_c, by = c("commodity","year","rgn_id","rgn_name","product"))
+
+plot(compare$tonnes_new, compare$tonnes)
+abline(0,1, col="red")
+
+
+## Look at tonnes for Senegal
+new_c <- filter(new, rgn_id==66) %>%
+  arrange(commodity, year) %>% 
+  rename(tonnes_new = "tonnes")
+old_c <- filter(old, rgn_id==66) %>%
+  arrange(commodity, year)
+
+compare <- old_c %>% 
+left_join(new_c, by = c("commodity","year","rgn_id","rgn_name","product"))
+
+plot(compare$tonnes_new, compare$tonnes)
+abline(0,1, col="red")
+
+
+## Look at tonnes for Greenland
+new_c <- filter(new, rgn_id==145) %>%
+  arrange(commodity, year) %>% 
+  rename(tonnes_new = "tonnes")
+old_c <- filter(old, rgn_id==145) %>%
+  arrange(commodity, year)
+
+compare <- old_c %>% 
+left_join(new_c, by = c("commodity","year","rgn_id","rgn_name","product"))
+
+plot(compare$tonnes_new, compare$tonnes)
+abline(0,1, col="red")
+
+
+## Look at tonnes for Indonesia
+new_c <- filter(new, rgn_id==216) %>%
+  arrange(commodity, year) %>% 
+  rename(tonnes_new = "tonnes")
+old_c <- filter(old, rgn_id==216) %>%
+  arrange(commodity, year)
+
+compare <- old_c %>% 
+left_join(new_c, by = c("commodity","year","rgn_id","rgn_name","product"))
+
+plot(compare$tonnes_new, compare$tonnes)
+abline(0,1, col="red")
+
+
+
+
+
+## Look at Commodities USD value for a few countries
+new <- read.csv("int/usd.csv")
+old <- read.csv("../v2016/int/usd.csv") # CHANGE YEAR
+
+## Look at Republique du Congo
+new_c <- filter(new, rgn_id==100) %>%
+  arrange(commodity, year) %>%
+  rename(usd_new = "usd")
+old_c <- filter(old, rgn_id==100) %>%
+  arrange(commodity, year)
+
+compare <- old_c %>%
+  left_join(new_c, by = c("commodity","year","rgn_id","rgn_name","product"))
+
+plot(compare$usd_new,compare$usd)
+abline(0,1, col="red")
+
+## Look at Bahamas
+new_c <- filter(new, rgn_id==110) %>%
+  arrange(commodity, year) %>%
+  rename(usd_new = "usd")
+old_c <- filter(old, rgn_id==110) %>%
+  arrange(commodity, year)
+
+compare <- old_c %>%
+  left_join(new_c, by = c("commodity","year","rgn_id","rgn_name","product"))
+
+plot(compare$usd_new,compare$usd)
+abline(0,1, col="red")
+
+
+## Look at final smoothed tonnes data for Republique du Congo
+## Rolling average changes values slightly - make sure new data is not too different from previous year
+new <- read.csv('output/np_harvest_tonnes.csv')
+old <- read.csv('../v2016/output/np_harvest_tonnes.csv') # CHANGE YEAR
+
+
+## Look at 	Republique du Congo
+new_c <- new %>% 
+  filter(rgn_id==100) %>% 
+  rename(tonnes_new = tonnes)
+old_c <- old %>% 
+  filter(rgn_id==100)
+
+compare <- old_c %>%
+  left_join(new_c, by = c("year","rgn_id","product"))
+
+plot(compare$tonnes_new,compare$tonnes)
+abline(0,1, col="red")
+
+
+## Look at Bahamas
+new_c <- new %>% 
+  filter(rgn_id==110) %>% 
+  rename(tonnes_new = tonnes)
+old_c <- old %>% 
+  filter(rgn_id==110)
+
+compare <- old_c %>%
+  left_join(new_c, by = c("year","rgn_id","product"))
+
+plot(compare$tonnes_new,compare$tonnes)
+abline(0,1, col="red")
 
 
 ```
