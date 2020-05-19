@@ -483,7 +483,7 @@ add_georegion_id <- function(k) {
   georegion <- georegion %>%
     filter(level == "r2")
   
-  k1 <- h %>%
+  k1 <- k %>%
     left_join(key, by = 'rgn_id') %>%
     left_join(georegion, by = 'cntry_key') %>%
     select(-cntry_key)
