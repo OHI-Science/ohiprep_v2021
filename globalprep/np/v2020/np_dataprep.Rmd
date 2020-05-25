@@ -200,7 +200,7 @@ h <- h_usd %>%
     arrange(rgn_id, product, commodity, year)
 
 ## clips out years prior to first reporting year, for each commodity per region
-h <- h %>% np_harvest_preclip
+h <- h %>% np_harvest_preclip()
 
 ```
 
@@ -218,7 +218,7 @@ Summary of gapfilling that is performed:
 
 ```{r}  
 
-h <- h %>% np_harvest_gapflag
+h <- h %>% np_harvest_gapflag()
 ## Adds flag for required gap-filling, based upon NAs in data. 
 ## NOTE: Does not perform any gap-filling.
 ## At this point, h includes: 
@@ -235,7 +235,7 @@ data_check <- h %>% np_datacheck()
 ##   unique_pairs:     lesser of usd_unique_pairs and tns_unique_pairs
 ##   count_no_data:    number of paired NAs - years with no value reported
 
-h <- h %>% np_zerofill
+h <- h %>% np_zerofill()
 ## for post-reporting years with NA for both tonnes and USD, fill zero - 
 ##    assumes that non-reporting indicates zero harvest to report.
 ## Also cross-fills zeros where one side is 0, other is NA (not flagged as gapfill)
@@ -259,14 +259,17 @@ h <- h %>% np_regr_fill(vars = 'tdy', scope = 'global')
 ## * scope = 'rgn_id' (str):  ('rgn_id', 'georgn_id', 'global') Determines grouping scale for regression.
 ## * vars = 'tdy' (str):      ('td', 'tdy') Determines model: (tonnes ~ usd) or (tonnes ~ usd + year) [and vice versa]
 
+h <- h %>% np_harvest_gapflag()
+
+#test <- filter(h, is.na(tonnes), is.na(usd))
 
 h <- h %>% np_end_fill()
 ## For final year of data, if both usd and tonnes originally reported as NA, pull forward
 ##    values for usd and tonnes from the previous year.  This should happen after regression fill.
+#test <- filter(h, is.na(tonnes), is.na(usd))
 
 h_comm <- h
 ## Store commodity-level data, before moving on to the product-level smoothing.
-
 
 ## Output gapfilling report to .csv files.
 ## Very few usd gapfilling, and none in recent years (data used to weight contributions), so will ignore this: gapfill=="r2_u_gr"
