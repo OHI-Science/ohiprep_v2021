@@ -51,6 +51,9 @@ h <- h %>% np_harvest_gapflag() # works
 ## At this point, h includes: 
 ##    rgn_name   rgn_id   commodity   product   year   tonnes   usd   gapfill
 ## 'gapfill' will be in (zerofill, endfill, tbd, none)
+summary(h)
+unique(h$gapfill)
+filter(h, is.na(usd), is.na(tonnes))
 
 data_check <- h %>% np_datacheck() # works
 ## for each commodity within each region, creates (but doesn't save...) summary info:
@@ -63,6 +66,7 @@ data_check <- h %>% np_datacheck() # works
 ##   count_no_data:    number of paired NAs - years with no value reported
 
  h <- h %>% np_zerofill() ## works
+#h22<- filter(h, is.na(usd), is.na(tonnes))
 
 ##    assumes that non-reporting indicates zero harvest to report.
 ## Also cross-fills zeros where one side is 0, other is NA (not flagged as gapfill)
@@ -74,6 +78,8 @@ h <- h %>% np_lowdata_filter() # works
 ## NOTE: This filter has consequences for the regression, but also has meaning in terms of 
 ##    not inflicting a penalty on regions trying, and then stopping, an experimental harvest.
 
+filter(h, is.na(usd), is.na(tonnes)) # 357 listed as endfill now...
+
 ## Melanie's script to add a georegional ID tag based on country keys and IDs.
 h <- h %>%
   add_georegion_id() ## works
@@ -84,15 +90,20 @@ h_test <- h #store a testing dataset to be used below
 filter(h, is.na(usd), is.na(tonnes)) ## all "endfill"
 
 h <- h %>% np_regr_fill(years_back = 10, vars = 'td', scope = 'rgn_id')
+filter(h, is.na(usd), is.na(tonnes))
+
 h <- h %>% np_regr_fill(vars = 'tdy', scope = 'georgn_id')
+filter(h, is.na(usd), is.na(tonnes))
+
 h <- h %>% np_regr_fill(vars = 'tdy', scope = 'global')
+
+unique(h$gapfill)
+
 ## np_regr_fill() is a generalized regression gapfill function. Parameters (with defaults):
 ## * years_back=50 (int):     This determines how far back in the time series to include within the regression.
 ## * min_paired_obs=4 (int):  This determines how many paired observations are required to attempt a regression.
 ## * scope = 'rgn_id' (str):  ('rgn_id', 'georgn_id', 'global') Determines grouping scale for regression.
 ## * vars = 'tdy' (str):      ('td', 'tdy') Determines model: (tonnes ~ usd) or (tonnes ~ usd + year) [and vice versa]
-
-h <- h %>% np_harvest_gapflag()
 
 check0 <- filter(h, is.na(tonnes), is.na(usd)) ## all of the original endfill's are now "r3_u_gl"
 

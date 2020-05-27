@@ -317,7 +317,9 @@ np_regr_fill <- function(h, years_back=50, min_paired_obs=4, scope = 'rgn_id', v
       gapfill     = ifelse(is.na(usd) & year >= lower_bound_year & !is.na(tonnes_coef), gap_flag[2], gapfill),
       ### conditions: usd is NA (needs to be filled); year is recent; and coefficient is not NA.
       usd         = ifelse(is.na(usd) & year >= lower_bound_year, pmax(0, usd_mdl), usd)) %>%
-    select(-usd_ix0, -tonnes_ix0, -usd_coef, -tonnes_coef, -usd_mdl, -tonnes_mdl, -yr_tns_coef, -yr_usd_coef) %>%
+    mutate(year_last = max(year, na.rm=T)) %>% # add year_last variable
+   mutate(gapfill = ifelse(is.na(tonnes) & is.na(usd) & year == year_last, 'endfill', gapfill)) %>% ## fix bad classifications
+    select(-usd_ix0, -tonnes_ix0, -usd_coef, -tonnes_coef, -usd_mdl, -tonnes_mdl, -yr_tns_coef, -yr_usd_coef, year_last) %>%
     ### removes internal function-specific variables
     arrange(rgn_id, product, commodity, year)
   
