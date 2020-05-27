@@ -259,14 +259,9 @@ h <- h %>% np_regr_fill(vars = 'tdy', scope = 'global')
 ## * scope = 'rgn_id' (str):  ('rgn_id', 'georgn_id', 'global') Determines grouping scale for regression.
 ## * vars = 'tdy' (str):      ('td', 'tdy') Determines model: (tonnes ~ usd) or (tonnes ~ usd + year) [and vice versa]
 
-h <- h %>% np_harvest_gapflag()
-
-#test <- filter(h, is.na(tonnes), is.na(usd))
-
 h <- h %>% np_end_fill()
 ## For final year of data, if both usd and tonnes originally reported as NA, pull forward
 ##    values for usd and tonnes from the previous year.  This should happen after regression fill.
-#test <- filter(h, is.na(tonnes), is.na(usd))
 
 h_comm <- h
 ## Store commodity-level data, before moving on to the product-level smoothing.
