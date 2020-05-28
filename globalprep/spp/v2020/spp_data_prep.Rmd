@@ -705,7 +705,9 @@ old_spp <- read.csv(here("globalprep/spp/v2019/output/sp_status_3nm.csv")) %>%
   rename(old_score = score) %>%
   mutate(year = 2020) %>%
   left_join(status) %>%
-  rename(new_score = score) 
+  rename(new_score = score) %>%
+  mutate(difference = new_score - old_score) %>%
+  left_join(rgns_eez)
 
 plot(old_spp$old_score, old_spp$new_score)
 abline(0,1, col="red")
