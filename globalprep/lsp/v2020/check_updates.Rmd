@@ -121,6 +121,77 @@ checks <- off_2019 %>% filter(rgn_id %in% check_rgn) %>% rename(prot_3nm_2019 = 
 
 ```
 
+## Filtering for export (added due to server issues in 2020)
+Filtering out countries with large changes to look at in Arc, since rationale for these changes was difficult to find through news or research
+```{r}
+
+#Russia
+
+#2020
+wdpa_rus_20 <- wdpa_sf %>%
+  select(parent_iso, geometry) %>% 
+  filter(parent_iso == "RUS")
+#2019
+wdpa_rus_19 <- wdpa_sf_19 %>%
+  select(parent_iso, geometry) %>% 
+  filter(parent_iso == "RUS")
+
+st_write(wdpa_rus_20, dsn = dirname(file.path(dir_goal,"v2020/int")), layer = "wdpa_rus_20.shp", driver = "ESRI Shapefile")
+
+st_write(wdpa_rus_19, dsn = dirname(file.path(dir_goal,"v2020/int")), layer = "wdpa_rus_19.shp", driver = "ESRI Shapefile")
+
+#Haiti
+
+#2020
+wdpa_hti_20 <- wdpa_sf %>%
+  select(parent_iso, geometry) %>% 
+  filter(parent_iso == "HTI")
+#2019
+wdpa_hti_19 <- wdpa_sf_19 %>%
+  select(parent_iso, geometry) %>% 
+  filter(parent_iso == "HTI")
+
+st_write(wdpa_hti_20, dsn = dirname(file.path(dir_goal,"v2020/int")), layer = "wdpa_hti_20.shp", driver = "ESRI Shapefile")
+
+st_write(wdpa_hti_19, dsn = dirname(file.path(dir_goal,"v2020/int")), layer = "wdpa_hti_19.shp", driver = "ESRI Shapefile")
+
+
+
+#Mozambique
+
+#2020
+wdpa_moz_20 <- wdpa_sf %>%
+  select(parent_iso, geometry) %>% 
+  filter(parent_iso == "MOZ")
+#2019
+wdpa_moz_19 <- wdpa_sf_19 %>%
+  select(parent_iso, geometry) %>% 
+  filter(parent_iso == "MOZ")
+
+st_write(wdpa_moz_20, dsn = dirname(file.path(dir_goal,"v2020/int")), layer = "wdpa_moz_20.shp", driver = "ESRI Shapefile")
+
+st_write(wdpa_moz_19, dsn = dirname(file.path(dir_goal,"v2020/int")), layer = "wdpa_moz_19.shp", driver = "ESRI Shapefile")
+
+
+#Comoro Islands
+
+#2020
+wdpa_com_20 <- wdpa_sf %>%
+  select(parent_iso, geometry) %>% 
+  filter(parent_iso == "COM")
+#2019
+wdpa_com_19 <- wdpa_sf_19 %>%
+  select(parent_iso, geometry) %>% 
+  filter(parent_iso == "COM")
+
+st_write(wdpa_com_20, dsn = dirname(file.path(dir_goal,"v2020/int")), layer = "wdpa_com_20.shp", driver = "ESRI Shapefile")
+
+st_write(wdpa_com_19, dsn = dirname(file.path(dir_goal,"v2020/int")), layer = "wdpa_com_19.shp", driver = "ESRI Shapefile")
+
+```
+
+
+
 ***
 
 
