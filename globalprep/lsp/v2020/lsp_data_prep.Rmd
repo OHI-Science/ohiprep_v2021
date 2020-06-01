@@ -460,13 +460,3 @@ write.csv(x, "output/major_changes_2020.csv" ) #added this so I could come back 
 ```
 
 
-###Individual investigation
-```{r}
-
-lsp_russia <- lsp_new_old %>% 
-  filter(rgn_name == "Russia")
-
-
-
-```
-
