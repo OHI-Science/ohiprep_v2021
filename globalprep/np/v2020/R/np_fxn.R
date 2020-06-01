@@ -185,13 +185,11 @@ np_zerofill <- function(h) {
 
 np_lowdata_filter <- function(h, nonzero_h_yr_min = 4) {
 ### Excludes commodities with few non-zero observations with a region.
-max_year <- max(h$year)
-min_year <- max_year-9
-  
+
   h1 <- h %>%
     group_by(rgn_id, commodity) %>%
     mutate(
-      nonzero_n = sum(tonnes[year>=min_year] > 0 | usd[year>=min_year] > 0, na.rm=TRUE)) %>%
+      nonzero_n = sum(tonnes > 0 | usd > 0, na.rm=TRUE)) %>%
     filter(nonzero_n >= nonzero_h_yr_min) %>%
     ### Require at least 'nonzero_harvest_years_min' years of data; filter out all
     ###   commodities by region with fewer than this.  This prevents penalizing countries that
@@ -298,9 +296,9 @@ np_regr_fill <- function(h, years_back=50, min_paired_obs=4, scope = 'rgn_id', v
                     georgn_id = c('georgn_id','commodity'),
                     global    =   'commodity')
   gap_flag <- switch(scope,
-                    rgn_id    = c('regr1_t_rgn','regr1_u_rgn'),
-                    georgn_id = c('regr2_t_gr','regr2_u_gr'),
-                    global    = c('regr3_t_gl','regr3_u_gl'),
+                    rgn_id    = c('r1_t_rgn','r1_u_rgn'),
+                    georgn_id = c('r2_t_gr','r2_u_gr'),
+                    global    = c('r3_t_gl','r3_u_gl'),
                     c('rgn_id','commodity'))
   
   h_mdl <- h %>%
@@ -319,7 +317,9 @@ np_regr_fill <- function(h, years_back=50, min_paired_obs=4, scope = 'rgn_id', v
       gapfill     = ifelse(is.na(usd) & year >= lower_bound_year & !is.na(tonnes_coef), gap_flag[2], gapfill),
       ### conditions: usd is NA (needs to be filled); year is recent; and coefficient is not NA.
       usd         = ifelse(is.na(usd) & year >= lower_bound_year, pmax(0, usd_mdl), usd)) %>%
-    select(-usd_ix0, -tonnes_ix0, -usd_coef, -tonnes_coef, -usd_mdl, -tonnes_mdl, -yr_tns_coef, -yr_usd_coef) %>%
+    mutate(year_last = max(year, na.rm=T)) %>% # add year_last variable
+   mutate(gapfill = ifelse(is.na(tonnes) & is.na(usd) & year == year_last, 'endfill', gapfill)) %>% ## fix bad classifications
+    select(-usd_ix0, -tonnes_ix0, -usd_coef, -tonnes_coef, -usd_mdl, -tonnes_mdl, -yr_tns_coef, -yr_usd_coef, year_last) %>%
     ### removes internal function-specific variables
     arrange(rgn_id, product, commodity, year)
   
@@ -461,7 +461,7 @@ np_datacheck <- function(h) {
 
 
 add_georegion_id <- function(k) {
-### Code from Melanie to attach a georegional id tag to dataframe k.
+  ### Code from Melanie to attach a georegional id tag to dataframe k.
   region_data()
   key <- rgns_eez %>% 
     rename(cntry_key = eez_iso3) %>% 
@@ -472,29 +472,23 @@ add_georegion_id <- function(k) {
   key  <- key %>%
     filter(!(cntry_key %in% c('Galapagos Islands', 'Alaska',
                               'Hawaii', 'Trindade', 'Easter Island',
-                              'PRI', 'GLP', 'MNP')))  
+                              'PRI', 'GLP', 'MNP')))  %>%
+    select(rgn_id, cntry_key)
   #PRI (Puerto Rico) and VIR (Virgin Islands) in the same r2 zone (just selected one), 
   #GLP (Guadalupe) and MTQ (Marinique) in the same r2 zone (just selected one),  
   #MNP (Northern Mariana Islands) and GUM (Guam)
   
   
-  georegion <- UNgeorgn
-  #   unique(georegion$georgn_id[georegion$level=="r0"])  # 1 level
-  #   unique(georegion$georgn_id[georegion$level=="r1"])  # 7 levels
-  #   unique(georegion$georgn_id[georegion$level=="r2"])  # 22 levels
-  # # OHI gapfills at level r2, which is the finest granularity. 
+  georegion <- read.csv(file.path(here(), "globalprep/np/v2020/raw/cntry_georegions.csv"))
+  
   
   georegion <- georegion %>%
-    select(rgn_id, r2_label)
+    filter(level == "r2")
   
   k1 <- k %>%
     left_join(key, by = 'rgn_id') %>%
-    left_join(georegion, by = 'rgn_id') %>%
+    left_join(georegion, by = 'cntry_key') %>%
     select(-cntry_key)
-      ### cleaning out variables
+  ### cleaning out variables
   return(k1)
 }
-
-
-
-

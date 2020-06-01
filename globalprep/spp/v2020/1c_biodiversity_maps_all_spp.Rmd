@@ -36,7 +36,7 @@ library(sf)
 source(here('workflow/R/common.R'))
 
 goal     <- 'spp'
-scenario <- 'v2019'
+scenario <- 'v2020'
 dir_goal <- here('globalprep', goal, scenario)
 
 ### goal specific folders and info
@@ -121,7 +121,7 @@ if(!file.exists(cell_summary_file) | reload == TRUE) {
   
   message('going into the first mclapply...')
   
-  ptm <- system.time({
+  ptm <- system.time({ # processing time 14.801999999996 sec
     cell_values_all <- parallel::mclapply(sum_files, mc.cores = 32,
       FUN = function(x) {
         read_csv(x, col_types = 'dddiidi')
@@ -140,8 +140,7 @@ if(!file.exists(cell_summary_file) | reload == TRUE) {
   
   message('going into the second mclapply...')
   # system.time({ 
-    ### standard:  3 sec for 5, 12.5 sec for 20... 32 sec for 50... 479 chunks ~ 6 min.
-    ### mclapply: 4 sec for 50, with 32 cores. 52 sec for the whole shebang.
+    ### mclapply: processing time 27.2139999999927 sec
   ptm <- system.time({
     cell_vals_list <- parallel::mclapply(1:n_chunks, mc.cores = 12,
         FUN = function(x) { ### x <- 1
@@ -157,7 +156,7 @@ if(!file.exists(cell_summary_file) | reload == TRUE) {
   
   message('going into the third mclapply...')
   
-  ptm <- system.time({
+  ptm <- system.time({ # processing time 9.91100000000733 sec
     cell_summary_list <- parallel::mclapply(cell_vals_list, mc.cores = 24,
                                        FUN = function(x) {
       ### x <- cell_vals_list[[250]]
