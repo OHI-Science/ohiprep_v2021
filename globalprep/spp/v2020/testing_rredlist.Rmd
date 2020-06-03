@@ -17,7 +17,20 @@ library(here)
 library(ggridges)
 library(ggplot2)
 library(stringr)
+source(here('workflow/R/common.R'))
 
+goal     <- 'spp'
+scenario <- 'v2020'
+
+dir_goal <- here('globalprep', goal, scenario)
+
+### goal specific folders and info
+dir_anx  <- file.path(dir_M, 'git-annex/globalprep')
+dir_setup   <- file.path(dir_goal, '_setup')
+dir_goal_anx <- file.path(dir_anx, goal, scenario, 'spp_risk_dists')
+dir_goal_anx_countries <- file.path(dir_anx, goal, scenario, 'spp_countries')
+
+source(file.path(dir_setup, 'common_fxns.R'))
 ```
 
 
@@ -33,6 +46,8 @@ all_df_comp <- all_df %>%
     dplyr::rename(iucn_sid = taxonid, sciname = scientific_name) %>%
     setNames(names(.) %>%
                stringr::str_replace('_name', ''))
+
+write.csv(all_df_comp, file.path(dir_goal,"raw_test/spp_list_iucn.csv"))
 ```
 
 get all species habitats from iucn
@@ -69,6 +84,122 @@ write_csv(spp_hab_tmp_2, chunk_file)
       
 }
 }
+
+
+```
+
+Grab all countries and Palmyra Atoll specific species:
+
+```{r}
+spp_list <- read_csv(file.path(dir_goal, 'raw_test/spp_list_iucn.csv')) %>%
+  .$iucn_sid
+
+spp_country_url <- 'http://apiv3.iucnredlist.org/api/v3/species/countries/id/%s?token=%s'
+
+chunk_size <- 2000
+  n_chunks <- ceiling(length(spp_list)/chunk_size)
+  
+  if(!dir.exists(file.path(dir_goal_anx_countries, 'tmp'))) {
+    dir.create(file.path(dir_goal_anx_countries, 'tmp'))
+  }
+  
+  for(j in 1:n_chunks) { 
+    #j <- 16
+    spp_index <- c( ((j - 1) * chunk_size + 1) : min((j * chunk_size), length(spp_list)) )#[1:100]
+    
+    chunk_file <- file.path(dir_goal_anx_countries, 'tmp', 
+                    sprintf('spp_countries_chunk_%s_%s.csv', 
+                            min(spp_index), max(spp_index)))
+
+    if(!file.exists(chunk_file)) {
+      cat_msg('Getting country info for species ', min(spp_index), ' to ', max(spp_index))
+      
+      spp_ids_chunk <- spp_list[spp_index]
+      spp_country_chunk <- mc_get_from_api(spp_country_url, spp_ids_chunk, api_key, cores = 12, delay = .5)
+      cat_msg('... found ', nrow(spp_country_chunk), ' habitat rows for these species')
+      
+      write_csv(spp_country_chunk, chunk_file)
+      
+    } else {
+      
+      cat_msg('Chunk file ', chunk_file, ' already exists; skipping these spp')
+      
+    }
+  }
+  
+  ### fields: 
+
+  spp_country_chunk_files <- list.files(file.path(dir_goal_anx_countries, 'tmp'), 
+                                    pattern = 'spp_countries_chunk', 
+                                    full.names = TRUE)
+  
+  spp_country_df <- lapply(spp_country_chunk_files, FUN = function(x) {
+    read.csv(x) %>%
+      mutate(code = as.character(code))}) %>%
+    bind_rows() %>%
+    rename(iucn_sid = id) %>%
+    mutate(iucn_sid = ifelse(is.na(iucn_sid), param_id, iucn_sid)) %>%
+    arrange(iucn_sid)
+  
+  spp_errors <- spp_country_df %>%
+    filter(!is.na(api_error) & api_error != 'no data.frame') %>%
+    .$iucn_sid
+  ### all these errors are due to returning a zero-length list instead of a data.frame
+
+  write_csv(spp_country_df, spp_country_from_api_file)
+  
+
+```
+
+Name to region function (in OHI core package) reports regions that don't have a match in OHI region list. Here we report certain reported regions at a higher spatial scale, based on the listed regions in the error message. 
+```{r country_split, eval=FALSE}
+####### v2020 error checking:
+
+# v2020 - No match for Isle of Man (not reported in OHI), Palestine (disputed), Saint Barthélemy (not reported in OHI), Disputed Territory (not associated with a country and can't be mapped to an OHI region) Macedonia (landlocked), and the four country strings above that were split to higher spatial resolutions 
+
+
+# Check that the country_split_data captures all the data from the longer country strings that were removed 
+check_full <- ico_spp_countries %>% 
+  filter(country == "Bonaire, Sint Eustatius and Saba") #29 species
+check_split <- ico_spp_countries %>% 
+  filter(country == "Bonaire" | country == "Saba" | country == "Sint Eustatius") 
+#87 entries - makes sense each of the 29 species is listed three times, one for each country
+
+# Check error message to make sure the unmatched countries don't have an OHI region match, that there are no duplicates, and that the unmatched regions make sense (not disputed, landlocked, not reported). If there are duplicates or unmatched regions that are reported in OHI, need to go back to fix and rerun the code.
+
+# v2020 - 26 countries removed for not being proper rgn_type or mismatched region names, all countries are not reported in OHI and aren't found in the rgns_all list
+
+# v2020 - returned the "duplicates found" error 
+# check for duplicates by replicating the code at the end of the name_2_rgn function
+dups <- ico_spp_rgn_raw[, c("iucn_sid", "country")]
+i_dupes <- duplicated(dups, fromLast = FALSE) | duplicated(dups, 
+        fromLast = TRUE)
+sum(i_dupes) #returns 0 
+df_dups <- unique(ico_spp_rgn_raw[i_dupes, "country"]) #empty df - implies there are no duplicates, so I'm not sure why I was getting that error
+
+############
+
+summary(ico_spp_rgn_raw) # Make sure there are no NAs!
+write_csv(ico_spp_rgn_raw, file.path(dir_github, 'raw/ico_spp_rgn_raw.csv'))
+```
+
+Get US Minor Outlying Islands species 
+```{r}
+library(ohicore)
+spp_country_url <- 'http://apiv3.iucnredlist.org/api/v3/country/getspecies/id/%s?token=%s'
+# 
+# /api/v3/country/getspecies/:country?token='YOUR TOKEN'
+
+rl_countries(key = api_key)
+#UM is United States Minor Outlying Islands country code
+spp_um <- rl_sp_country('UM', key = api_key)$result %>%
+  mutate(country_code = "UM", country = "Palmyra Atoll") %>%
+  rename("iucn_sid" = "taxonid")
+
+spp_rgn_raw <- name_2_rgn(df_in = spp_um, 
+                       fld_name='country',
+                       flds_unique = 'iucn_sid') %>%
+  select(-country)
 
 ```
 
