@@ -235,15 +235,15 @@ For each of these species, use the IUCN API to gather a list of countries in whi
  
 ``` {r get_country_list, eval= F}
 
-ico_country_url <- 'http://apiv3.iucnredlist.org/api/v3/species/countries/id/%s?token=%s'
-
-ico_spp_countries <- mc_get_from_api(url = ico_country_url, param_vec = unique(ico_list$iucn_sid), api_key = api_key, delay = 0.5)
-# sometimes this line takes a while to run! Make sure you have the project open........
-# v2020 had trouble with this line running for 8+ hours and never finishing, I think the server might have been timing out but wasn't sure, used the work around below instead
-
-write_csv(ico_spp_countries, file.path(dir_github, 'int/ico_spp_countries.csv')) # save this as an intermediate data file since it takes so long to create the df
-
-ico_spp_countries <- read_csv(here("globalprep/ico/v2019/int/ico_spp_countries.csv"))
+# ico_country_url <- 'http://apiv3.iucnredlist.org/api/v3/species/countries/id/%s?token=%s'
+# 
+# ico_spp_countries <- mc_get_from_api(url = ico_country_url, param_vec = unique(ico_list$iucn_sid), api_key = api_key, delay = 0.5)
+# # sometimes this line takes a while to run! Make sure you have the project open........
+# # v2020 had trouble with this line running for 8+ hours and never finishing, I think the server might have been timing out but wasn't sure, used the work around below instead
+# 
+# write_csv(ico_spp_countries, file.path(dir_github, 'int/ico_spp_countries.csv')) # save this as an intermediate data file since it takes so long to create the df
+# 
+# ico_spp_countries <- read_csv(here("globalprep/ico/v2019/int/ico_spp_countries.csv"))
 
 ################ v2020 workaround 
 
@@ -385,8 +385,7 @@ ico_spp_rgn_prepped <- ico_spp_rgn_prepped %>%
 # Adding as.tibble() simplified the structure, prevents ico_rgn_id from being coerced to logical structue
 # v2020- changed to as_tibble, as.tibble() is deprecated as of tibble 2.0.0
 
-write_csv(ico_spp_rgn_prepped, here('globalprep/ico/v2019/int/ico_spp_rgn_prepped.csv'))
-# This part of the code presented an issue where the ico_rgn_id column values being preserved in this csv, but these data were being lost where the csv is imported in the next code chunk. Tried converting the column to numeric before saving and updating the tidyverse, neither of which solved the problem.  . Read_csv is coercing ico_rgn_id column to logical instead of numeric/integer format, as it only looks at the first 1000 rows of data, all of which are NA for ico_rgn_id (where ico_gl = TRUE). Read.csv solves the problem, but the better solution was to hard code col_types into the read_csv function in the next code chunk.
+write_csv(ico_spp_rgn_prepped, here('globalprep/ico/v2020/int/ico_spp_rgn_prepped.csv'))
 
 ```
 
@@ -394,7 +393,7 @@ write_csv(ico_spp_rgn_prepped, here('globalprep/ico/v2019/int/ico_spp_rgn_preppe
 
 ```{r, eval=F}
 
-ico_spp_rgn_prepped <- read_csv(here('globalprep/ico/v2019/int/ico_spp_rgn_prepped.csv'),
+ico_spp_rgn_prepped <- read_csv(here('globalprep/ico/v2020/int/ico_spp_rgn_prepped.csv'),
                                 col_types = "ddcccccdcccldcc")
 # Explicitly designating col_types retains all data !
 
@@ -445,7 +444,7 @@ ico_assess_raw <- mc_get_from_api(ico_past_assess_url, ico_list$iucn_sid, api_ke
 
 ## for each species ID, get past assessments
 for(j in 1:n_chunks){
-   #j = 2
+   j = 2
 
     chunk_file <- file.path(dir_github, 'tmp', 
                     sprintf('spp_past_assess_chunk_%s.csv', 
@@ -524,7 +523,6 @@ v2020 <- ico_assess_raw %>%
 ######
 
 write_csv(ico_assess_raw, file.path(dir_github, 'raw/ico_assessments_raw.csv'))
-
 ```
 
 ```{r, eval=F}
@@ -1125,7 +1123,7 @@ hmd <- rbind(hmd1, hmd2)
 ## v2020 Outlier Check
 *As with the above code, no need to run this, I just want to investigate some of the changes from the plot*   
 
-```{r v2020-outliers}
+```{r v2020-outliers, include = FALSE, eval = FALSE}
 # Read in ico_spp_countries from v2019
 ico_spp_v2019 <- read.csv(here('globalprep/ico/v2019/int/ico_spp_rgn_cat.csv'))
 
