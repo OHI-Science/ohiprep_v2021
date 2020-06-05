@@ -1,5 +1,5 @@
 ---
-title: "OHI 2019: FP, SAUP Species Resilience Lookup Table"
+title: "OHI 2020: FP, SAUP Species Resilience Lookup Table"
 author: "*Compiled on `r date()` by `r Sys.info()['user']`*"
 output: 
   html_document:
@@ -34,8 +34,8 @@ source('../../../workflow/R/common.R')
 taxon <- read.csv('output/stock_catch_no_res.csv') %>%
           dplyr::select(sciname = TaxonName,
                  species = CommonName,
-                 TaxonKey) %>%
-            filter(TaxonKey > 599999) %>%
+                 Taxonkey) %>%
+            filter(Taxonkey > 599999) %>%
             distinct()
 
 # validate scientific names with fishbase

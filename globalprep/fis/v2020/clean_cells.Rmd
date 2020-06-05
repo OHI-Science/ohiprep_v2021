@@ -270,7 +270,7 @@ old_2018_cells <- read.csv('../v2018/int/cells.csv') %>%
 dim(cells)[1]-dim(old_cells)[1] # 0 cells - we didn't change any of the analysis and the data didn't change 
 
 ## Diff in IDs in new cells csv versus old
-new_old <- setdiff(cells$cell_fao_ohi, old_cells$cell_fao_ohi)
+new_old <- setdiff(cells$cell_fao_ohi, old_2018_cells$cell_fao_ohi)
 ## Diff in IDs in old cells csv versus new
 old_new <- setdiff(cells$cell_fao_ohi,old_cells$cell_fao_ohi)
 
