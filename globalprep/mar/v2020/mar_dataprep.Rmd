@@ -18,8 +18,7 @@ This analysis converts FAO mariculture data into data used to calculate the OHI 
 
 # Updates from previous assessment
 
-* New year of FAO mariculture yield data for 2017. 
-* We have updated the way we calculate reference points. This code has been added to the bottom of this script, and will stay static for future years, since the potential mariculture data will likely not be updated in the future. 
+* New year of FAO mariculture yield data for 2018.
 
 
 ***
@@ -81,7 +80,7 @@ Mariculture production in tonnes.
 
 ```{r}
 
-mar <- read.csv(file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_mariculture/d2019/FAO_GlobalAquacultureProduction_Quantity_1950_2017.csv'), check.names=FALSE, stringsAsFactors=FALSE) ; head(mar) 
+mar <- read.csv(file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_mariculture/d2020/FAO_GlobalAquacultureProduction_Quantity_1950_2018.csv'), check.names=FALSE, stringsAsFactors=FALSE) ; head(mar) 
 
 ```
 
@@ -95,8 +94,8 @@ Filter freshwater mariculture, make long format, and clean FAO codes.
 
 mar <- mar %>%
   rename(country = `Country (Country)`,
-         FAO_name = `Species (ASFIS species)`, 
-         fao = `Aquaculture area (FAO major fishing area)`, 
+         FAO_name = `ASFIS species (ASFIS species)`, 
+         fao = `FAO major fishing area (FAO major fishing area)`, 
          environment = `Environment (Environment)`)
 table(mar$environment)  
 
@@ -110,7 +109,7 @@ mar <- mar %>%
   select(-Unit) 
 
 mar <- mar %>%
-  gather(key="year", value="value", num_range("",1950:2017)) %>%
+  gather(key="year", value="value", num_range("",1950:2018)) %>%
     fao_clean_data() 
 
 ```
@@ -184,7 +183,7 @@ mar <- mar %>%
 # Yugoslavia SFR: no longer a country after 1992
 
 mar <- mar %>%
-  mutate(country = ifelse(country=="R\xe9union", "Reunion", country)) %>%  # this one is hard to get right
+  mutate(country = ifelse(country=="Réunion", "Reunion", country)) %>%  # this one is hard to get right; v2020: last year it was "R\xe9union", but this year it was "Réunion"
   mar_split()  # function in mar_fxs.R
 
 mar_rgn <- name_2_rgn(df_in = mar, 
@@ -282,7 +281,7 @@ mar_rgn_spread <- spread(mar_rgn, year, value)
 dim(mar_rgn_spread)
 
 ## turn data frame back into long format
-mar_rgn_gf <- gather(mar_rgn_spread, "year", "value", num_range("",1950:2017)) %>%
+mar_rgn_gf <- gather(mar_rgn_spread, "year", "value", num_range("",1950:2018)) %>%
   arrange(rgn_id, species, year, Taxon_code, fao, environment) 
 
 ## NA values are converted to zero.
@@ -304,6 +303,7 @@ See how may NA values were converted to 0
 table(mar_rgn_gf$gap_0_fill)
 ## 3790 of these out of 27810+3790 cases had NA values converted to 0 - 2018 assessment
 ## 3763 of these out of 28694+4291 cases had NA values converted to 0 - 2019 assessment
+## 5656 of these out of 28137+5656 cases had NA values converted to 0 - 2020 assessment
 ```
 
 Remove species-region-environment time series with less than four years of mariculture production > 0 tonnes (assume these are not established mariculture programs).
@@ -493,7 +493,7 @@ mar_sus_gf = mar_sus_gf %>%
 **Take a look at the wrangled data**
 ```{r}
 summary(mar_sus_gf) # should be no NA's in Sust_gf_taxon column
-table(mar_sus_gf$gapfill) 
+table(mar_sus_gf$gapfill)
 ```
 
 Obtain a sustainability score for each record, and a book-keeping column of whether it's actual or gap-filled
@@ -727,7 +727,7 @@ genEscapes_gf <- tonnes_esc %>%
   group_by(rgn_id, year) %>%
   summarize(genEscapes = weighted.mean(gapfill, tonnes, na.rm=TRUE)) %>%
   ungroup() %>%
-  filter(year==2017) %>%
+  filter(year==2018) %>%
   select(rgn_id, pressures.score=genEscapes) %>%
   mutate(pressures.score=ifelse(pressures.score=="NaN", NA, pressures.score)) %>%
   data.frame()
@@ -775,11 +775,11 @@ Comparing this year's data to previous year's data. Expect small variation from 
 ```{r}
 
 ## Compare genetic escapes pressure scores for Russia; saw large changes between 2018 and 2017 assessment years. No big changes between 2019 and 2018 assessment years. 
-old <- read.csv("../v2018/output/GenEsc.csv") %>%
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
   filter(rgn_id == 73) %>% 
   select(rgn_id, year, prs_score_old=pressure_score)
 
-new <- read.csv("../v2019/output/GenEsc.csv") %>%
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
   filter(rgn_id == 73) %>% 
   select(rgn_id, year, pressure_score)
 
