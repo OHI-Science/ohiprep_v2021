@@ -774,7 +774,7 @@ Comparing this year's data to previous year's data. Expect small variation from 
 
 ```{r}
 
-## Compare genetic escapes pressure scores for Russia; saw large changes between 2018 and 2017 assessment years. No big changes between 2019 and 2018 assessment years. 
+## Compare genetic escapes pressure scores for Russia; saw large changes between 2018 and 2017 assessment years. No big changes between 2019 and 2018 assessment years. No changes between 2020 and 2019 assessment years.
 old <- read.csv("../v2019/output/GenEsc.csv") %>%
   filter(rgn_id == 73) %>% 
   select(rgn_id, year, prs_score_old=pressure_score)
@@ -790,11 +790,11 @@ plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
 
 
 ## Compare yield data for Russia
-mar_old <- read.csv("../v2018/output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 73, year == 2016) %>% 
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 73, year == 2017) %>% 
   select(rgn_id, species, fao, old_value = value)
 mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 73, year == 2017) %>% 
+  filter(rgn_id == 73, year == 2018) %>% 
   select(rgn_id, species, fao, value)
 
 yield <- mar_old %>% 
@@ -802,12 +802,12 @@ yield <- mar_old %>%
 
 
 
-## Compare genetic escapes pressure scores for Vietnam; no change in pressures
-old <- read.csv("../v2018/output/GenEsc.csv") %>%
+## Compare genetic escapes pressure scores for Vietnam; no change in pressures between 2020 and 2019 assessment years.
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
   filter(rgn_id == 207) %>% 
   select(rgn_id, year, prs_score_old=pressure_score)
 
-new <- read.csv("../v2019/output/GenEsc.csv") %>%
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
   filter(rgn_id == 207) %>% 
   select(rgn_id, year, pressure_score)
 
@@ -818,39 +818,11 @@ plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
 
 
 ## Compare yield data for Vietnam
-mar_old <- read.csv("../v2018/output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 207, year == 2016) %>% 
-  select(rgn_id, species, fao, environment, old_value = value)
-mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
   filter(rgn_id == 207, year == 2017) %>% 
-  select(rgn_id, species, fao, environment, value)
-
-yield <- mar_old %>% 
-  full_join(mar_new, by = c("rgn_id","species","fao", "environment")); View(yield)
-
-
-
-## Compare genetic escapes pressure scores for Iceland; saw large changes between 2018 and 2017 assessment years, we do not see a big difference between 2019 and 2018 assessment years. 
-old <- read.csv("../v2018/output/GenEsc.csv") %>%
-  filter(rgn_id == 143) %>% 
-  select(rgn_id, year, prs_score_old=pressure_score)
-
-new <- read.csv("../v2019/output/GenEsc.csv") %>%
-  filter(rgn_id == 143) %>% 
-  select(rgn_id, year, pressure_score)
-
-compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
-
-plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
-
-
-
-## Compare yield data for Iceland. Atlantic Salmon increased by a lot between 2018 and 2019 assessment years. 
-mar_old <- read.csv("../v2018/output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 143, year == 2016) %>% 
   select(rgn_id, species, fao, environment, old_value = value)
 mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 143, year == 2017) %>% 
+  filter(rgn_id == 207, year == 2018) %>% 
   select(rgn_id, species, fao, environment, value)
 
 yield <- mar_old %>% 
@@ -858,12 +830,40 @@ yield <- mar_old %>%
 
 
 
-## Compare genetic escapes pressure scores for Belize; saw large changes between 2018 and 2017 assessment years, we do not see big differences between 2019 and 2018 assessment years. 
-old <- read.csv("../v2018/output/GenEsc.csv") %>%
+## Compare genetic escapes pressure scores for Iceland; saw large changes between 2018 and 2017 assessment years, we do not see a big difference between 2019 and 2018 assessment years or 2020 and 2019 assessment years. 
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
+  filter(rgn_id == 143) %>% 
+  select(rgn_id, year, prs_score_old=pressure_score)
+
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
+  filter(rgn_id == 143) %>% 
+  select(rgn_id, year, pressure_score)
+
+compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
+
+plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
+
+
+
+## Compare yield data for Iceland. Atlantic Salmon increased by a lot between 2018 and 2019 assessment years. Atlantic Salmon stayed relatively stable between 2020 and 2019 assessment years. However, Senegalese sole has an NA value in 2019 assessment; maybe a gapfilling error from last year?
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 143, year == 2017) %>% 
+  select(rgn_id, species, fao, environment, old_value = value)
+mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 143, year == 2018) %>% 
+  select(rgn_id, species, fao, environment, value)
+
+yield <- mar_old %>% 
+  full_join(mar_new, by = c("rgn_id","species","fao", "environment")); View(yield)
+
+
+
+## Compare genetic escapes pressure scores for Belize; saw large changes between 2018 and 2017 assessment years, we do not see big differences between 2019 and 2018 assessment years or 2020 and 2019 assessment years. 
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
   filter(rgn_id == 164) %>% 
   select(rgn_id, year, prs_score_old=pressure_score)
 
-new <- read.csv("../v2019/output/GenEsc.csv") %>%
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
   filter(rgn_id == 164) %>% 
   select(rgn_id, year, pressure_score)
 
@@ -871,24 +871,24 @@ compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
 
 plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
 
-## Compare yield data for Belize
-mar_old <- read.csv("../v2018/output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 164, year == 2016) %>% 
+## Compare yield data for Belize; yield of Whiteleg shrimp was halved between 2019 and 2020 assessment years.
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 164, year == 2017) %>% 
   select(rgn_id, species, fao, old_value = value)
 mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 164, year == 2017) %>% 
+  filter(rgn_id == 164, year == 2018) %>% 
   select(rgn_id, species, fao, value)
 
 yield <- mar_old %>% 
   full_join(mar_new, by = c("rgn_id","species","fao")); View(yield)
 
 
-## Compare genetic escapes pressure scores for France; saw large changes between 2018 and 2017 assessment years, we do not see big difference between 2019 and 2018 assessment years. 
-old <- read.csv("../v2018/output/GenEsc.csv") %>%
+## Compare genetic escapes pressure scores for France; saw large changes between 2018 and 2017 assessment years, we do not see big differences between 2019 and 2018 assessment years or 2020 and 2019 assessment years. 
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
   filter(rgn_id == 179) %>% 
   select(rgn_id, year, prs_score_old=pressure_score)
 
-new <- read.csv("../v2019/output/GenEsc.csv") %>%
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
   filter(rgn_id == 179) %>% 
   select(rgn_id, year, pressure_score)
 
@@ -898,11 +898,11 @@ plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
 
 
 ## Compare yield data for France
-mar_old <- read.csv("../v2018/output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 179, year == 2016) %>% 
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 179, year == 2017) %>% 
   select(rgn_id, species, fao, old_value = value)
 mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 179, year == 2017) %>% 
+  filter(rgn_id == 179, year == 2018) %>% 
   select(rgn_id, species, fao, value)
 
 yield <- mar_old %>% 
@@ -913,11 +913,11 @@ plot(yield$old_value, yield$value);abline(0,1,col="red")
 
 
 ## Compare new/old Mariculture sustainability scores
-tmp_old <- read.csv("../v2018/raw/Truj_label_sust.csv") %>% 
+tmp_old <- read.csv("../v2019/raw/Truj_label_sust.csv") %>% 
   filter(country == "Russian Federation") %>% 
   select(country, species_Truj, sust_old = Maric_sustainability, gen_old = Genetic.escapees)
   
-tmp_new <- read.csv("../v2019/raw/Truj_label_sust.csv") %>% 
+tmp_new <- read.csv("../v2020/raw/Truj_label_sust.csv") %>% 
   filter(country == "Russian Federation") %>% 
   select(country, species_Truj, Maric_sustainability, Genetic.escapees)
 
@@ -945,18 +945,18 @@ Compare the three exclusion methods for seaweed species.
 
 ## Read in the three different versions of wrangled data
 ## Best Professional Judgement (BPJ)
-exclude <- read.csv("../v2019/output/GenEsc.csv") %>%
-  filter(year == 2017) %>% # compare the most recent shared year between old and new
+exclude <- read.csv("../v2020/output/GenEsc.csv") %>%
+  filter(year == 2018) %>% # compare the most recent shared year between old and new
   select(rgn_id, prs_score_BPJ=pressure_score)
 
 ## Exclude all seaweeds (no seaweed)
-exclude_no_sw <- read.csv("../v2019/test/GenEsc_no_seaweed.csv") %>%
-  filter(year == 2017) %>% # compare the most recent shared year between old and new
+exclude_no_sw <- read.csv("../v2020/test/GenEsc_no_seaweed.csv") %>%
+  filter(year == 2018) %>% # compare the most recent shared year between old and new
   select(rgn_id, prs_score_no_sw=pressure_score)
 
 ## Exclude only nei seaweeds (no nei)
-exclude_no_nei <- read.csv("../v2019/test/GenEsc_no_nei.csv") %>%
-  filter(year == 2017) %>% # compare the most recent shared year between old and new
+exclude_no_nei <- read.csv("../v2020/test/GenEsc_no_nei.csv") %>%
+  filter(year == 2018) %>% # compare the most recent shared year between old and new
   select(rgn_id, prs_score_no_nei=pressure_score)
 
 
