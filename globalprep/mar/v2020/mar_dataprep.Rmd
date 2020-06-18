@@ -911,6 +911,33 @@ yield <- mar_old %>%
 plot(yield$old_value, yield$value);abline(0,1,col="red")
 
 
+## Compare genetic escapes pressure scores for Malta; saw large changes between 2019 and 2020 assessment years. 
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
+  filter(rgn_id == 68) %>% 
+  select(rgn_id, year, prs_score_old=pressure_score)
+
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
+  filter(rgn_id == 68) %>% 
+  select(rgn_id, year, pressure_score)
+
+compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
+
+plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
+
+
+## Compare yield data for Malta
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 68, year == 2017) %>% 
+  select(rgn_id, species, fao, old_value = value)
+mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 68, year == 2018) %>% 
+  select(rgn_id, species, fao, value)
+
+yield <- mar_old %>% 
+  full_join(mar_new, by = c("rgn_id","species","fao")); View(yield)
+
+plot(yield$old_value, yield$value);abline(0,1,col="red")
+
 
 ## Compare new/old Mariculture sustainability scores
 tmp_old <- read.csv("../v2019/raw/Truj_label_sust.csv") %>% 
