@@ -24,7 +24,7 @@ knitr::opts_chunk$set(echo = TRUE, eval=FALSE)
 
 ## Summary
 
-Generates a dataset describing the OHI and FAO major fishing regions that correspond to each stock's range.  This combines last year's dataset of stock-spatial information from RAM v4.40 database and Christopher M. Free's spatial work at Rutgers as well as newly added stocks from RAM v4.44 with manually assigned ohi and fao region ids. Dataset only contains stocks with B/Bmsy data.
+Generates a dataset describing the OHI and FAO major fishing regions that correspond to each stock's range.  This combines last year's dataset of stock-spatial information from RAM v4.44 database and Christopher M. Free's spatial work at Rutgers as well as newly added stocks from RAM v4.491 with manually assigned ohi and fao region ids. Dataset only contains stocks with B/Bmsy data.
 
 
 ## Setup
@@ -39,7 +39,7 @@ library(sf)
 library(ggplot2)
 library(stringr)
 library(here) 
-setwd(here::here("globalprep","fis","v2019"))
+setwd(here::here("globalprep","fis","v2020"))
 
 source('../../../workflow/R/common.R')
 
@@ -53,58 +53,68 @@ Old Stocks: Used `timeseries` table, because in RAM v3.80, this table only conta
 ```{r}
 
 ## old stocks
-load(file.path(dir_M, "git-annex/globalprep/_raw_data/RAM/d2018/RAM v4.40 (6-4-18)/DB Files With Assessment Data/DBdata.RData"))
+load(file.path(dir_M, "git-annex/globalprep/_raw_data/RAM/d2019/RLSADB v4.44/DB Files With Assessment Data/DBdata.RData"))
 
 ram_bmsy_old <- timeseries_values_views %>%
-  select(stockid, stocklong, year, TBdivTBmsy, SSBdivSSBmsy) %>% 
-  mutate(ram_bmsy = ifelse(!is.na(TBdivTBmsy), TBdivTBmsy, SSBdivSSBmsy)) %>% 
-  filter(!is.na(ram_bmsy)) %>% 
+dplyr::select(stockid, stocklong, year, TBdivTBmsy, SSBdivSSBmsy, TBdivTBmgt, SSBdivSSBmgt) %>%
+  mutate(ram_bmsy = 
+           ifelse(!is.na(TBdivTBmsy), TBdivTBmsy, SSBdivSSBmsy)) %>%
+  mutate(ram_bmsy =
+           ifelse(is.na(TBdivTBmsy) & is.na(SSBdivSSBmsy), TBdivTBmgt, ram_bmsy)) %>%
+  mutate(ram_bmsy = 
+           ifelse(is.na(TBdivTBmsy) & is.na(SSBdivSSBmsy) & is.na(TBdivTBmgt), SSBdivSSBmgt, ram_bmsy)) %>%
   dplyr::filter(year > 1979) %>%
+  filter(!is.na(ram_bmsy)) %>%
   dplyr::select(stockid, stocklong, year, ram_bmsy)
 
 ## check number of unique entries
-old_stockid <- unique(ram_bmsy_old$stockid) # 345 unique entries
+old_stockid <- unique(ram_bmsy_old$stockid) # 442 unique entries
 
 ```
 
 New Stocks: Used `timeseries_values_views` table, because in RAM v4.44, this is the table that contains the most recent assessment for each unique stock. The `timeseries` table has all assessments conducted so there are multiple `assessid` per unique `stockid`.
 ```{r}
 ## new stocks
-load(file.path(dir_M, "git-annex/globalprep/_raw_data/RAM/d2019/RLSADB v4.44/DB Files With Assessment Data/DBdata.RData"))
+load(file.path(dir_M, "git-annex/globalprep/_raw_data/RAM/d2020/RAMLDB v4.491/DB Files With Assessment Data/R Data/DBdata[asmt][v4.491].RData"))
 
 ram_bmsy <- timeseries_values_views %>%
-  select(stockid, stocklong, year, TBdivTBmsy, SSBdivSSBmsy) %>% 
-  mutate(ram_bmsy = ifelse(!is.na(TBdivTBmsy), TBdivTBmsy, SSBdivSSBmsy)) %>% 
+dplyr::select(stockid, stocklong, year, TBdivTBmsy, SSBdivSSBmsy, TBdivTBmgt, SSBdivSSBmgt) %>%
+  mutate(ram_bmsy = 
+           ifelse(!is.na(TBdivTBmsy), TBdivTBmsy, SSBdivSSBmsy)) %>%
+  mutate(ram_bmsy =
+           ifelse(is.na(TBdivTBmsy) & is.na(SSBdivSSBmsy), TBdivTBmgt, ram_bmsy)) %>%
+  mutate(ram_bmsy = 
+           ifelse(is.na(TBdivTBmsy) & is.na(SSBdivSSBmsy) & is.na(TBdivTBmgt), SSBdivSSBmgt, ram_bmsy)) %>% 
   filter(!is.na(ram_bmsy)) %>% 
   dplyr::filter(year > 1979) %>%
   dplyr::select(stockid, stocklong, year, ram_bmsy)
 
 ## check number of unique entries
-new_stockid <- unique(ram_bmsy$stockid) # 346 unique entries
+new_stockid <- unique(ram_bmsy$stockid) # 443 unique entries
 ```
 
 
 ### Investigate Differences
-There were 3 stocks included in the new data but not the old data.
+There were 4 stocks included in the new data but not the old data.
 These include: 
 
-* "BOARVI-VIII" "PANDALI-II"  "PLAICCELT"  
+* "BTSHRIMPNAUST" "COD1f-XIV"     "GTPRAWNNAUST"  "SARDWSE"      
 
-There were 2 stocks present in the old data but not the new.
+There were 3 stocks present in the old data but not the new.
 These include:
 
-* "HERR30"  "SSARDCH" - in OLD RAM 4.40
+* "CODIf-XIV"               "REDDEEPDP-1-2-V-XII-XIV" "RSARDINWA"    - in OLD RAM 4.44
 
 ```{r}
 
 ## find newly added stocks, when using timeseries_values_views
-newStocks <- setdiff(new_stockid, old_stockid) # there are 3 new stocks
+newStocks <- setdiff(new_stockid, old_stockid) # there are 4 new stocks
 unusedStocks <- setdiff(old_stockid, new_stockid) # these are no longer included in the RAM data, will be deleted
 
 ```
 
 
-Subset for just the additional stocks in RAM v4.44 data
+Subset for just the additional stocks in RAM v4.491 data
 ```{r}
 
 ram_bmsy_new <- ram_bmsy %>% 
@@ -123,7 +133,7 @@ Each stock needs the corresponding ohi and fao regions associated with its range
 ```{r}
 ## Grab last year's fao-ohi-assessid data table
 ## (we need to get the stock id from the old RAM data)
-RAM_fao_ohi_rgns <- read.csv("../v2018/int/RAM_fao_ohi_rgns.csv") 
+RAM_fao_ohi_rgns <- read.csv("../v2019/int/RAM_fao_ohi_rgns_final.csv") 
 
 ## create unique values of assessid, stock id, and stock long
 id_old <- ram_bmsy_old %>% 
@@ -164,7 +174,7 @@ RAM_rgns_new <- RAM_rgns_old %>%
 ## Fill Region IDs for New Stocks
 
 Investigate what FAO/OHI region each stock belongs to: 
-* Full intermediate stock data table [here](https://github.com/OHI-Science/ohiprep_v2019/master/globalprep/fis/v2018/int/RAM_fao_ohi_rgns.csv)
+* Full intermediate stock data table [here](https://github.com/OHI-Science/ohiprep_v2020/master/globalprep/fis/v2019/int/RAM_fao_ohi_rgns.csv)
 * Primarily used www.fishsource.org to find stock distribution information. ICES sub-region codes found here: https://www.researchgate.net/figure/Stock-units-defined-by-ICES-for-white-anglerfish-southern-stock-in-Divisions-VIIIc-and_fig1_31198841 and http://gis.ices.dk/sf/
 * Referenced F_CODE/FAO_AREAS (filtered for MAJOR in F_LEVEL) in ohi_fao_rgns shapefile (fis/v2017/int) from mazu (can use other map visuals to identify stock extent). 
 * Searched and tested key words in data table viewer (`DT::datatable`) to use in `str_detect`. See which stocks have the same FAO id assignment(s).
@@ -175,11 +185,15 @@ Note: In `str_detect`, it doesn't always work when you type out "Bering Sea | Gu
 
 ```{r}
 
-#European Plaice ICES VIIf-g is in fao rgn 27, in ohi rgn *180*, *181*, 
-#	Northern shrimp North-East Arctic is in fao rgn 21, 27, ohi rgn *145*, *218*, *223*, *143*, *175*, *163*, 
-#	Boarfish VI and VIII is in fao rgn 27, ohi rgn *180*, *181*, *175*
-# 	Pacific Ocean perch Haida Gwaii is in fao rgn 67, ohi rgn *218*
-# Orange roughy Northwest Chatham Rise is in fao rgn 81, ohi rgn *162*
+# Atlantic cod NAFO 1f and ICES 14 has ohi rgn *145* and fao rgn 21, 27 - -
+# Brown tiger shrimp Northern Australia fao rgn 57, 71, and ohi rgn *16* - - 
+# Grooved tiger prawn Northern Australia fao rgn 57, 71, and ohi rgn *16*- - 
+# Norway lobster Adriatic Sea fao rgn 37, ohi rgn *184*, *187* - 
+# Sand eel Sandeel Area 4 fao rgn 27, ohi rgn *223* - - 
+# Sardine Western half of Southeast Australia ohi rgn *16*, fao rgn 57 - - 
+# Spurdog Northeast Atlantic fao rgn 21, ohi rgn *163* - - 
+# 	Pacific Ocean perch Haida Gwaii is in fao rgn 67, ohi rgn *218* - -
+# Orange roughy Northwest Chatham Rise is in fao rgn 81, ohi rgn *162* - - 
 
 
 ## Subset for rows with missing FAO and OHI ids
@@ -190,45 +204,35 @@ RAM <- RAM_filt %>%
   ## ADDING FAO REGION ID
   mutate(fao_id = 
            case_when(
-             str_detect(stocklong, paste(c("European", "Northern shrimp", "Boarfish VI"), collapse = "|")) ~ 27,
+             str_detect(stocklong, paste(c("Atlantic cod", "Sand eel", "Boarfish VI"), collapse = "|")) ~ 27,
+             str_detect(stocklong, paste(c("Northern Australia", "Southeast Australia"), collapse = "|")) ~ 57,
+             str_detect(stocklong, paste(c("Northwest Chatham Rise"), collapse = "|")) ~ 81, 
              str_detect(stocklong, paste(c("Haida Gwaii"), collapse = "|")) ~ 67,
-             str_detect(stocklong, paste(c("Northwest Chatham Rise"), collapse = "|")) ~ 81
+             str_detect(stocklong, paste(c("Spurdog"), collapse = "|")) ~ 21,
+             str_detect(stocklong, paste(c("Norway lobster"), collapse = "|")) ~ 37
            )) %>%
   mutate(fao_id_2 =
            case_when(
-             str_detect(stocklong, "Northern shrimp") ~ 21
+             str_detect(stocklong, paste(c("Atlantic cod"), collapse = 
+                        "|")) ~ 21,
+             str_detect(stocklong, paste(c("Northern Australia"), collapse = "|")) ~ 71
            )) %>%
   ## ADDING OHI REGION ID
   mutate(rgn_id = 
            case_when(
-             str_detect(stocklong, paste(c("European", "Boarfish VI"), collapse = "|")) ~ 180,
+             str_detect(stocklong, paste(c("Atlantic cod"), collapse = "|")) ~ 145,
              str_detect(stocklong, paste("Northwest Chatham Rise", collapse = "|")) ~ 162,
-             str_detect(stocklong, paste(c("Haida Gwaii", "Northern shrimp"), collape = "|")) ~ 218
+             str_detect(stocklong, paste(c("Haida Gwaii"), collapse = "|")) ~ 218, 
+             str_detect(stocklong, paste(c("Spurdog"), collapse = "|")) ~ 163,
+             str_detect(stocklong, paste(c("Australia"), collapse = "|")) ~ 16, 
+             str_detect(stocklong, paste(c("Sandeel"), collapse = "|")) ~ 223,
+             str_detect(stocklong, paste(c("Norway"), collapse = "|")) ~ 184
+             
            )) %>%
   mutate(rgn_id_2 =
            case_when(
-             str_detect(stocklong, paste(c("Boarfish VI", "European"), collapse ="|")) ~ 181
-           )) %>%
-  mutate(rgn_id_3 =
-           case_when(
-             str_detect(stocklong, paste(c("Boarfish VI", "Northern shrimp"), collapse ="|")) ~ 175
-           )) %>%
-  mutate(rgn_id_4 =
-           case_when(
-             str_detect(stocklong, paste("Northern shrimp", collapse ="|")) ~ 145
-           )) %>%
-  mutate(rgn_id_5 =
-           case_when(
-             str_detect(stocklong, paste("Northern shrimp", collapse ="|")) ~ 223
-           )) %>%
-  mutate(rgn_id_6 =
-           case_when(
-             str_detect(stocklong, paste("Northern shrimp", collapse ="|")) ~ 143
-           )) %>%
-  mutate(rgn_id_7 =
-           case_when(
-             str_detect(stocklong, paste("Northern shrimp", collapse ="|")) ~ 163
-           )) 
+             str_detect(stocklong, paste(c("Norway"), collapse = "|")) ~ 187
+           ))
              
 DT::datatable(RAM,rownames = F)
 
@@ -281,10 +285,10 @@ RAM_rgns_new_final <- fao_ohi_id %>%
 Compare with unfiltered RAM regions table to check on fao-ohi pairs that were dropped
 ```{r}
 ## Number of unique stocks after joining
-nrow(RAM_rgns_new_final) #14
+nrow(RAM_rgns_new_final) #13
 ## Number of unique stocks before joining
 RAM_temp <- RAM_temp %>% select(rgn_id, fao_id, stockid, stocklong) %>% distinct()
-nrow(RAM_temp) #19
+nrow(RAM_temp) #13
 
 ## add identifier for the two RAM table versions
 RAM_temp$idtemp <- 1:nrow(RAM_temp)
@@ -301,7 +305,7 @@ Tidy up RAM data table.  After the final check (located below), I hand added som
 ```{r}
 
 write.csv(RAM_rgns_new_final, "int/RAM_new_stocks.csv", row.names=FALSE)
-## check that there are still 5 unique stock ids
+## check that there are still 9 unique stock ids
 length(unique(RAM_rgns_new_final$stockid))
 
 ```
@@ -317,7 +321,7 @@ ram_sp <- ram %>%
   dplyr::select(rgn_id, fao_id, stockid, stocklong=stocklong.x, scientificname, commonname, idtemp2)
 
 # Watson species, sci name (read in the datatable that includes TaxonKey)
-wat_sp <- read_csv(file.path(dir_M,'git-annex/globalprep/fis/v2019/int/stock_catch_by_rgn_taxa.csv')) %>% 
+wat_sp <- read_csv(file.path(dir_M,'git-annex/globalprep/fis/v2020/int/stock_catch_by_rgn_taxa.csv')) %>% 
   dplyr:: select(rgn_id, fao_id=fao_rgn, scientificname=TaxonName, stock_id) %>%
   unique() 
 
@@ -328,7 +332,7 @@ combined <- left_join(wat_sp_w_RAM, ram_sp, by=c("rgn_id", "fao_id", "scientific
 
 write.csv(combined, "int/watson_RAM_rgn_compare.csv", row.names=FALSE)
 
-
+#### STOPPED HERE JUNE 23 ####
 #### The way to hand check these are to look at stock_ids which have an idtemp2. I.e. Pandalus_borealiz_27, filter for this stock_id, and hand check the rgn_id's that have NAs as stockids to determine if these rgn_id's should be hand added to our RAM_new_stocks according to the maps on fishsource.org
 
 ## need to hand add 176, 177, 179, 182, 183, 223, 227, 228 for boarfish -	Capros_aper-27

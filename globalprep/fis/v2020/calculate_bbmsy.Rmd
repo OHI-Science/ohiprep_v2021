@@ -1,5 +1,5 @@
 ---
-title: "OHI 2019: Food Provision, Calculating fisheries stock status"
+title: "OHI 2020: Food Provision, Calculating fisheries stock status"
 author: "*Compiled on `r date()` by `r Sys.info()['user']`*"
 output: 
   html_document:
@@ -18,7 +18,7 @@ pdf_document:
 
 # Summary
 
-To calculate the status of global fish stocks from the Watson 2019 (v4) catch data we use catch-MSY (CMSY) developed by [Martell and Froese (2012)](http://onlinelibrary.wiley.com/doi/10.1111/j.1467-2979.2012.00485.x/full). This model requires catch and resilience information for each stock. Stocks are defined by FAO areas and are limited to only those records where catch is reported at the species level.
+To calculate the status of global fish stocks from the Watson 2019 (v5) catch data we use catch-MSY (CMSY) developed by [Martell and Froese (2012)](http://onlinelibrary.wiley.com/doi/10.1111/j.1467-2979.2012.00485.x/full). This model requires catch and resilience information for each stock. Stocks are defined by FAO areas and are limited to only those records where catch is reported at the species level.
 
 The [`datalimited`](https://github.com/datalimited/datalimited) R package, developed by Sean Anderson, is used to run CMSY.
 
@@ -45,11 +45,11 @@ library(tidyverse)
 library(doParallel)
 library(here)
 
-setwd(here::here("globalprep/fis/v2019"))
+setwd(here::here("globalprep/fis/v2020"))
 
 registerDoParallel(cores = 5)
 
-source('../../../workflow/R/common.R')
+source(here('workflow/R/common.R'))
 
 ```
 
@@ -83,7 +83,7 @@ cmsy_fits <- plyr::dlply(catch, c("stock_id", "common"), function(x) {
   }, .parallel = TRUE)
 
 
-saveRDS(cmsy_fits, file = file.path(dir_M,"git-annex/globalprep/fis/v2019/int/cmsy-fits.rds"))
+saveRDS(cmsy_fits, file = file.path(dir_M,"git-annex/globalprep/fis/v2020/int/cmsy-fits.rds"))
 
 
 
@@ -91,12 +91,12 @@ saveRDS(cmsy_fits, file = file.path(dir_M,"git-annex/globalprep/fis/v2019/int/cm
 
 Take output and format: 
 ```{r}
-cmsy_fits <- readRDS(file.path(dir_M,"git-annex/globalprep/fis/v2019/int/cmsy-fits.rds"))
+cmsy_fits <- readRDS(file.path(dir_M,"git-annex/globalprep/fis/v2020/int/cmsy-fits.rds"))
 
 fake_data <- data.frame(bbmsy_q2.5 = NA, bbmsy_q25 = NA, bbmsy_q50 = NA, 
   bbmsy_q75 = NA, bbmsy_q97.5 = NA)
 
-cmsy_bbmsy <- plyr::ldply(cmsy_fits, function(x) {
+ cmsy_bbmsy <- plyr::ldply(cmsy_fits, function(x) {
   bbmsy_cmsy <- x$biomass[, -1] / x$bmsy
   bbmsy_out <- tryCatch({
     bbmsy_out <- summarize_bbmsy(bbmsy_cmsy)

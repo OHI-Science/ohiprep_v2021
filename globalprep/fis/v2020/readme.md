@@ -24,11 +24,13 @@ A description of files:
 * catch_data_prep.Rmd: Preps the spatialized catch data (at half degree cells) for use in goal weighting and stock status calculations. Auxiliary prep file, **species_resilience_lookup_table.Rmd**: Uses FishBase to find the Resilience for each of the species in the Watson database. The Resilience information is needed for running catch-MSY to estimate B/Bmsy. Outputs:
   
    - `git-annex/globalprep/fis/v2020/int/stock_catch_by_rgn.csv`
-   - `int/watson_taxon_key_v2019.csv`
+   - `int/watson_taxon_key_v2020.csv`
    - `output/stock_catch.csv`
    - `output/mean_catch.csv`
    - `output/FP_fis_catch.csv`
    - `output/taxon_resilience_lookup.csv`
+   - `output/mean_catch_minus_feed.csv`
+   - `output/stock_catch_no_res.csv`
    
 
 * calculate_bbmsy.Rmd: Calculates B/Bmsy estimates for all stocks using catch-MSY (CMSY) developed by Martell and Froese (2012). Outputs:
