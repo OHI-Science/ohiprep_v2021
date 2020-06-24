@@ -1,6 +1,6 @@
 ## Ocean Health Index: World Governance Indicator
 
-See full data prep details [here](https://rawgit.com/OHI-Science/ohiprep_v2018/master/globalprep/prs_res_wgi/v2018/WGI_dataprep.html).
+See full data prep details [here](http://ohi-science.org/ohiprep_v2020/globalprep/prs_res_wgi/v2020/WGI_dataprep.html).
 
 ## Layers Created
 * ss_wgi
