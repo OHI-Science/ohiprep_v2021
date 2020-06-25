@@ -317,8 +317,8 @@ For each stock:
 - We convert any predicted RAM B/Bmsy value less than the minimum observed B/Bmsy value to that the minimum observed value, as there are some negative predicted values.
 
 Summary: 
-- There are 397 RAM stocks with at least 5 years of B/Bmsy data from 2005 to 2015. 
-- 222 of these stocks have at least 1 year of gapfilled data.  
+- There are 398 RAM stocks with at least 5 years of B/Bmsy data from 2005 to 2015. 
+- 313 of these stocks have at least 1 year of gapfilled data.  
 - A few of the predicted B/Bmsy values go below zero. We convert anything with a RAM B/Bmsy value < 0.0026 to 0.0026, which is the minimum observed B/Bmsy value in the data.
 
 ```{r gapfill, eval = FALSE}
