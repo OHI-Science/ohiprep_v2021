@@ -98,12 +98,14 @@ new_stockid <- unique(ram_bmsy$stockid) # 443 unique entries
 There were 4 stocks included in the new data but not the old data.
 These include: 
 
-* "BTSHRIMPNAUST" "COD1f-XIV"     "GTPRAWNNAUST"  "SARDWSE"      
+* "BTSHRIMPNAUST"  "COD1f-XIV" "GTPRAWNNAUST"  "SARDWSE"      
 
 There were 3 stocks present in the old data but not the new.
 These include:
 
 * "CODIf-XIV"               "REDDEEPDP-1-2-V-XII-XIV" "RSARDINWA"    - in OLD RAM 4.44
+
+
 
 ```{r}
 
@@ -111,6 +113,24 @@ These include:
 newStocks <- setdiff(new_stockid, old_stockid) # there are 4 new stocks
 unusedStocks <- setdiff(old_stockid, new_stockid) # these are no longer included in the RAM data, will be deleted
 
+# See the mispelling for CODIf-XIV vs COD1f-XIV. Let's check to make sure that these didn't actually change across the years, and fix it in the data. 
+# 
+# ram_bmsy_new_check <- ram_bmsy %>% 
+#   filter(stockid == "COD1f-XIV") ## 39 obs
+# 
+# ram_bmsy_old_check <- ram_bmsy_old %>% 
+#   filter(stockid == "CODIf-XIV") ## 39 obs
+# 
+# #they have the same amount of observations, but it looks like the bmsy values are updated for the new year. I think we should use the new ones. For now, we will filter out the new ones, and deal with this problem in RAM_data_prep.Rmd to see if they are double counting the bmsy values. We will just use the same fao ohi ids that we have found in the past, since those won't have changed. 
+# 
+# ram_bmsy <- ram_bmsy %>%
+#   filter(stockid != "COD1f-XIV")
+# ## check number of unique entries
+# new_stockid <- unique(ram_bmsy$stockid) # 442 unique entries now
+# 
+# ## find newly added stocks, when using timeseries_values_views
+# newStocks <- setdiff(new_stockid, old_stockid) # there are 4 new stocks
+# unusedStocks <- setdiff(old_stockid, new_stockid) # these are no longer included in the RAM data, will be deleted
 ```
 
 
@@ -118,7 +138,7 @@ Subset for just the additional stocks in RAM v4.491 data
 ```{r}
 
 ram_bmsy_new <- ram_bmsy %>% 
-  filter(stockid %in% newStocks)
+  filter(stockid %in% newStocks) 
 
 id_new <- ram_bmsy_new %>% 
   select(stockid, stocklong) %>% 
@@ -135,13 +155,34 @@ Each stock needs the corresponding ohi and fao regions associated with its range
 ## (we need to get the stock id from the old RAM data)
 RAM_fao_ohi_rgns <- read.csv("../v2019/int/RAM_fao_ohi_rgns_final.csv") 
 
+## v2020... after some investigating it was found that there are a ton of duplicates in this file. This is a mistake. Every stock should only have one unique combo of each rgn id and fao id. We need to isolate and remove these. First we will remove the easy ones using distinct(). 
+RAM_fao_ohi_rgns_fix <- RAM_fao_ohi_rgns %>%
+  distinct() %>% ## fixes easy duplicates. Now lets check for mispellings or other errors 
+  group_by(rgn_id, fao_id, stockid) %>%
+  dplyr::mutate(dupe = n()>1) %>% # find the rest of the duplicates 
+  ungroup()
+  
+ #filter for dupes
+dupes <- RAM_fao_ohi_rgns_fix %>%
+filter(dupe == "TRUE") 
+
+## fix the dupes 
+dupes_fix <- dupes %>%
+  filter(!is.na(RAM_area_m2))
+
+##filter out dupes from RAM_fao_ohi_rgns_fix and add fixed dupes back in
+RAM_fao_ohi_rgns_fix_final <- RAM_fao_ohi_rgns_fix %>%
+  filter(dupe == "FALSE") %>%
+  rbind(dupes_fix) %>%
+  select(-dupe)
+
 ## create unique values of assessid, stock id, and stock long
 id_old <- ram_bmsy_old %>% 
   select(stockid, stocklong) %>% 
   distinct()
 
 ## join tables
-RAM_rgns_old <- RAM_fao_ohi_rgns %>% 
+RAM_rgns_old <- RAM_fao_ohi_rgns_fix_final %>% 
   full_join(id_old, by=c("stockid", "stocklong")) 
 
 ```
@@ -157,6 +198,25 @@ RAM_rgns_old <- RAM_rgns_old %>%
   filter(!(stockid %in% unusedStocks))
 ```
 
+```{r}
+#### 2020 fix only ####
+# for some reason, a couple of the stocks that were already present are showing up as na for FAO and RGN ID. Spot check each of the stocks that show up in RAM_filt with RAM_rgns_new. We need to make sure that each stock only shows up once unless it is in multiple FAO/ohi regions. 
+
+o_roughy_RAM <- RAM_rgns_old %>%
+  filter(stockid == "OROUGHYNWCR") ## bad, need to remove 1 of these rows (only keep the one with area in it). This was filled in last year. 
+
+perch_RAM <- RAM_rgns_old %>%
+  filter(stockid == "PERCHQCI") # bad, only want to keep 1 of these. This was filled in last year. 
+
+# i will go in and fix these myself in excel, and re upload. I deleted the two NA rows for PERCHQCI and OROUGHYNWCR. There were also two mispelling in there that i fixed for these two.
+write.csv(RAM_rgns_old, file.path("int/RAM_fix_2020.csv"), row.names = FALSE)
+
+## reupload as "RAM_fix_2020_corr.csv
+RAM_rgns_old <- read_csv(file.path("int/RAM_fix_2020_corr.csv"))
+
+#### END 2020 FIX ####
+```
+
 ## Combine New and Old Stock Data
 
 Essentially adds new stocks to the bottom of the old stocks data table.  The regions of the new stocks are blank at this point. 
@@ -168,6 +228,7 @@ setdiff(id_new$stockid, RAM_rgns_old$stockid)
 
 RAM_rgns_new <- RAM_rgns_old %>% 
   full_join(id_new, by = c("stockid","stocklong"))
+
 
 ```
 
@@ -183,22 +244,23 @@ Some regions have more than 1 `fao_id` or `rgn_id` (e.g. Alaska skate Bering Sea
 
 Note: In `str_detect`, it doesn't always work when you type out "Bering Sea | Gulf of Alaska$". Using `paste` with the `collapse = "|"` argument seems to work best.
 
+
 ```{r}
 
 # Atlantic cod NAFO 1f and ICES 14 has ohi rgn *145* and fao rgn 21, 27 - -
 # Brown tiger shrimp Northern Australia fao rgn 57, 71, and ohi rgn *16* - - 
 # Grooved tiger prawn Northern Australia fao rgn 57, 71, and ohi rgn *16*- - 
-# Norway lobster Adriatic Sea fao rgn 37, ohi rgn *184*, *187* - 
+# Norway lobster Adriatic Sea fao rgn 37, ohi rgn *184*, *187* *186*, *232* *82* *80* - -
 # Sand eel Sandeel Area 4 fao rgn 27, ohi rgn *223* - - 
 # Sardine Western half of Southeast Australia ohi rgn *16*, fao rgn 57 - - 
-# Spurdog Northeast Atlantic fao rgn 21, ohi rgn *163* - - 
+# Spurdog Northeast Atlantic fao rgn 21, ohi rgn *163*, *218* - - 
 # 	Pacific Ocean perch Haida Gwaii is in fao rgn 67, ohi rgn *218* - -
 # Orange roughy Northwest Chatham Rise is in fao rgn 81, ohi rgn *162* - - 
-
 
 ## Subset for rows with missing FAO and OHI ids
 RAM_filt <- RAM_rgns_new %>% 
   filter(is.na(fao_id))
+
 
 RAM <- RAM_filt %>%
   ## ADDING FAO REGION ID
@@ -206,8 +268,6 @@ RAM <- RAM_filt %>%
            case_when(
              str_detect(stocklong, paste(c("Atlantic cod", "Sand eel", "Boarfish VI"), collapse = "|")) ~ 27,
              str_detect(stocklong, paste(c("Northern Australia", "Southeast Australia"), collapse = "|")) ~ 57,
-             str_detect(stocklong, paste(c("Northwest Chatham Rise"), collapse = "|")) ~ 81, 
-             str_detect(stocklong, paste(c("Haida Gwaii"), collapse = "|")) ~ 67,
              str_detect(stocklong, paste(c("Spurdog"), collapse = "|")) ~ 21,
              str_detect(stocklong, paste(c("Norway lobster"), collapse = "|")) ~ 37
            )) %>%
@@ -221,8 +281,6 @@ RAM <- RAM_filt %>%
   mutate(rgn_id = 
            case_when(
              str_detect(stocklong, paste(c("Atlantic cod"), collapse = "|")) ~ 145,
-             str_detect(stocklong, paste("Northwest Chatham Rise", collapse = "|")) ~ 162,
-             str_detect(stocklong, paste(c("Haida Gwaii"), collapse = "|")) ~ 218, 
              str_detect(stocklong, paste(c("Spurdog"), collapse = "|")) ~ 163,
              str_detect(stocklong, paste(c("Australia"), collapse = "|")) ~ 16, 
              str_detect(stocklong, paste(c("Sandeel"), collapse = "|")) ~ 223,
@@ -231,7 +289,25 @@ RAM <- RAM_filt %>%
            )) %>%
   mutate(rgn_id_2 =
            case_when(
-             str_detect(stocklong, paste(c("Norway"), collapse = "|")) ~ 187
+             str_detect(stocklong, paste(c("Norway"), collapse = "|")) ~ 187, 
+             str_detect(stocklong, paste(c("Spurdog"), collapse = "|")) ~ 218,
+
+           )) %>%
+  mutate(rgn_id_3 =
+           case_when(
+             str_detect(stocklong, paste(c("Norway"), collapse = "|")) ~ 186
+           )) %>%
+  mutate(rgn_id_4 =
+           case_when(
+             str_detect(stocklong, paste(c("Norway"), collapse = "|")) ~ 232
+           )) %>%
+  mutate(rgn_id_5 =
+           case_when(
+             str_detect(stocklong, paste(c("Norway"), collapse = "|")) ~ 82
+           )) %>%
+  mutate(rgn_id_6 =
+           case_when(
+             str_detect(stocklong, paste(c("Norway"), collapse = "|")) ~ 80
            ))
              
 DT::datatable(RAM,rownames = F)
@@ -285,10 +361,10 @@ RAM_rgns_new_final <- fao_ohi_id %>%
 Compare with unfiltered RAM regions table to check on fao-ohi pairs that were dropped
 ```{r}
 ## Number of unique stocks after joining
-nrow(RAM_rgns_new_final) #13
+nrow(RAM_rgns_new_final) #16
 ## Number of unique stocks before joining
 RAM_temp <- RAM_temp %>% select(rgn_id, fao_id, stockid, stocklong) %>% distinct() %>% arrange(stocklong, fao_id)
-nrow(RAM_temp) #13
+nrow(RAM_temp) #16
 
 ## add identifier for the two RAM table versions
 RAM_temp$idtemp <- 1:nrow(RAM_temp)
@@ -297,7 +373,7 @@ RAM_rgns_new_final$idtemp2 <- 1:nrow(RAM_rgns_new_final)
 ## view the ohi-fao pairs that would be removed
 combine <- RAM_temp %>% 
   full_join(RAM_rgns_new_final, by = c("rgn_id", "fao_id", "stockid", "stocklong")) %>% 
-  filter(is.na(idtemp2)) ## 0 for 2020
+  filter(is.na(idtemp2)) ## 0 for 2020 yay!
 
 ```
 
@@ -310,140 +386,10 @@ length(unique(RAM_rgns_new_final$stockid))
 
 ```
 
-Get RAM_area_m2 for new stocks 
-Here we identify the FAO/OHI regions where each new RAM stock is located, and grab their RAM_area_m2. This involved the following steps:
-
-1. Create a intersection map that identifies each FAO/OHI region.
-2. Overlay each of the new RAM stocks on the region map to determine where they fall.  There were 2 general challenges to doing this.  A few of the stocks did not have a complete dataframe in the shapefile and could not be joined to the other data.  A few stocks had intersecting polygons and consequently would not run.  In the first case, I added these data by hand later in the process.  For the second case, I fixed the intersections and added later.  
-
-```{r RAM to OHI_FAO rgn, eval = FALSE}
-
-ram_bmsy_gf <- read_csv(file.path("int/ram_stock_bmsy_gf.csv")) %>%
-  left_join(metadata, by = "stockid") %>%
-  dplyr::select(assessid,stockid, year, ram_bmsy, gapfilled, method)
-
-
-RAM_spatial_dir <- file.path(dir_M, "git-annex/globalprep/_raw_data/RAM/d2017/ramldb_boundaries/ramldb_boundaries")
-
-ram_sf <- list.files(RAM_spatial_dir, pattern = "shp")
-
-ram_sf <- gsub(".shp", "", ram_sf)
-
-ram_sf <- intersect(ram_bmsy_gf$assessid, ram_sf) # get these spatial data
-
-## get a sample file to convert other spatial data
-tmp <- read_sf(dsn = RAM_spatial_dir, layer = ram_sf[1])
-
-## Overlay stock data on fao-ohi region data
-
-fao_ohi <- st_read(file.path(dir_M, "git-annex/globalprep/fis/v2017/int"),
-        layer = "ohi_fao_rgns")
-
-ram_sf_df <- data.frame(ram_sf, stringsAsFactors=FALSE) # make ram_sf a dataframe so that we can filter for new stocks added from management values...
-
-new_species_list <- read_csv("int/RAM_new_stocks.csv")
-
-ram_sf_df_new <- ram_sf_df %>%
-  filter(grepl(paste(new_species_list$stockid, collapse = "|"), ram_sf)) ## 2020 - 2 of the new stocks for this year are located in Chris Free's RAM LDB boundaries 
-ram_sf_df_new_vec <- c(ram_sf_df_new$ram_sf)
-
-
-stock_fao_ohi <- NA
-for(stock in ram_sf_df_new_vec) {    #stock = ram_sf_df_mgt$ram_sf[50]
-    cat(paste0(stock, "\n"))
-    tmp_poly <- read_sf(dsn = RAM_spatial_dir, layer = stock)
-    tmp_fao_ohi <- st_intersection(fao_ohi, tmp_poly)
-    if(sum(is.na(stock_fao_ohi))==1){
-      stock_fao_ohi <- tmp_fao_ohi
-    }else
-    {stock_fao_ohi <- rbind(stock_fao_ohi, tmp_fao_ohi)}
-}
-
-
-
-stock_fao_ohi_shps <- stock_fao_ohi[st_dimension(stock_fao_ohi) == 2,]
-
-stock_fao_ohi_shps <- stock_fao_ohi_shps[!is.na(st_dimension(stock_fao_ohi_shps)), ] 
-
-## Fix GEOMETRYCOLLECTION features, http://r-spatial.org/r/2017/03/19/invalid.html
-
-type <- st_is(stock_fao_ohi_shps, "GEOMETRYCOLLECTION")
-
-stock_fao_ohi_shps[type, ] <- st_buffer(stock_fao_ohi_shps[type, ], 0.0)
-
-#check:
-type <- st_is(stock_fao_ohi_shps, "GEOMETRYCOLLECTION")
-
-
-## Get areas in case we want to later weight the data
-stock_fao_ohi_shps$RAM_area_m2 <- st_area(stock_fao_ohi_shps)
-
-st_geometry(stock_fao_ohi_shps) <- NULL
-
-
-stock_fao_ohi_new <- stock_fao_ohi_shps %>%
-  dplyr::select(type_w_ant, rgn_ant_id, F_CODE, assessid, RAM_area_m2) %>%
-  group_by(rgn_ant_id, F_CODE, assessid) %>%
-  summarize(RAM_area_m2 = sum(RAM_area_m2)) %>%
-  rename(rgn_id = rgn_ant_id, fao_id = F_CODE) %>%
-  ungroup()
-
-## Need to wrangle this so that we have stockid and stocklong (from 2020 ram data v4.491) instead of assessid (from 2017 ram data v3.80). Then we will join our new stocks with these so that we can get an estimate of area! 
-stock_fao_ohi_new$fao_id <- as.numeric(as.character(stock_fao_ohi_new$fao_id))
-
-new_species_list <- read_csv("int/RAM_new_stocks.csv")
-
-stock_fao_ohi_new_final <- stock_fao_ohi_new %>%
-  mutate(stockid = gsub("-1.*", "", assessid)) %>% #remove everything after "-1"
-  mutate(stockid = gsub("-2.*", "", stockid)) %>% #remove everything after "-2"
-  mutate(stockid = gsub("^[^-]*-","",stockid)) %>% #remove everything before the first "-"
-  left_join(new_species_list, by = c("stockid", "rgn_id", "fao_id")) %>% # join on stockid to get the stocklong names we need...
- dplyr::select(-assessid, -idtemp2, -RAM_area_m2.y) %>% #delete assessid
-  rename("RAM_area_m2" = "RAM_area_m2.x") %>% # keep only the rgn id and fao id we determined earlier for the new stocks present
-ungroup()
-
-write.csv(stock_fao_ohi_new_final, "int/RAM_fao_ohi_rgns_new_areas.csv", row.names=FALSE)
-
-## Now add these to RAM_fao_ohi_rgns.csv file that you created in fao_ohi_rgns.Rmd
-
-RAM_fao_ohi_rgns <- read_csv("int/RAM_fao_ohi_rgns.csv")
-
-### Now we need to manually add the rest of the new species by looking each of them up individually and creating a spreadsheet with columns rgn_id, fao_id, RAM_area_m2 (these will all be NA), stockid, and stocklong. Make this csv file and upload to mazu. The code below will help as a check to make sure the rgn ids are in the correct fao rgn.
-
-## Spatial file with fao and ohi regions, F_CODE is the FAO id
-fao_ohi <- st_read(dsn = file.path(dir_M, "git-annex/globalprep/fis/v2017/int"),
-                   layer = "ohi_fao_rgns")
-st_geometry(fao_ohi) <- NULL # removes geometry
-fao_ohi_id <- fao_ohi %>%
-  select(rgn_id, fao_id = F_CODE) %>%
-  arrange(rgn_id) %>%
-  mutate(fao_id = as.numeric(as.character(fao_id))) %>%
-  mutate(rgn_id = as.numeric(as.character(rgn_id))) %>%
-  distinct()
-
-manual_additions <- data.frame(stockid = sort(setdiff(new_species_list$stockid, stock_fao_ohi_new_final$stockid))) %>%
-  left_join(new_species_list, by = "stockid")
-
-
-write_csv(manual_additions, file.path("int/manual_new_area_additions.csv"))
-
-## after manually adding the rest (just changing column names to match above, and adding NAs for RAM_area_m2), reupload into "int" folder as manual_new_area_additions_corr.csv
-
-manual_additions_corr <- read_csv("int/manual_new_area_additions_corr.csv")
-
-## add the manual additions areas to our new areas FAO_OHI rgns dataset
-
-RAM_fao_ohi_rgns_new <- rbind(stock_fao_ohi_new_final, manual_additions_corr)
-
-## write this to int folder
-write_csv(RAM_fao_ohi_rgns_new, file.path("int/RAM_fao_ohi_rgns_new_areas_final.csv"))
-```
-
 ### Final check
 The goal here is to make sure we are capturing all the ohi/fao regions that the stock is caught in. I'm just going focus on the newly added stocks. After examining this table, I added in some more regions relevant to particular stocks, and saved the changes as "RAM_new_stocks_hand_additions.csv" (and then reran through the code with the new file.).
 ```{r, eval=FALSE}
-
-ram <- read.csv("int/RAM_fao_ohi_rgns_new_areas_final.csv")
+ram <- read.csv("int/RAM_new_stocks.csv")
 
 ram$idtemp2 <- 1:nrow(ram)
 
@@ -466,14 +412,19 @@ write.csv(combined, "int/watson_RAM_rgn_compare.csv", row.names=FALSE)
 combined <- read_csv(file.path("int/watson_RAM_rgn_compare.csv"))
 
 
-#### The way to hand check these are to look at stock_ids which have an idtemp2. I.e. Pandalus_borealis_27, filter for this stock_id, and hand check the rgn_id's that have NAs as stockids to determine if these rgn_id's should be hand added to our RAM_new_stocks according to the maps on fishsource.org
+#### The way to hand check these are to look at stock_ids which have an idtemp2. I.e. Penaeus_semisulcatus-71, filter for this stock_id, and hand check the rgn_id's that have NAs as stockids to determine if these rgn_id's should be hand added to our RAM_new_stocks according to the fisheries listed on fishsource.org for each species
 
 #2020
-## need to hand add 176, 177, 179, 182, 183, 223, 227, 228 for boarfish -	Capros_aper-27
-## need to hand add 144 to PANDALI - Pandalus_borealis-27
-## need to hand add 219 to PANDALI - Pandalus_borealis-21
-## need to hand add 55, 59, 143, 175, 176, 177, 178, 179, 222, 223, 227, 228 for 	PLAICCELT - European Plaice ICES VIIf-g
+## Penaeus_semisulcatus-71 need to add none... this is only fished by australia according to fishsource, which is already present, rgnid 16
+## Penaeus_semisulcatus-57 need to add none... this is only fished by australia according to fishsource, which is already present, rgnid 16
+## Sardinops_sagax-57	need to add none... this is only fished by australia according to fishsource, which is already present, rgnid 16
+## Gadus_morhua-27 need to add none... this is only fished by greenland according to fishsource, which is already present. A good check here is because stocklong indicates that it is in ICES subarea 14, and NAFO 1f, which are only in greenland. 
+## Gadus_morhua-21 need to add none... this is only fished by greenland according to fishsource, which is already present. A good check here is because stocklong indicates that it is in ICES subarea 14, and NAFO 1f, which are only in greenland. 
+## Hoplostethus_atlanticus-81	need to add none. This is only fished by NZ, rgn id =162. Here is the link to check. I knew it was this by looking at stocklong: https://www.fishsource.org/stock_page/1410
+## Squalus_acanthias-21	 Need to add none.. See these links for reference: https://www.fishsource.org/stock_page/1683; https://www.fishsource.org/stock_page/1684. We know that these are only in FAO 21 based on stocklong. 
+## Nephrops_norvegicus-37. need to add none. We know this is located in the Adriatic Sea (see stocklong), and all of those countries are present.
 
+# Once finished spot checking and adding some, reupload to int as "RAM_new_stocks_hand_additions.csv" so that we document this. Then go back to the part of the code where we manually add in rgn ids and fao ids for species, and add these (The part titled "Fill Region IDs for new stocks"). Now rerun the code from there! Note: since we didn't have any hand additions for 2020, no need to go back and add them! 
 
 ```
 
@@ -482,19 +433,17 @@ combined <- read_csv(file.path("int/watson_RAM_rgn_compare.csv"))
 Combine newly added stocks with ohi and fao region information to the old stock data table. Make sure there are no NAs!
 ```{r, eval=FALSE}
 
-RAM_final <- bind_rows(read_csv("int/RAM_new_stocks.csv"),
-                       read_csv("int/RAM_new_stocks_hand_additions.csv", col_types = "ddccd")) %>% 
+
+RAM_final <- bind_rows(read_csv(file.path("int/RAM_new_stocks.csv")),
+                            read_csv("int/RAM_new_stocks_hand_additions.csv", col_types = "ddccd")) %>% 
   select(-idtemp2)
 
 RAM_fao_ohi_rgn <- RAM_rgns_old %>% 
   full_join(RAM_final, by = c("rgn_id", "fao_id", "stockid", "stocklong")) %>%
-  select(-RAM_area_m2.y, RAM_area_m2 = RAM_area_m2.x)
+  select(-RAM_area_m2.y, RAM_area_m2 = RAM_area_m2.x) %>%
+  filter(!is.na(fao_id)) # only do this for 2020. For some reason NAs were carried over from 2019, that we filled in this year. 
+ 
 
-
-write.csv(RAM_fao_ohi_rgn, "int/RAM_fao_ohi_rgns.csv", row.names=FALSE)
-
-
-#check again last year 
-#old_2018_RAM_fao_ohi_rgns <- read_csv("../v2018/int/RAM_fao_ohi_rgns.csv")
+write.csv(RAM_fao_ohi_rgn, "int/RAM_fao_ohi_rgns_final.csv", row.names=FALSE)
 ```
 
