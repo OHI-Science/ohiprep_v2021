@@ -441,8 +441,20 @@ Compare trend, pressure, pressure output to last year's values
 old_health <- read.csv("../v2019/output/habitat_health_softbottom.csv") %>%
   dplyr::filter(year == 2014) %>% 
   dplyr::select(rgn_id, old_health=health)
-  
 
+compare_health <-  read.csv("output/habitat_health_softbottom.csv")%>%
+  filter(year==2014) %>%
+  dplyr::select(rgn_id, health) %>%
+  left_join(old_health)
+
+plot(health ~old_health, data=compare_health)
+abline(0,1, col = 'red')
+
+# Compare health with v2018
+old_health <- read.csv("../v2018/output/habitat_health_softbottom.csv") %>%
+  dplyr::filter(year == 2014) %>% 
+  dplyr::select(rgn_id, old_health=health)
+  
 compare_health <-  read.csv("output/habitat_health_softbottom.csv")%>%
   filter(year==2014) %>%
   dplyr::select(rgn_id, health) %>%
@@ -457,7 +469,27 @@ old_pressure <- read.csv("../v2019/output/hd_sb_subtidal.csv") %>%
   dplyr::filter(year == 2014) %>% 
   dplyr::select(rgn_id, old_pressure= pressure_score)
   
+compare_pressure <-  read.csv("output/hd_sb_subtidal.csv")%>%
+  filter(year==2014) %>%
+  dplyr::select(rgn_id, pressure=pressure_score) %>%
+  left_join(old_pressure)
 
+plot(pressure ~old_pressure, data=compare_pressure)
+abline(0,1, col = 'red')
+
+compare_pressure_plot <- ggplot(data = compare_pressure, aes(x = old_pressure, y = pressure, label = rgn_id))+
+  geom_point()+
+  geom_abline(color = "red")
+
+plot(compare_plot)
+library(plotly)
+ggplotly(compare_pressure_plot)
+
+# Compare pressure with v2018
+old_pressure <- read.csv("../v2018/output/hd_sb_subtidal.csv") %>%
+  dplyr::filter(year == 2014) %>% 
+  dplyr::select(rgn_id, old_pressure= pressure_score)
+  
 compare_pressure <-  read.csv("output/hd_sb_subtidal.csv")%>%
   filter(year==2014) %>%
   dplyr::select(rgn_id, pressure=pressure_score) %>%
@@ -475,13 +507,24 @@ library(plotly)
 ggplotly(compare_pressure_plot)
 
 
-
-##Trend
+## Trend
 old_trend <- read.csv("../v2019/output/habitat_trend_softbottom.csv") %>%
   dplyr::filter(year == 2014) %>% 
   dplyr::select(rgn_id, old_trend= trend)
   
+compare_trend <-  read.csv("output/habitat_trend_softbottom.csv")%>%
+  filter(year==2014) %>%
+  dplyr::select(rgn_id, trend) %>%
+  left_join(old_trend)
 
+plot(trend ~old_trend, data=compare_trend)
+abline(0,1, col = 'red')
+
+# Compare trend with v2018
+old_trend <- read.csv("../v2018/output/habitat_trend_softbottom.csv") %>%
+  dplyr::filter(year == 2014) %>% 
+  dplyr::select(rgn_id, old_trend= trend)
+  
 compare_trend <-  read.csv("output/habitat_trend_softbottom.csv")%>%
   filter(year==2014) %>%
   dplyr::select(rgn_id, trend) %>%
