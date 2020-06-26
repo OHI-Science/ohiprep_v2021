@@ -49,7 +49,7 @@ source('../../../workflow/R/common.R')
 
 Compare stocks found in previous version of RAM data to new data to see what additional stocks have been added.
 
-Old Stocks: Used `timeseries` table, because in RAM v3.80, this table only contained single assessment for each unique stock
+Old Stocks: Used `timeseries` table, because in RAM v3.80, this table only contained single assessment for each unique stock. Now we use `timeseries_values_view, since v4.44 (assessment year 2019). 
 ```{r}
 
 ## old stocks
@@ -113,24 +113,7 @@ These include:
 newStocks <- setdiff(new_stockid, old_stockid) # there are 4 new stocks
 unusedStocks <- setdiff(old_stockid, new_stockid) # these are no longer included in the RAM data, will be deleted
 
-# See the mispelling for CODIf-XIV vs COD1f-XIV. Let's check to make sure that these didn't actually change across the years, and fix it in the data. 
-# 
-# ram_bmsy_new_check <- ram_bmsy %>% 
-#   filter(stockid == "COD1f-XIV") ## 39 obs
-# 
-# ram_bmsy_old_check <- ram_bmsy_old %>% 
-#   filter(stockid == "CODIf-XIV") ## 39 obs
-# 
-# #they have the same amount of observations, but it looks like the bmsy values are updated for the new year. I think we should use the new ones. For now, we will filter out the new ones, and deal with this problem in RAM_data_prep.Rmd to see if they are double counting the bmsy values. We will just use the same fao ohi ids that we have found in the past, since those won't have changed. 
-# 
-# ram_bmsy <- ram_bmsy %>%
-#   filter(stockid != "COD1f-XIV")
-# ## check number of unique entries
-# new_stockid <- unique(ram_bmsy$stockid) # 442 unique entries now
-# 
-# ## find newly added stocks, when using timeseries_values_views
-# newStocks <- setdiff(new_stockid, old_stockid) # there are 4 new stocks
-# unusedStocks <- setdiff(old_stockid, new_stockid) # these are no longer included in the RAM data, will be deleted
+# v2020: See the mispelling for CODIf-XIV vs COD1f-XIV. This is ok. We will just use the new spelling and assign the fao-ohi regions again. 
 ```
 
 
@@ -155,16 +138,20 @@ Each stock needs the corresponding ohi and fao regions associated with its range
 ## (we need to get the stock id from the old RAM data)
 RAM_fao_ohi_rgns <- read.csv("../v2019/int/RAM_fao_ohi_rgns_final.csv") 
 
-## v2020... after some investigating it was found that there are a ton of duplicates in this file. This is a mistake. Every stock should only have one unique combo of each rgn id and fao id. We need to isolate and remove these. First we will remove the easy ones using distinct(). 
+######### This part is only needed for v2020...
+#after some investigating it was found that there are a ton of duplicates in this file. This is a mistake. Every stock should only have one unique combo of each rgn id and fao id. We need to isolate and remove these. First we will remove the easy ones using distinct(), then we will isolate the outliers with more than one duplicate.
+
 RAM_fao_ohi_rgns_fix <- RAM_fao_ohi_rgns %>%
   distinct() %>% ## fixes easy duplicates. Now lets check for mispellings or other errors 
   group_by(rgn_id, fao_id, stockid) %>%
   dplyr::mutate(dupe = n()>1) %>% # find the rest of the duplicates 
   ungroup()
   
- #filter for dupes
+ #filter for duplicates
 dupes <- RAM_fao_ohi_rgns_fix %>%
 filter(dupe == "TRUE") 
+
+dupes$stockid #these are our problem duplicates: OROUGHYNWCR and PERCHQCI
 
 ## fix the dupes 
 dupes_fix <- dupes %>%
@@ -174,7 +161,9 @@ dupes_fix <- dupes %>%
 RAM_fao_ohi_rgns_fix_final <- RAM_fao_ohi_rgns_fix %>%
   filter(dupe == "FALSE") %>%
   rbind(dupes_fix) %>%
-  select(-dupe)
+  select(-dupe) ## now we have fixed the duplicate problem. 
+
+######### end part only needed for v2020. However, in the future, we should always check for duplicates to make sure this isn't overlooked again! 
 
 ## create unique values of assessid, stock id, and stock long
 id_old <- ram_bmsy_old %>% 
@@ -200,7 +189,7 @@ RAM_rgns_old <- RAM_rgns_old %>%
 
 ```{r}
 #### 2020 fix only ####
-# for some reason, a couple of the stocks that were already present are showing up as na for FAO and RGN ID. Spot check each of the stocks that show up in RAM_filt with RAM_rgns_new. We need to make sure that each stock only shows up once unless it is in multiple FAO/ohi regions. 
+# because of a few spelling changes in stocklong, a couple of the stocks that were already present in the 2019 data are showing up as NA for FAO and RGN ID in the 2020 data. Spot check each of the stocks that show up in RAM_filt with RAM_rgns_new. We need to make sure that each stock only shows up once unless it is in multiple FAO/ohi regions. 
 
 o_roughy_RAM <- RAM_rgns_old %>%
   filter(stockid == "OROUGHYNWCR") ## bad, need to remove 1 of these rows (only keep the one with area in it). This was filled in last year. 
@@ -208,7 +197,7 @@ o_roughy_RAM <- RAM_rgns_old %>%
 perch_RAM <- RAM_rgns_old %>%
   filter(stockid == "PERCHQCI") # bad, only want to keep 1 of these. This was filled in last year. 
 
-# i will go in and fix these myself in excel, and re upload. I deleted the two NA rows for PERCHQCI and OROUGHYNWCR. There were also two mispelling in there that i fixed for these two.
+# i will go in and fix these myself in excel, and re upload. I deleted the two NA rows for PERCHQCI and OROUGHYNWCR, and fixed the stocklong spelling to match the 2020 data. 
 write.csv(RAM_rgns_old, file.path("int/RAM_fix_2020.csv"), row.names = FALSE)
 
 ## reupload as "RAM_fix_2020_corr.csv
@@ -227,7 +216,7 @@ setdiff(id_new$stockid, RAM_rgns_old$stockid)
 
 
 RAM_rgns_new <- RAM_rgns_old %>% 
-  full_join(id_new, by = c("stockid","stocklong"))
+  full_join(id_new, by = c("stockid","stocklong")) ## added the 4 new stocks.
 
 
 ```
@@ -246,6 +235,8 @@ Note: In `str_detect`, it doesn't always work when you type out "Bering Sea | Gu
 
 
 ```{r}
+## v2020: you can see there are more than 4 here stocks here. This is because some must've been overlooked in past data preps. We will manually add the FAO and OHI regions for all of the NA stocks here. 
+
 
 # Atlantic cod NAFO 1f and ICES 14 has ohi rgn *145* and fao rgn 21, 27 - -
 # Brown tiger shrimp Northern Australia fao rgn 57, 71, and ohi rgn *16* - - 
@@ -254,8 +245,6 @@ Note: In `str_detect`, it doesn't always work when you type out "Bering Sea | Gu
 # Sand eel Sandeel Area 4 fao rgn 27, ohi rgn *223* - - 
 # Sardine Western half of Southeast Australia ohi rgn *16*, fao rgn 57 - - 
 # Spurdog Northeast Atlantic fao rgn 21, ohi rgn *163*, *218* - - 
-# 	Pacific Ocean perch Haida Gwaii is in fao rgn 67, ohi rgn *218* - -
-# Orange roughy Northwest Chatham Rise is in fao rgn 81, ohi rgn *162* - - 
 
 ## Subset for rows with missing FAO and OHI ids
 RAM_filt <- RAM_rgns_new %>% 
@@ -382,7 +371,7 @@ Tidy up RAM data table.  After the final check (located below), I hand added som
 
 write.csv(RAM_rgns_new_final, "int/RAM_new_stocks.csv", row.names=FALSE)
 ## check that there are still 9 unique stock ids
-length(unique(RAM_rgns_new_final$stockid))
+length(unique(RAM_rgns_new_final$stockid)) # 7 makes sense
 
 ```
 
@@ -438,12 +427,12 @@ RAM_final <- bind_rows(read_csv(file.path("int/RAM_new_stocks.csv")),
                             read_csv("int/RAM_new_stocks_hand_additions.csv", col_types = "ddccd")) %>% 
   select(-idtemp2)
 
-RAM_fao_ohi_rgn <- RAM_rgns_old %>% 
+RAM_fao_ohi_rgn_final <- RAM_rgns_old %>% 
   full_join(RAM_final, by = c("rgn_id", "fao_id", "stockid", "stocklong")) %>%
   select(-RAM_area_m2.y, RAM_area_m2 = RAM_area_m2.x) %>%
   filter(!is.na(fao_id)) # only do this for 2020. For some reason NAs were carried over from 2019, that we filled in this year. 
  
 
-write.csv(RAM_fao_ohi_rgn, "int/RAM_fao_ohi_rgns_final.csv", row.names=FALSE)
+write.csv(RAM_fao_ohi_rgn_final, "int/RAM_fao_ohi_rgns_final.csv", row.names=FALSE)
 ```
 

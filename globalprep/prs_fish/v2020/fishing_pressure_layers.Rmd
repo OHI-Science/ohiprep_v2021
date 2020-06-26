@@ -41,7 +41,7 @@ We create raster files of total annual global catch from the Watson data and cor
 
  1. Watson, R. A. and Tidd, A. 2018. Mapping nearly a century and a half of global marine fishing: 1869–2015. Marine Policy, 93, pp. 171-177. [(Paper URL)](https://doi.org/10.1016/j.marpol.2018.04.023)
  
- 2. Watson, R. (2017) A database of global marine commercial, small-scale, illegal and unreported fisheries catch 1950-2014. Nature Scientific Data 4 (170039).
+ 2. Watson, R. (2017) A database of global marine commercial, small-scale, illegal and unreported fisheries catch 1950-2017. Nature Scientific Data 4 (170039).
 
 **Downloaded**: December, 11, 2019 from [IMAS portal]() - see mazu readme for v5 link
 
@@ -66,7 +66,7 @@ library(tidyverse)
 library(purrr)
 library(here) # install.packages("here")
 library(readxl)
-setwd(here::here("globalprep","prs_fish","v2019"))
+setwd(here::here("globalprep","prs_fish","v2020"))
 
 source('http://ohi-science.org/ohiprep_v2020/workflow/R/common.R')
 
@@ -79,7 +79,7 @@ rastFolder <- paste0(dir_M,"/git-annex/globalprep/prs_fish/v2020/int/")
 
 Download the following from the **data_download.Rmd** script:
 
-* Catch (1950 - 2019) - reported, iuu, and discard catch data for each cell location and unique identifier for industrial and non-industrial vessels
+* Catch (1950 - 2017) - reported, iuu, and discard catch data for each cell location and unique identifier for industrial and non-industrial vessels
 * Spatial Cells Reference (Codes.xlsx - sheet name is Cell) - contains geospatial information associated wtih the Industrial Catch data
 * Gear Reference (Codes.xlsx - sheet name is Gear) - contains information regarding how different fishing gear is classified in the index datasets. This will probably not be used for the fishing pressure layers. 
 * Taxa Reference (Codes.xlsx - sheet name is Taxa) - contains information regarding how different taxa is classified in the index datasets.

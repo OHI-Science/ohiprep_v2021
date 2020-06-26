@@ -143,173 +143,6 @@ ram_bmsy_new <- timeseries_values_views %>%
 
 ```
 
-
-## Identify FAO and OHI regions for RAM stocks added by using management values
-
-*Note: This is only necessary for the 2019 assessment, since this is the first year we are implementing management target biomass values*
-Determine if we will add management values
-```{r, eval = FALSE}
-# ram_bmsy_check <- timeseries_values_views %>%
-#   dplyr::select(stockid, year, TBdivTBmsy, SSBdivSSBmsy) %>%
-#   mutate(ram_bmsy = ifelse(!is.na(TBdivTBmsy), TBdivTBmsy, SSBdivSSBmsy)) %>%
-#   dplyr::filter(year > 1979)
-# 
-# sum(is.na(ram_bmsy_check$ram_bmsy)) #24480 NAs with only msy values in ram_bmsy column... 24480/35177 = ~69% of ram data is NA with these methods.
-# 
-# 
-# ram_bmgt_new <- timeseries_values_views %>%
-#   dplyr::select(stockid, stocklong, year, TBdivTBmsy, SSBdivSSBmsy, TBdivTBmgt, SSBdivSSBmgt) %>%
-#   mutate(ram_bmsy =
-#            ifelse(!is.na(TBdivTBmsy), TBdivTBmsy, SSBdivSSBmsy)) %>%
-#   mutate(ram_bmsy =
-#            ifelse(is.na(TBdivTBmsy) & is.na(SSBdivSSBmsy), TBdivTBmgt, ram_bmsy)) %>%
-#   mutate(ram_bmsy =
-#            ifelse(is.na(TBdivTBmsy) & is.na(SSBdivSSBmsy) & is.na(TBdivTBmgt), SSBdivSSBmgt, ram_bmsy)) %>%
-#   dplyr::filter(year > 1979)
-# 
-# sum(is.na(ram_bmgt_new$ram_bmsy)) #21195 NAs with new methods in ram_bmsy column... 21195/35177 = ~60% of ram data is NA with new methods.. better than before. Gained 3285 rows of data.
-# 
-# ram_bmgt_new_final <- ram_bmgt_new %>%
-#   filter(!is.na(ram_bmsy)) %>%
-#   dplyr::select(stockid,stocklong,year,ram_bmsy)
-# 
-# new_species_list <- data.frame(stockid = sort(setdiff(ram_bmgt_new_final$stockid, ram_bmsy_new$stockid))) %>%
-#   unique() %>% ## there are 96 stocks added.
-#   left_join(ram_bmgt_new_final, by = "stockid") %>%
-#   dplyr::select(stockid, stocklong) %>%
-#   unique()
-# 
-# write.csv(new_species_list, "int/RAM_addl_mgt_stocks.csv", row.names = FALSE)
-
-## based off of this, we will change our methods to include the management targets for bmsy... 
-```
-
-**Also only needed for 2019 assessment:**
-Here we identify the FAO/OHI regions where each RAM stock is located.  This involved the following steps:
-
-1. Create a intersection map that identifies each FAO/OHI region.
-2. Overlay each of the RAM stocks on the region map to determine where they fall.  There were 2 general challenges to doing this.  A few of the stocks did not have a complete dataframe in the shapefile and could not be joined to the other data.  A few stocks had intersecting polygons and consequently would not run.  In the first case, I added these data by hand later in the process.  For the second case, I fixed the intersections and added later.  
-
-```{r RAM to OHI_FAO rgn, eval = FALSE}
-
-# RAM_spatial_dir <- file.path(dir_M, "git-annex/globalprep/_raw_data/RAM/d2017/ramldb_boundaries/ramldb_boundaries") 
-# 
-# ram_sf <- list.files(RAM_spatial_dir, pattern = "shp")
-# 
-# ram_sf <- gsub(".shp", "", ram_sf)
-# 
-# ram_sf <- intersect(ram_bmsy_gf$assessid, ram_sf) # get these spatial data
-# 
-# ## get a sample file to convert other spatial data
-# tmp <- read_sf(dsn = RAM_spatial_dir, layer = ram_sf[1])
-# 
-# ## Overlay stock data on fao-ohi region data
-# 
-# fao_ohi <- st_read(file.path(dir_M, "git-annex/globalprep/fis/v2017/int"), 
-#         layer = "ohi_fao_rgns")
-# 
-# ram_sf_df <- data.frame(ram_sf, stringsAsFactors=FALSE) # make ram_sf a dataframe so that we can filter for new stocks added from management values...
-# 
-# new_species_list <- read_csv("int/RAM_addl_mgt_stocks.csv")
-# 
-# ram_sf_df_mgt <- ram_sf_df %>%
-#   filter(grepl(paste(new_species_list$stockid, collapse = "|"), ram_sf))
-# ram_sf_df_mgt_vec <- c(ram_sf_df_mgt$ram_sf)
-# 
-# 
-# stock_fao_ohi <- NA
-# for(stock in ram_sf_df_mgt_vec) {    #stock = ram_sf_df_mgt$ram_sf[50]
-#     cat(paste0(stock, "\n"))
-#     tmp_poly <- read_sf(dsn = RAM_spatial_dir, layer = stock)
-#     tmp_fao_ohi <- st_intersection(fao_ohi, tmp_poly)
-#     if(sum(is.na(stock_fao_ohi))==1){
-#       stock_fao_ohi <- tmp_fao_ohi
-#     }else
-#     {stock_fao_ohi <- rbind(stock_fao_ohi, tmp_fao_ohi)}
-# }
-# 
-# #got nervous about losing this... writing to mazu just incase
-# # st_write(stock_fao_ohi, dsn = file.path(dir_M, "git-annex/globalprep/fis/v2019/int/management_additions"), 
-# #         layer = "stock_fao_ohi_mgt_initial", driver = "ESRI Shapefile")
-# 
-# stock_fao_ohi_shps <- stock_fao_ohi[st_dimension(stock_fao_ohi) == 2,]
-# 
-# stock_fao_ohi_shps <- stock_fao_ohi_shps[!is.na(st_dimension(stock_fao_ohi_shps)), ] #5904
-# 
-# ## Fix GEOMETRYCOLLECTION features, http://r-spatial.org/r/2017/03/19/invalid.html
-# 
-# type <- st_is(stock_fao_ohi_shps, "GEOMETRYCOLLECTION")
-# 
-# stock_fao_ohi_shps[type, ] <- st_buffer(stock_fao_ohi_shps[type, ], 0.0) 
-# 
-# #check:
-# type <- st_is(stock_fao_ohi_shps, "GEOMETRYCOLLECTION")
-# 
-# 
-# ## Get areas in case we want to later weight the data 
-# stock_fao_ohi_shps$RAM_area_m2 <- st_area(stock_fao_ohi_shps)
-# 
-# st_geometry(stock_fao_ohi_shps) <- NULL
-# 
-# 
-# stock_fao_ohi_mgt <- stock_fao_ohi_shps %>%
-#   dplyr::select(type_w_ant, rgn_ant_id, F_CODE, assessid, RAM_area_m2) %>%
-#   group_by(rgn_ant_id, F_CODE, assessid) %>%
-#   summarize(RAM_area_m2 = sum(RAM_area_m2)) %>%
-#   rename(rgn_id = rgn_ant_id, fao_id = F_CODE)
-# 
-# ## Need to wrangle this so that we have stockid and stocklong (from 2019 ram data v4.44) instead of assessid (from 2017 ram data v3.80)
-# 
-# new_species_list <- read_csv("int/RAM_addl_mgt_stocks.csv")
-# 
-# stock_fao_ohi_mgt_final <- stock_fao_ohi_mgt %>%
-#   mutate(stockid = gsub("-1.*", "", assessid)) %>% #remove everything after "-1"
-#   mutate(stockid = gsub("-2.*", "", stockid)) %>% #remove everything after "-2"
-#   mutate(stockid = gsub("^[^-]*-","",stockid)) %>% #remove everything before the first "-"
-#   mutate(stockid = gsub("NFLD-", "", stockid)) %>% ## our above efforts did not catch all of the instances of we needed. There is one species with an extra "-" in there, so delete that... 
-#   left_join(new_species_list, by = "stockid") %>% # join on stockid to get the stocklong names we need...
-#  dplyr::select(-assessid) %>% #delete assessid
-# ungroup()
-# 
-# write.csv(stock_fao_ohi_mgt, "int/RAM_fao_ohi_rgns_mgt.csv", row.names=FALSE)
-# 
-# ## Now add these to RAM_fao_ohi_rgns.csv file that you created in fao_ohi_rgns.Rmd
-# 
-# RAM_fao_ohi_rgns <- read_csv("int/RAM_fao_ohi_rgns.csv")
-# 
-# initial_mgt_add_fao_ohi_rgns <- rbind(RAM_fao_ohi_rgns, stock_fao_ohi_mgt_final)
-# 
-# ### Now we need to manually add the rest of the new species from the management value change by looking each of them up individually and creating a spreadsheet with columns rgn_id, fao_id, RAM_area_m2 (these will all be NA), stockid, and stocklong. Make this csv file and upload to mazu. The code below will help as a check to make sure the rgn ids are in the correct fao rgn.
-# 
-# ## Spatial file with fao and ohi regions, F_CODE is the FAO id
-# fao_ohi <- st_read(dsn = file.path(dir_M, "git-annex/globalprep/fis/v2017/int"),
-#                    layer = "ohi_fao_rgns")
-# st_geometry(fao_ohi) <- NULL # removes geometry
-# fao_ohi_id <- fao_ohi %>%
-#   select(rgn_id, fao_id = F_CODE) %>% 
-#   arrange(rgn_id) %>% 
-#   mutate(fao_id = as.numeric(as.character(fao_id))) %>% 
-#   mutate(rgn_id = as.numeric(as.character(rgn_id))) %>% 
-#   distinct()
-# 
-# manual_additions <- data.frame(stockid = sort(setdiff(new_species_list$stockid, initial_mgt_add_fao_ohi_rgns$stockid))) %>% 
-#   left_join(new_species_list, by = "stockid")
-# 
-# 
-# write_csv(manual_additions, file.path("int/manual_management_additions.csv"))
-# 
-# ## after manually adding the rest, reupload into "int" folder as manual_management_additions_corr.csv
-# 
-# manual_additions_corr <- read_csv("int/manual_management_additions_corr.csv")
-# 
-# ## add the manual additions to our fao_ohi_rgns dataset
-# 
-# RAM_fao_ohi_rgns_final <- rbind(initial_mgt_add_fao_ohi_rgns, manual_additions_corr)
-# 
-# ## write this to int folder
-# write_csv(RAM_fao_ohi_rgns_final, file.path("int/RAM_fao_ohi_rgns_final.csv"))
-```
-
 ## Gapfill RAM data when there are missing years
 
 For each stock: 
@@ -318,13 +151,13 @@ For each stock:
 
 Summary: 
 - There are 398 RAM stocks with at least 5 years of B/Bmsy data from 2005 to 2015. 
-- 313 of these stocks have at least 1 year of gapfilled data.  
+- 314 of these stocks have at least 1 year of gapfilled data.  
 - A few of the predicted B/Bmsy values go below zero. We convert anything with a RAM B/Bmsy value < 0.0026 to 0.0026, which is the minimum observed B/Bmsy value in the data.
 
 ```{r gapfill, eval = FALSE}
 
-## gapfill ram_bmsy
-## based on this it seams reasonable to gap-fill missing values
+## gap fill ram_bmsy
+## based on this it seems reasonable to gap-fill missing values
 
 ram_gf_check <- ram_bmsy_new %>%
    filter(year >= 2001) %>%
@@ -333,7 +166,7 @@ ram_gf_check <- ram_bmsy_new %>%
 # identify stocks for gapfilling (those with 5 or more years of data since 2005).
 # NOTE: we potentially gapfill to 2001, but we want stocks with adequate *recent* data 
 ram_bmsy_gf <- ram_bmsy_new %>%
-  filter(year >= 2001 & year <= 2016) %>%   # 2015 corresponds to the final year of Watson catch data
+  filter(year >= 2001 & year <= 2017) %>%   # 2017 corresponds to the final year of Watson catch data
   group_by(stockid) %>%
   mutate(years_data_2005_now = length(ram_bmsy[year >= 2005])) %>%
   mutate(years_data_2001_now = length(ram_bmsy[year >= 2001])) %>%
@@ -351,8 +184,8 @@ ram_bmsy_gf <- ram_bmsy_gf %>%
 ## gapfilling record keeping
 ram_bmsy_gf <- ram_bmsy_gf %>%   
   mutate(gapfilled = NA) %>%
-  mutate(gapfilled = ifelse(years_data_2001_now == 15, gapfilled, 
-                            paste(15 - years_data_2001_now, "years gf", sep = " ")))
+  mutate(gapfilled = ifelse(years_data_2001_now == 17, gapfilled, 
+                            paste(17 - years_data_2001_now, "years gf", sep = " ")))
 
 ## see unique values of stocks
 tmp <- ram_bmsy_gf %>%
@@ -364,7 +197,7 @@ tmp <- ram_bmsy_gf %>%
 length(tmp$gapfilled)  # 397 stocks with at least 5 years of data in past 11 years - v2019
                       # 398 stocks with at least 5 years of data in past 11 years - v2020
 sum(table(tmp$gapfilled))  # 222 stocks have at least one year of B/Bmsy values gapfilled - v2019
-                          # 313 stocks have at least one year of B/Bmsy values gapfilled; this is because there is an additional year of data in RAM... 2016 - v2020
+                          # 314 stocks have at least one year of B/Bmsy values gapfilled; this is because there is an additional year of data in RAM... 2016 - v2020
 
 
 ## regression model for prediction for each stock
@@ -377,8 +210,8 @@ ram_bmsy_gf <- ram_bmsy_gf %>%
   }) %>%
   ungroup()
 
-summary(ram_bmsy_gf) #892 NAs for ram_bmsy
-sum(ram_bmsy_gf$ram_bmsy_predict < 0 )  # 21 of the predicted B/Bmsy values go below zero.  
+summary(ram_bmsy_gf) #1206 NAs for ram_bmsy
+sum(ram_bmsy_gf$ram_bmsy_predict < 0 )  # 30 of the predicted B/Bmsy values go below zero.  
 min(ram_bmsy_gf$ram_bmsy, na.rm = TRUE) #0.00263
 
 ## We convert anything with a RAM BBmsy value < 0.00263 to 0.00263, which is the minimum observed B/Bmsy value in the data; add method documentation
@@ -420,15 +253,13 @@ If there are many differences between RAM spatial file and RAM metadata, check t
 
 ```{r final, eval = FALSE}
 
-#### STOPPED HERE JUNE 25 ####
-
 ## Read in RAM spatial stocks file
 ram_spatial <- read.csv("int/RAM_fao_ohi_rgns_final.csv", stringsAsFactors = FALSE)
 
 ram_meta <- metadata %>% 
   dplyr::select(stockid, stocklong, scientificname)
 
-setdiff(ram_spatial$stockid, ram_meta$stockid) # make sure all the spatial data has corresponding metadata (should be 0). It is not 0, probably because these are ones that have been removed from the RAM database since the 2017 assessment... delete these from the dataframe. 
+setdiff(ram_spatial$stockid, ram_meta$stockid) # make sure all the spatial data has corresponding metadata (should be 0). It is not 0, probably because these are ones that have been removed from the RAM database since the 2017 assessment... delete these from the data frame below. 
 
 # join with metadata to get scientific name
 ram_spatial <- ram_spatial %>%
@@ -466,12 +297,12 @@ wat_sp <- read_csv(file.path(dir_M,'git-annex/globalprep/fis/v2020/int/stock_cat
 tmp <- data.frame(scientificname = sort(setdiff(ram_sp$scientificname, wat_sp$wat_scientificname))) # 52 species names
 
 # compare names - what's in watson that's not in RAM
-tmp2 <- sort(setdiff(wat_sp$wat_scientificname, ram_sp$scientificname)) # 1210 species names
+tmp2 <- data.frame(scientificname = sort(setdiff(wat_sp$wat_scientificname, ram_sp$scientificname))) # 1210 species names
 
 write.csv(tmp, "int/unmatched_RAM_species.csv", row.names=FALSE)
 write.csv(tmp2, "int/Watson_species_no_RAM.csv", row.names=FALSE)
 
-setdiff(tmp, ram_name_corr$RAM_species)
+#setdiff(tmp, ram_name_corr$RAM_species)
 
 
 ## join ram spatial with RAM species on scientific name. We can use this to help check whether questionable species names across the ram and watson data match by region and fao id...
@@ -486,12 +317,16 @@ wat_sp_fao_ohi <- read_csv(file.path(dir_M,'git-annex/globalprep/fis/v2020/int/s
   dplyr::rename(wat_scientificname = TaxonName) %>%
    dplyr::filter(year > 1979)
 
+RAM_species_to_Watson <- read.csv("int/RAM_species_to_Watson.csv", stringsAsFactors = FALSE)
 
-# Then I hand-looked up each of the missing ones to generate this list - most still unmatched. See "RAM_species_to_watson_notes.csv" for our reasoning behind these changes. 
+# Then I hand-looked up each of the missing ones from "unmatched_RAM_species.csv", and added those new ones to "RAM_species_to_Watson.csv" to generate this list - most still unmatched. See "RAM_species_to_watson_notes.csv" for our reasoning behind these changes. 
+
+setdiff(RAM_species_to_Watson$RAM_species,tmp$scientificname) ## these are the new species to add to "RAM_species_to_Watson.csv". For 2020 there is only one new one, just a new spelling of Lepidorgombus spp
+
 ram_name_corr <- read.csv("int/RAM_species_to_Watson.csv", stringsAsFactors = FALSE) %>%
    filter(!is.na(Watson_species))  # Watson to RAM name conversion
 
-ram_name_corr # matched species, only 15
+ram_name_corr # matched species, only 16
 ```
 
 
@@ -509,8 +344,8 @@ ram_spatial <- ram_spatial %>%
   dplyr::mutate(species = ifelse(!is.na(Watson_species), Watson_species, RAM_species)) %>%
   dplyr::select(rgn_id, fao_id, stockid, stocklong, species, RAM_area_m2)
 
-length(unique(ram_spatial$stockid)) # 452 RAM stocks with B/Bmsy data - v2019
-length(unique(ram_spatial$species)) #218
+length(unique(ram_spatial$stockid)) # 443 RAM stocks with B/Bmsy data - v2020
+length(unique(ram_spatial$species)) #217
 ```
 
 
@@ -534,4 +369,7 @@ ram_data <- ram_bmsy_gf %>%
   unique()
 
 write.csv(ram_data, "int/ram_bmsy.csv", row.names=FALSE)
+
+
+ram_2019 <- read_csv(file.path("../v2019/int/ram_bmsy.csv"))
 ```
