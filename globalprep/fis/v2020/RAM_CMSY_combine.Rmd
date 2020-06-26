@@ -1,5 +1,5 @@
 ---
-title: "OHI 2019: Food Provision, Combining RAM and CMSY B/Bmsy data"
+title: "OHI 2020: Food Provision, Combining RAM and CMSY B/Bmsy data"
 author: "*Compiled on `r date()` by `r Sys.info()['user']`*"
 output: 
   html_document:
@@ -96,11 +96,13 @@ Check number of Watson stocks that have CMSY or RAM B/Bmsy values:
 setdiff(ram$stock_id, mean_catch$stock_id)
 setdiff(mean_catch$stock_id, ram$stock_id)
 intersect(ram$stock_id, mean_catch$stock_id) #342 stocks with RAM-B/Bmsy data (although RAM is matched by fao and rgn ids) - v2019
+#332 stocks with RAM-B/Bmsy data (although RAM is matched by fao and rgn ids) - v2020
 
 ## Watson v CMSY
 setdiff(cmsy$stock_id, mean_catch$stock_id)
 setdiff(mean_catch$stock_id, cmsy$stock_id)
 intersect(mean_catch$stock_id, cmsy$stock_id) #738 stocks with CMSY-B/Bmsy data - v2019
+#703 stocks with CMSY-B/Bmsy data - v2020
 ```
 
 Combine Watson to RAM-B/Bmsy:
@@ -108,9 +110,10 @@ Combine Watson to RAM-B/Bmsy:
 
 data <- mean_catch %>%
   left_join(ram, by=c('rgn_id', 'stock_id', "year"))# 608006 catch records (catch from specific fao and ohi regions) when joined with ram increases to 612599 because there are multiple stocks for some species - v2019
+# 704173 catch records (catch from specific fao and ohi regions) when joined with ram increases to 709274 because there are multiple stocks for some species - v2020
 
-sum(!is.na(data$ram_bmsy))/nrow(data) # about 6% of catch records have RAM data - v2019
-sum(data$mean_catch[!is.na(data$ram_bmsy)])/sum(data$mean_catch) # about 54% of tons of catch have RAM data - v2019 (this was 34% before the addition of management values!!!!)
+sum(!is.na(data$ram_bmsy))/nrow(data) # about 6% of catch records have RAM data - v2020
+sum(data$mean_catch[!is.na(data$ram_bmsy)])/sum(data$mean_catch) # about 54% of tons of catch have RAM data - v2020 
 
 ```
 
@@ -118,15 +121,15 @@ Save & view duplicate stocks:
 ```{r}
 
 sum(duplicated(paste(data$rgn_id, data$stock_id, data$year, sep="_")))
-# 13974 regions with multiple RAM stocks (stockid_ram) for the same species (see scientific name in stockid) (was 11950 before addition of management values!!!!)
+# 7773 regions with multiple RAM stocks (stockid_ram) for the same species (see scientific name in stockid)
 
 
 ## save the duplicate stock values to take a look at an example
 tmp <- data[duplicated(paste(data$rgn_id, data$stock_id, data$year, sep="_")), ]
 
 ## Examples of a region with multiple RAM stocks of the same species
-filter(data, rgn_id == 9, year == 2001, stock_id == "Thunnus_alalunga-71") # stocks ALBANPAC and ALBASPAC are the same species; mean catch 1086 tonnes
-filter(data, rgn_id == 9, year == 2001, stock_id == "Tetrapturus_audax-71") # stocks STMARLINWCNPAC and STMARLINSWPO are the same species; mean catch 89 tonnes
+filter(data, rgn_id == 9, year == 2001, stock_id == "Thunnus_alalunga-71") # stocks ALBANPAC and ALBASPAC are the same species; mean catch 1153.528 tonnes
+filter(data, rgn_id == 9, year == 2001, stock_id == "Tetrapturus_audax-71") # stocks STMARLINWCNPAC and STMARLINSWPO are the same species; mean catch 86 tonnes
 
 ```
 
@@ -141,11 +144,11 @@ data <- data %>%
             method = paste(method, collapse = ", ")) %>%
   ungroup()
 
-## check that averaging went ok - compare with mean catch values earlier (1086 and 89)
+## check that averaging went ok - compare with mean catch values earlier (1153 and 86)
 filter(data, rgn_id == 9, year == 2001, stock_id == "Thunnus_alalunga-71")
 filter(data, rgn_id == 9, year == 2001, stock_id == "Tetrapturus_audax-71")
 
-## check example of duplicate stock catch with ram_bmsy but no RAM_area_m2 value, ram_bmsy should not be NA (should be 2.2 tonnes, checked)
+## check example of duplicate stock catch with ram_bmsy but no RAM_area_m2 value, ram_bmsy should not be NA (should be 29256 tonnes, checked)
 filter(data, rgn_id == 20, year == 2001, stock_id ==  "Todarodes_pacificus-61")
 
 
@@ -169,7 +172,7 @@ B/Bmsy values for each catch record are generated (for the species where this is
    dplyr::select(rgn_id, stock_id, taxon_key, year, bbmsy, bmsy_data_source, RAM_gapfilled=method, mean_catch) %>%
    filter(year >= 2001)
 
-
+#old <- read_csv(file.path("../v2018/output/fis_bbmsy_gf.csv"))
 write.csv(data_gf, "output/fis_bbmsy_gf.csv", row.names=FALSE) 
 
 data_gf <- read.csv("output/fis_bbmsy_gf.csv") 
@@ -182,7 +185,7 @@ bbmsy_dups_fixed <- bbmsy %>%
   group_by(rgn_id, stock_id, year) %>%
   summarise(bbmsy = mean(bbmsy)) %>% ## account for the duplicated TaxonName/CommonName noted in "catch_data_prep.Rmd"...
   ungroup()
-
+#old <- read_csv(file.path("../v2019/output/fis_bbmsy.csv"))
 
 write.csv(bbmsy_dups_fixed, "output/fis_bbmsy.csv", row.names=FALSE) 
 

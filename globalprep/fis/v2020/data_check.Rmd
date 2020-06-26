@@ -1,5 +1,5 @@
 ---
-title: "OHI 2018: Food Provision, Investigate Differences"
+title: "OHI 2020: Food Provision, Investigate Differences"
 author: "*Compiled on `r date()` by `r Sys.info()['user']`*"
 output: 
   html_document:
@@ -35,7 +35,7 @@ library(sf)
 library(ggplot2)
 library(stringr)
 library(here) 
-setwd(here::here("globalprep","fis","v2019"))
+setwd(here::here("globalprep","fis","v2020"))
 
 source('../../../workflow/R/common.R')
 
@@ -50,63 +50,63 @@ Note: When loading old and new, make sure to clear environment if there is ever 
 Save New and Old RAM metadata and timeseries data to unqiue variables for comparison. Old data checks out but new data has more unqiue `assessid` and `stockid` entries in the `timeseries` data than in the `metadata`. 
 ```{r}
 ## Check unique stockid in new RAM data
-load(file.path(dir_M, "git-annex/globalprep/_raw_data/RAM/d2019/RLSADB v4.44/DB Files With Assessment Data/DBdata.RData"))
+load(file.path(dir_M, "git-annex/globalprep/_raw_data/RAM/d2020/RAMLDB v4.491/DB Files With Assessment Data/R Data/DBdata[asmt][v4.491].RData"))
 
 ## save newest metadata to unique variable 
-RAM4.44_meta = as.data.frame(metadata)
-RAM4.44_data = as.data.frame(timeseries)
+RAM4.491_meta = as.data.frame(metadata)
+RAM4.491_data = as.data.frame(timeseries)
 
 ## Check length in metadata
-length(unique(RAM4.44_meta$assessid)) #1330 unique entries
-length(unique(RAM4.44_meta$stockid)) # same number of stockids as assessids
-length(unique(RAM4.44_meta$stocklong)) # same number of stocklong as the above two
+length(unique(RAM4.491_meta$assessid)) #1330 unique entries
+length(unique(RAM4.491_meta$stockid)) # same number of stockids as assessids
+length(unique(RAM4.491_meta$stocklong)) # same number of stocklong as the above two
 
 
 ## Check length in timeseries data
-length(unique(RAM4.44_data$assessid)) # 2197 unique entries, more than in metadata
-length(unique(RAM4.44_data$stockid)) # 1371 unique, more than in metadata..
-length(unique(RAM4.44_data$stocklong)) #1373 unique
+length(unique(RAM4.491_data$assessid)) # 2215 unique entries, more than in metadata
+length(unique(RAM4.491_data$stockid)) # 1371 unique, more than in metadata..
+length(unique(RAM4.491_data$stocklong)) #1373 unique
 
-setdiff(RAM4.44_data$assessid, RAM4.44_meta$assessid) #868 diff in data not in meta
-setdiff(RAM4.44_data$stockid, RAM4.44_meta$stockid) #42 stockids in data not in meta
+setdiff(RAM4.491_data$assessid, RAM4.491_meta$assessid) #886 diff in data not in meta
+setdiff(RAM4.491_data$stockid, RAM4.491_meta$stockid) #44 stockids in data not in meta
 
 
 ## old stocks 
-load(file.path(dir_M, "git-annex/globalprep/_raw_data/RAM/d2018/RAM v4.40 (6-4-18)/DB Files With Assessment Data/DBdata.RData"))
+load(file.path(dir_M, "git-annex/globalprep/_raw_data/RAM/d2019/RLSADB v4.44/DB Files With Assessment Data/DBdata.RData"))
 
-RAM4.40_meta = as.data.frame(metadata)
-RAM4.40_data = as.data.frame(timeseries)
+RAM4.44_meta = as.data.frame(metadata)
+RAM4.44_data = as.data.frame(timeseries)
 
 ## Check length
-length(unique(RAM4.40_meta$assessid)) # 1252
-length(unique(RAM4.40_meta$stockid)) # 1252
-length(unique(RAM4.40_meta$assessid)) # 1252
+length(unique(RAM4.44_meta$assessid)) # 1330
+length(unique(RAM4.44_meta$stockid)) # 1330
+length(unique(RAM4.44_meta$assessid)) # 1330
 
-length(unique(RAM4.40_data$assessid)) # 1814 
-length(unique(RAM4.40_data$stockid)) # 1290
-length(unique(RAM4.40_data$stocklong)) # 1292
+length(unique(RAM4.44_data$assessid)) # 2197
+length(unique(RAM4.44_data$stockid)) # 1371
+length(unique(RAM4.44_data$stocklong)) # 1373
 
-setdiff(RAM4.40_data$assessid, RAM4.40_meta$assessid) #563
-setdiff(RAM4.40_data$stockid, RAM4.40_meta$stockid) #39
+setdiff(RAM4.44_data$assessid, RAM4.44_meta$assessid) #868
+setdiff(RAM4.44_data$stockid, RAM4.44_meta$stockid) #42
 
 ```
 
 ## Investigate New RAM Database filtered for B/Bmsy data
 ```{r}
 
-ram_bmsy <- RAM4.44_data %>%
+ram_bmsy <- RAM4.491_data %>%
   dplyr::filter(tsid == "BdivBmsytouse-dimensionless") %>%
   dplyr::filter(!is.na(tsvalue)) %>%
   dplyr::mutate(tsyear = as.numeric(as.character(tsyear))) %>%
   dplyr::filter(tsyear > 1979) %>%
   dplyr::select(assessid, year=tsyear, ram_bmsy = tsvalue, stockid, stocklong)
 
-length(unique(ram_bmsy$assessid)) # 487 unique entries
-length(unique(ram_bmsy$stockid)) # 355
-length(unique(ram_bmsy$stocklong)) # 355
+length(unique(ram_bmsy$assessid)) # 499 unique entries
+length(unique(ram_bmsy$stockid)) # 360
+length(unique(ram_bmsy$stocklong)) # 360
 
-setdiff(ram_bmsy$assessid, RAM4.44_meta$assessid) # 169 diffs
-setdiff(ram_bmsy$stockid, RAM4.44_meta$stockid) # 9 diffs
+setdiff(ram_bmsy$assessid, RAM4.491_meta$assessid) # 177 diffs
+setdiff(ram_bmsy$stockid, RAM4.491_meta$stockid) # 9 diffs
 
 
 ```
@@ -120,7 +120,7 @@ Try looking at stockid BLACKROCKNPCOAST, in ram_spatial but not raw_meta. ram_sp
 new_stockid <- unique(ram_bmsy$stockid)
 
 ## Check to see if BLACKROCKNPCOAST is in old stock data
-ram_bmsy_old <- data.frame(RAM4.40_data) %>%
+ram_bmsy_old <- data.frame(RAM4.44_data) %>%
   dplyr::filter(tsid == "BdivBmsytouse-dimensionless") %>%
   dplyr::filter(!is.na(tsvalue)) %>%
   dplyr::mutate(tsyear = as.numeric(as.character(tsyear))) %>%
@@ -131,20 +131,20 @@ ram_bmsy_old <- data.frame(RAM4.40_data) %>%
 old_stockid <-  unique(ram_bmsy_old$stockid)
 
 
-## Compare stockid in raw_meta for v4.44 RAM data versus stockid in timeseries.. should match
-setdiff(ram_bmsy$stockid,RAM4.44_meta$stockid)
+## Compare stockid in raw_meta for v4.491 RAM data versus stockid in timeseries.. should match
+setdiff(ram_bmsy$stockid,RAM4.491_meta$stockid)
 
 ```
 
 
 ***
 
-# Investigate Multiple `assessid` in RAM v4.44 Database
+# Investigate Multiple `assessid` in RAM v4.491 Database
 
 ## Identify the number of assessments per stock
 ```{r}
 ## see unique pairs of assess and stockid
-test <- RAM4.40_data %>% 
+test <- RAM4.491_data %>% 
   select(assessid, stockid) %>% 
   unique() %>% 
   group_by(stockid) %>% 
@@ -163,7 +163,7 @@ plot(test$`NEFSC-ACADREDGOMGB-1913-2007-MILLER`,test$`NEFSC-ACADREDGOMGB-1913-20
 abline(0,1, col="red")
 ```
 
-ANGLVIIIc-IXa has 6 assessments, take a look
+ANGLVIIIc-IXa has 7 assessments, take a look
 ```{r}
 test2 <- ram_bmsy %>% 
   filter(stockid == "ANGLVIIIc-IXa")

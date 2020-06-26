@@ -26,6 +26,9 @@ knitr::opts_chunk$set(echo = TRUE, eval=FALSE)
 
 Generates a dataset describing the OHI and FAO major fishing regions that correspond to each stock's range.  This combines last year's dataset of stock-spatial information from RAM v4.44 database and Christopher M. Free's spatial work at Rutgers as well as newly added stocks from RAM v4.491 with manually assigned ohi and fao region ids. Dataset only contains stocks with B/Bmsy data.
 
+## Updates for 2020
+
+There were some duplicates showing up in the data, so we fixed those. 
 
 ## Setup
 
