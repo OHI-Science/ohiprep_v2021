@@ -182,7 +182,7 @@ foreach(yr = years) %dopar%{
 }
 
 ## Reading in the raster to make sure it looks as expected
-test<- raster(file.path(dir_M, ('git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int/catch_count_2015.tif')))
+test <- raster(file.path(dir_M, ('git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int/catch_count_2015.tif')))
 
 plot(test) ## Looks like all information is there!
 
@@ -193,10 +193,10 @@ plot(test) ## Looks like all information is there!
 
 ```{r, eval=FALSE}
 
-## Read tif as rasters for all catches using gear that harm soft bottom
+## Read tif as rasters for all catches using gear that harm soft-bottom habitat
 
 ## Reference raster
-catch_crs <- raster(file.path (dir_M,'git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2019/int/catch_count_2003.tif'))
+catch_crs <- raster(file.path (dir_M,'git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int/catch_count_2003.tif'))
 
 ## OHI region polygons
 ohi_regions <- st_read(dsn = file.path(dir_M, "git-annex/globalprep/spatial/v2017"), layer="regions_2017_update")
@@ -206,20 +206,21 @@ ohi_regions_wgs <-  st_transform(ohi_regions, proj4string(catch_crs))
 
 
 ## List of all tifs with catches that need to be read in the loop
-catch_rasts <- list.files(file.path(dir_M, "git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2019/int"), pattern = 'catch_count_.*.tif', full.names = TRUE)
+catch_rasts <- list.files(file.path(dir_M, "git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int"), pattern = 'catch_count_.*.tif', full.names = TRUE)
 
-catch_rasts <- catch_rasts[c(1,2,3,4,5,6,7,8,9,10,11,13)] #Filter for the 12 missing rasters to run in the loop
+catch_rasts <- catch_rasts[c(1,2,3,4,5,6,7,8,9,10,11,13)] # Filter for the 12 missing rasters to run in the loop
 # catch_rasts <- catch_rasts[c(9,10,11,13)]
 
-#registering cores for parallel processing
+## Registering cores for parallel processing
 registerDoParallel(4)
 
+## Loop to extract values for each OHI region
 foreach(sb_catch = catch_rasts) %dopar% { 
-   #sb_catch = catch_rasts[12]
+   # sb_catch = catch_rasts[12]
 
 cat(sb_catch)
 
-catch_year <- str_extract(basename(sb_catch), "(\\d)+") ##extract the correspending year for each file
+catch_year <- str_extract(basename(sb_catch), "(\\d)+") # Extract the corresponding year for each file
 
 catch <- raster(sb_catch)
 
@@ -228,7 +229,7 @@ data <- raster::extract(catch, ohi_regions_wgs, weights = TRUE, normalizeWeights
 names(data) <- paste(ohi_regions$type_w_ant, ohi_regions$rgn_ant_id, sep="_") 
 sb_catch_rgn   <- plyr::ldply(data, rbind)
 
-# the following code keeps the raster information when the raster lands partially on the land polygons
+# The following code keeps the raster information when the raster lands partially on the land polygons
 sb_catch_rgn <- sb_catch_rgn %>%
   tidyr::separate(.id, c("rgn_type", "rgn_id"), sep="_") %>%
   dplyr::mutate(tonnes = value*weight) %>%
@@ -240,7 +241,7 @@ sb_catch_rgn <- sb_catch_rgn %>%
   dplyr::arrange(as.numeric(as.character(rgn_id))) %>%
   dplyr::mutate(year = catch_year)
 
-write.csv(sb_catch_rgn, file = file.path(here(), "globalprep/hab_prs_hd_subtidal_soft_bottom/v2019/int", sprintf("sb_catch_rgn_%s.csv", catch_year)), row.names=FALSE)
+write.csv(sb_catch_rgn, file = file.path(here(), "globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int", sprintf("sb_catch_rgn_%s.csv", catch_year)), row.names=FALSE)
 
 }
 
@@ -250,14 +251,15 @@ write.csv(sb_catch_rgn, file = file.path(here(), "globalprep/hab_prs_hd_subtidal
 ## Standarized catches per soft-bottom area
 
 ```{r, eval=FALSE}
+
 area <-  read.csv(file.path(here(), "globalprep/hab_prs_hd_subtidal_soft_bottom/v2016/output/habitat_extent_softbottom.csv"))
 
 ## Read in csv for each year and combine them in one data frame
 
 ## Make sure you are in the correct wd
-#setwd("~/github/ohiprep_v2019/globalprep/hab_prs_hd_subtidal_soft_bottom/v2019") 
+#setwd("~/github/ohiprep_v2020/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020") 
 
-files <- list.files("int", pattern = "sb_catch_rgn_.*.csv", full.names = TRUE) 
+files <- list.files("int", pattern = "sb_catch_rgn_.*.csv", full.names = TRUE)
 
 #files_2018 <- list.files("../v2018/int", pattern = "sb_catch_rgn_.*.csv", full.names = TRUE)
 
@@ -284,30 +286,31 @@ max <- data_density %>%
   summarize(maxDensity = max(density, na.rm=TRUE)) %>%
   data.frame()
 
-write.csv(max, "int/reference_point_max.csv", row.names=FALSE) ##Make sure you are working in the correct working directory
+write.csv(max, "int/reference_point_max.csv", row.names=FALSE) # Make sure you are working in the correct working directory
 
-## Reference point = max values accroass all years
+## Reference point = max values across all years
 ref_point <- read.csv("int/reference_point_max.csv")
 ref_point_max <- max(ref_point$maxDensity)
 
-##ref_point 2018 = 7052.172 (year 2015)
-##ref_point 2019 = 45.76575 (year 2015)
+# ref_point 2018 = 7052.172 (year 2015)
+# ref_point 2019 = 45.76575 (year 2015)
+# ref_point 2020 = 4842.57385 (year 2015)
 
-## checking for distribution of data. In the past density data happens to be very skewed
-hist(data_density$density) ## Yes, very skewed data
+## Checking for distribution of data. In the past density data happens to be very skewed
+hist(data_density$density) # Yes, very skewed data
 
-## rescale the density: 
-## density is rescaled twice to reduce skew
+## Rescale the density:
+## Density is rescaled twice to reduce skew
 
 data_rescaled <- data_density %>%
-  mutate(density_rescaled_max = log(density + 1)/log(ref_point_max + 1)) %>% #pressure-type measure
+  mutate(density_rescaled_max = log(density + 1)/log(ref_point_max + 1)) %>% # pressure-type measure
   mutate(inv_dens_rescaled_max = 1 - density_rescaled_max)  # health-type measure
 
 hist(data_rescaled$density_rescaled_max)
 hist(data_rescaled$inv_dens_rescaled_max)
 
 
-## Find the second rescaling point - median value of healthy-type meassure for each year
+## Find the second rescaling point - median value of healthy-type measure for each year
 ref_median <- data_rescaled %>%
   group_by(year) %>%
   summarize(ref_median = median(inv_dens_rescaled_max, na.rm=TRUE)) %>%
@@ -316,8 +319,9 @@ ref_median <- data_rescaled %>%
 write.csv(ref_median, "int/reference_point_median.csv", row.names=FALSE)
 
 
-ref_point_median <- min(ref_median$ref_median) # 0.8590695
-                                               # 0.99485138963124
+ref_point_median <- min(ref_median$ref_median) # 0.8590695 (v2018)
+                                               # 0.99485138963124 (v2019)
+                                               # 0.87582237227035 (v2020)
 
 
 ## Rescale for second time:  
@@ -341,8 +345,8 @@ data_rescaled_2 <- data_rescaled %>%
 
 ```{r, eval=FALSE}
 
-  ## check against old data
-old <- read.csv("../v2018/output/habitat_health_softbottom.csv") %>%
+## Check against old data
+old <- read.csv("../v2019/output/habitat_health_softbottom.csv") %>%
   dplyr::filter(year == 2014) %>% 
   dplyr::select(rgn_id, old_health=health)
   
@@ -359,7 +363,7 @@ abline(0,1, col = 'red')
 ## (at least according to our raster data)
 
 
-compare_plot <- ggplot(data = test, aes(x = old_health, y = health, label = rgn_id))+
+compare_plot <- ggplot(data = test, aes(x = old_health, y = health, label = rgn_id)) + # "test" is a RasterLayer class so this doesn't run
   geom_point()+
   geom_abline(color = "red")
 
@@ -373,24 +377,25 @@ ggplotly(compare_plot)
 ## Calculate and save trend
 
 ```{r, eval=FALSE}
-### Get relevant data
+
+## Get relevant data
 
 save_dir <- "output"
 
 condition_pressure <- data_rescaled_2 %>%
   mutate(habitat = "soft_bottom") %>%
-  mutate(pressure = 1 - density_rescaled_median_capped) %>% ##transformes it back into pressure-measssure
+  mutate(pressure = 1 - density_rescaled_median_capped) %>% # Transforms it back into pressure-measure
   dplyr::select(rgn_id, year, habitat, health=density_rescaled_median_capped, pressure) %>%
   filter(!is.na(pressure))
 
 hist(condition_pressure$pressure)
 
-# get habitat trends
+# Get habitat trends
 stop_year <- max(condition_pressure$year)
 
 trend <- data.frame()
 
-for (status_year in (stop_year-4):stop_year){ #status_year = 2011
+for (status_year in (stop_year-4):stop_year){ # status_year = 2011
   trend_years <- status_year:(status_year - 4)
   first_trend_year <- min(trend_years)
   
@@ -432,8 +437,8 @@ Compare trend, pressure, pressure output to last year's values
 
 ```{r, eval=FALSE}
 
- ## Health data
-old_health <- read.csv("../v2018/output/habitat_health_softbottom.csv") %>%
+## Health data
+old_health <- read.csv("../v2019/output/habitat_health_softbottom.csv") %>%
   dplyr::filter(year == 2014) %>% 
   dplyr::select(rgn_id, old_health=health)
   
@@ -447,8 +452,8 @@ plot(health ~old_health, data=compare_health)
 abline(0,1, col = 'red')
 
 
-##Pressure
-old_pressure <- read.csv("../v2018/output/hd_sb_subtidal.csv") %>%
+## Pressure
+old_pressure <- read.csv("../v2019/output/hd_sb_subtidal.csv") %>%
   dplyr::filter(year == 2014) %>% 
   dplyr::select(rgn_id, old_pressure= pressure_score)
   
@@ -472,7 +477,7 @@ ggplotly(compare_pressure_plot)
 
 
 ##Trend
-old_trend <- read.csv("../v2018/output/habitat_trend_softbottom.csv") %>%
+old_trend <- read.csv("../v2019/output/habitat_trend_softbottom.csv") %>%
   dplyr::filter(year == 2014) %>% 
   dplyr::select(rgn_id, old_trend= trend)
   
@@ -488,18 +493,18 @@ abline(0,1, col = 'red')
 ## Comparisons in general are not great but not too bad. Consider:this year we included more destructive gear, we also included artisanal (non-commercial catches) and Watson updated its methods
 
 
-old <- sb_catch_all_2018 %>%
-  dplyr::filter(year == 2015) %>% 
-  dplyr::select(rgn_id, old_tonnes=tonnes)
-  
-
-compare <- sb_catch_all %>%
-  filter(year==2015) %>%
-  dplyr::select(rgn_id, tonnes) %>%
-  left_join(old)
-
-plot(tonnes ~old_tonnes, data=compare)
-abline(0,1, col = 'red')
+# old <- sb_catch_all_2018 %>%
+#   dplyr::filter(year == 2015) %>% 
+#   dplyr::select(rgn_id, old_tonnes=tonnes)
+#   
+# 
+# compare <- sb_catch_all %>%
+#   filter(year==2015) %>%
+#   dplyr::select(rgn_id, tonnes) %>%
+#   left_join(old)
+# 
+# plot(tonnes ~old_tonnes, data=compare)
+# abline(0,1, col = 'red')
 
 ```
 
@@ -507,31 +512,29 @@ abline(0,1, col = 'red')
 # Gapfill
 
 There was no gapfilling for these data. Created gapfill files with values of 0.
-Note: Every data layer has to have a corresponding gapfill file. If there is no gapfilling the gafill column is fill in with 0 as done below.
+Note: Every data layer has to have a corresponding gapfill file. If there is no gapfilling the gapfill column is filled in with 0 as done below.
 
 ```{r, eval=FALSE}
 
 hab_health_sb_gf <- read.csv("output/habitat_health_softbottom.csv")%>%
   mutate(gapfilled = 0) %>% 
-  select(rgn_id, year, gapfilled)
+  dplyr::select(rgn_id, year, gapfilled)
 
 write.csv(hab_health_sb_gf, "output/habitat_health_softbottom_gf.csv", row.names=FALSE)
 
 
 hab_trend_sb_gf <- read.csv("output/habitat_trend_softbottom.csv")%>%
   mutate(gapfilled = 0) %>% 
-  select(rgn_id, year, gapfilled)
+  dplyr::select(rgn_id, year, gapfilled)
 
 write.csv(hab_trend_sb_gf, "output/habitat_trend_softbottom_gf.csv", row.names=FALSE)
 
 
 hd_sb_subtidal_gf <- read.csv("output/hd_sb_subtidal.csv")%>%
   mutate(gapfilled = 0) %>% 
-  select(rgn_id, year, gapfilled)
+  dplyr::select(rgn_id, year, gapfilled)
 
 write.csv(hd_sb_subtidal_gf, "output/hd_sb_subtidal_gf.csv", row.names=FALSE)
-
-
 
 ```
 
