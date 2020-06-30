@@ -20,25 +20,10 @@ editor_options:
 
 
 # Summary
-The habitat pressure data layer is created from fish catch by gear type of industrial and non industrial fishing provided by Watson (2019). Total tonnes of catch are calculated for each OHI region and then standardized by area (km^2) soft-bottom habitat in each region. These values are then rescaled to be between 0 and 1. 
+The habitat pressure data layer is created from fish catch by gear type of industrial and non industrial fishing provided by Watson (2018). Total tonnes of catch are calculated for each OHI region and then standardized by area (km^2) soft-bottom habitat in each region. These values are then rescaled to be between 0 and 1. 
 
 # Updates from previous assessment
-Data reports catch by gear type. For each gear type we assign a multiplier according to how much the gear affects the sea bottom. The table with the multipliers is shown below (1 is extremely harmful and 0 is not harmful):
-
-Gear  | Multiplier
-------|-----------
-Trawl | 1
-Dredge | 1
-Gillnet | 0.5
-Trap  | 0.5
-Other | 0.25
-Trawl midwater | 0
-Pole and Line | 0
-Longline | 0
-Purse seine | 0
-Seine | 0
-
-
+Instead of using the maximum density, used the 95th quantile (line ~255).
 
 ***
 
@@ -51,7 +36,7 @@ Seine | 0
 
 **Native data resolution**: 
 
-**Time range**: 1950 - 2015
+**Time range**: 1950 - 2017
 
 **Format**:  csv format
 
@@ -59,7 +44,7 @@ Seine | 0
   
 # Methods 
 First create one raster a year with all catches (industrial and non industrial) using gear that harm soft-bottom habitat. 
-Then extract catches per OHI regions and standardize by soft-bottom habitat of each region.We used a ln(x + 1) transformation because density data were extremely skewed. Finally, we rescale the transformed data dividing by the maximum value across all years. A second rescale was done using the media values across years. 
+Then extract catches per OHI regions and standardize by soft-bottom habitat of each region. We used a ln(x + 1) transformation because density data were extremely skewed. Finally, we rescale the transformed data dividing by the maximum value across all years. A second rescale was done using the media values across years. 
 
 This script provides pressure scores, health indicators, and trend values for soft-bottom habitats.  
 
@@ -85,8 +70,6 @@ library(sf)
 library(readxl)
 library(here)
 
-#setwd("~/github/ohiprep_v2018/globalprep/hab_prs_hd_subtidal_soft_bottom/v2018")
-#setwd("globalprep/hab_prs_hd_subtidal_soft_bottom/v2018")
 
 registerDoParallel(4) # Registering cores for parallel processing
 
@@ -134,7 +117,7 @@ Then create one raster per year for industrial and non industrial catches using 
 
 ```{r, eval=FALSE}
 
-years <-  c(2003:2015)
+years <-  c(2003:2017)
 
 ## Data frame with each gear in the dataset with the corresponding multiplier according to how much they harm the ocean bottom.
 multipliers <- data.frame(FleetGearName = c("Dredge", "Gillnet", "Lines Non-tuna", "Longline Non-tuna", "LonglineTuna", "Other", "Pole and Line Tuna", "Purse seine Non-tuna", "Purse seine Tuna", "Seine", "Trap", "Trawl", "Trawl midwater"), multiplier = c(1, 0.5, 0, 0, 0, 0.25, 0, 0, 0, 0, 0.5, 1, 0))
@@ -142,7 +125,7 @@ multipliers <- data.frame(FleetGearName = c("Dredge", "Gillnet", "Lines Non-tuna
 ## Loop to create rasters of catches using gear that harm soft-bottom habitat.
 
 foreach(yr = years) %dopar%{ 
-  # yr = 2015
+  # yr = 2015 if you want to just run one year without looping through all of them
   
   ## Read in raw data for industrial catch per the year
   raw_ind <- readRDS(paste0(file.path(dir_M,'git-annex/globalprep/prs_fish/v2020/int/annual_catch/IndCatch_'),yr,'.rds'))
@@ -182,7 +165,7 @@ foreach(yr = years) %dopar%{
 }
 
 ## Reading in the raster to make sure it looks as expected
-test <- raster(file.path(dir_M, ('git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int/catch_count_2015.tif')))
+test <- raster(file.path(dir_M, ('git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int/catch_count_2014.tif')))
 
 plot(test) ## Looks like all information is there!
 
@@ -208,15 +191,12 @@ ohi_regions_wgs <-  st_transform(ohi_regions, proj4string(catch_crs))
 ## List of all tifs with catches that need to be read in the loop
 catch_rasts <- list.files(file.path(dir_M, "git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int"), pattern = 'catch_count_.*.tif', full.names = TRUE)
 
-catch_rasts <- catch_rasts[c(1,2,3,4,5,6,7,8,9,10,11,13)] # Filter for the 12 missing rasters to run in the loop
-# catch_rasts <- catch_rasts[c(9,10,11,13)]
-
 ## Registering cores for parallel processing
 registerDoParallel(4)
 
 ## Loop to extract values for each OHI region
 foreach(sb_catch = catch_rasts) %dopar% { 
-   # sb_catch = catch_rasts[12]
+   # sb_catch = catch_rasts[12] if you just want to run one year's raster without looping through all of them
 
 cat(sb_catch)
 
@@ -256,87 +236,107 @@ area <-  read.csv(file.path(here(), "globalprep/hab_prs_hd_subtidal_soft_bottom/
 
 ## Read in csv for each year and combine them in one data frame
 
-## Make sure you are in the correct wd
-#setwd("~/github/ohiprep_v2020/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020") 
-
 files <- list.files("int", pattern = "sb_catch_rgn_.*.csv", full.names = TRUE)
-
-#files_2018 <- list.files("../v2018/int", pattern = "sb_catch_rgn_.*.csv", full.names = TRUE)
 
 sb_catch_list <- lapply(files, function(x){read.csv(file=x)})
 
 sb_catch_all <- bind_rows(sb_catch_list)
   
-#sb_catch_list_2018 <- lapply(files_2018, function(x){read.csv(file=x)})
-
-#sb_catch_all_2018 <- bind_rows(sb_catch_list_2018)
-  
-#sum(sb_catch_all$tonnes) #5899354
-#sum(sb_catch_all_2018$tonnes) #707463134
-
+# sum(sb_catch_all$tonnes) # v2018: 707463134
+                           # v2019: 5899354
+                           # v2020: 682566393
 
 data_density <- sb_catch_all %>%
   left_join(area, by="rgn_id") %>%
   filter(rgn_id <= 250) %>%
   mutate(density = tonnes/km2)
 
-## find max density for each year
-max <- data_density %>%
+## Find 95th quantile density for each year
+quant_95 <- data_density %>%
   group_by(year) %>%
-  summarize(maxDensity = max(density, na.rm=TRUE)) %>%
+  summarize(quantDensity = quantile(density, c(0.95), na.rm=TRUE)) %>%
   data.frame()
 
-write.csv(max, "int/reference_point_max.csv", row.names=FALSE) # Make sure you are working in the correct working directory
+write.csv(quant_95, "int/reference_point_quant_95.csv", row.names=FALSE) # Make sure you are working in the correct working directory
+
+# # Scatterplot of 2014 and 2015
+# catch_2014 <- read.csv("int/sb_catch_rgn_2014.csv") %>% 
+#   mutate(tonnes_2014 = tonnes) %>% 
+#   dplyr::select(-year)
+# 
+# catch_2015 <- read.csv("int/sb_catch_rgn_2015.csv") %>% 
+#   mutate(tonnes_2015 = tonnes) %>% 
+#   dplyr::select(-year)
+# 
+# catch_combined <- catch_2014 %>% 
+#   left_join(catch_2015, "rgn_id")
+# 
+# catch_plot <- catch_combined %>% 
+#   ggplot(aes(x=tonnes_2014, y=tonnes_2015)) +
+#   geom_point()
+# 
+# catch_plot
 
 ## Reference point = max values across all years
-ref_point <- read.csv("int/reference_point_max.csv")
-ref_point_max <- max(ref_point$maxDensity)
+ref_point <- read.csv("int/reference_point_quant_95.csv")
+ref_point_median <- median(ref_point$quantDensity) # v2020: 20.5649376263763
 
-# ref_point 2018 = 7052.172 (year 2015)
-# ref_point 2019 = 45.76575 (year 2015)
-# ref_point 2020 = 4842.57385 (year 2015)
+# ref_point (max) 2018 = 7052.172 (year 2015)
+# ref_point (max) 2019 = 45.76575 (year 2015)
+# ref_point (max) 2020 = 4842.57385 (year 2015)
+# ref_point (95th quantile) 2020 = 19.62075 (year 2015)
 
 ## Checking for distribution of data. In the past density data happens to be very skewed
 hist(data_density$density) # Yes, very skewed data
 
 ## Rescale the density:
-## Density is rescaled twice to reduce skew
-
-data_rescaled <- data_density %>%
-  mutate(density_rescaled_max = log(density + 1)/log(ref_point_max + 1)) %>% # pressure-type measure
-  mutate(inv_dens_rescaled_max = 1 - density_rescaled_max)  # health-type measure
-
-hist(data_rescaled$density_rescaled_max)
-hist(data_rescaled$inv_dens_rescaled_max)
-
-
-## Find the second rescaling point - median value of healthy-type measure for each year
-ref_median <- data_rescaled %>%
-  group_by(year) %>%
-  summarize(ref_median = median(inv_dens_rescaled_max, na.rm=TRUE)) %>%
-  data.frame()
-
-write.csv(ref_median, "int/reference_point_median.csv", row.names=FALSE)
-
-
-ref_point_median <- min(ref_median$ref_median) # 0.8590695 (v2018)
-                                               # 0.99485138963124 (v2019)
-                                               # 0.87582237227035 (v2020)
-
-
-## Rescale for second time:  
-data_rescaled_2 <- data_rescaled %>%
-  mutate(density_rescaled_median = inv_dens_rescaled_max/ref_point_median) %>%
-  mutate(density_rescaled_median_capped = ifelse(density_rescaled_median > 1, 
-                                                   1, 
+data_rescale <- data_density %>%
+  mutate(density_rescaled_median = density/ref_point_median) %>%
+  mutate(density_rescaled_median_capped = ifelse(density_rescaled_median > 1,
+                                                   1,
                                                    density_rescaled_median))
 
-  hist(data_rescaled_2$density_rescaled_median_capped)
-  
- 
-  hist(data_rescaled_2$density_rescaled_median_capped[data_rescaled_2$year==2014])
-  filter(data_rescaled_2, rgn_id==163)
-  filter(data_rescaled_2, year==2010)
+hist(data_rescale$density_rescaled_median_capped)
+
+## code from v2019: 
+## Rescale the density:
+## Density is rescaled twice to reduce skew
+
+# data_rescaled <- data_density %>%
+#   mutate(density_rescaled_max = log(density + 1)/log(ref_point_max + 1)) %>% # pressure-type measure
+#   mutate(inv_dens_rescaled_max = 1 - density_rescaled_max)  # health-type measure
+# 
+# hist(data_rescaled$density_rescaled_max)
+# hist(data_rescaled$inv_dens_rescaled_max)
+# 
+# 
+# ## Find the second rescaling point - median value of healthy-type measure for each year
+# ref_median <- data_rescaled %>%
+#   group_by(year) %>%
+#   summarize(ref_median = median(inv_dens_rescaled_max, na.rm=TRUE)) %>%
+#   data.frame()
+# 
+# write.csv(ref_median, "int/reference_point_median.csv", row.names=FALSE)
+# 
+# 
+# ref_point_median <- min(ref_median$ref_median) # 0.8590695 (v2018)
+#                                                # 0.99485138963124 (v2019)
+#                                                # 0.87582237227035 (v2020)
+# 
+# 
+# ## Rescale for second time:  
+# data_rescaled_2 <- data_rescaled %>%
+#   mutate(density_rescaled_median = inv_dens_rescaled_max/ref_point_median) %>%
+#   mutate(density_rescaled_median_capped = ifelse(density_rescaled_median > 1, 
+#                                                    1, 
+#                                                    density_rescaled_median))
+# 
+#   hist(data_rescaled_2$density_rescaled_median_capped)
+#   
+#  
+#   hist(data_rescaled_2$density_rescaled_median_capped[data_rescaled_2$year==2014])
+#   filter(data_rescaled_2, rgn_id==163)
+#   filter(data_rescaled_2, year==2010)
 
 
 ```
@@ -346,30 +346,18 @@ data_rescaled_2 <- data_rescaled %>%
 ```{r, eval=FALSE}
 
 ## Check against old data
-old <- read.csv("../v2019/output/habitat_health_softbottom.csv") %>%
+old <- read.csv("../v2018/output/habitat_health_softbottom.csv") %>%
   dplyr::filter(year == 2014) %>% 
   dplyr::select(rgn_id, old_health=health)
   
-
-compare <- data_rescaled_2 %>%
+compare <- data_rescale %>%
   filter(year==2014) %>%
   dplyr::select(rgn_id, health = density_rescaled_median_capped) %>%
   left_join(old)
 
 plot(health ~old_health, data=compare)
 abline(0,1, col = 'red')
-## Not a great correlation, but different years data and fisheries data is very different
-## some new NA values, but it doesn't seem like these have soft-bottom habitat
-## (at least according to our raster data)
-
-
-compare_plot <- ggplot(data = test, aes(x = old_health, y = health, label = rgn_id)) + # "test" is a RasterLayer class so this doesn't run
-  geom_point()+
-  geom_abline(color = "red")
-
-plot(compare_plot)
-ggplotly(compare_plot)
-
+# Not a great correlation, but different years data and fisheries data is very different
 
 ```
 
@@ -382,7 +370,7 @@ ggplotly(compare_plot)
 
 save_dir <- "output"
 
-condition_pressure <- data_rescaled_2 %>%
+condition_pressure <- data_rescale %>%
   mutate(habitat = "soft_bottom") %>%
   mutate(pressure = 1 - density_rescaled_median_capped) %>% # Transforms it back into pressure-measure
   dplyr::select(rgn_id, year, habitat, health=density_rescaled_median_capped, pressure) %>%
@@ -438,23 +426,10 @@ Compare trend, pressure, pressure output to last year's values
 ```{r, eval=FALSE}
 
 ## Health data
-old_health <- read.csv("../v2019/output/habitat_health_softbottom.csv") %>%
-  dplyr::filter(year == 2014) %>% 
-  dplyr::select(rgn_id, old_health=health)
-
-compare_health <-  read.csv("output/habitat_health_softbottom.csv")%>%
-  filter(year==2014) %>%
-  dplyr::select(rgn_id, health) %>%
-  left_join(old_health)
-
-plot(health ~old_health, data=compare_health)
-abline(0,1, col = 'red')
-
-# Compare health with v2018
 old_health <- read.csv("../v2018/output/habitat_health_softbottom.csv") %>%
   dplyr::filter(year == 2014) %>% 
   dplyr::select(rgn_id, old_health=health)
-  
+
 compare_health <-  read.csv("output/habitat_health_softbottom.csv")%>%
   filter(year==2014) %>%
   dplyr::select(rgn_id, health) %>%
@@ -465,27 +440,6 @@ abline(0,1, col = 'red')
 
 
 ## Pressure
-old_pressure <- read.csv("../v2019/output/hd_sb_subtidal.csv") %>%
-  dplyr::filter(year == 2014) %>% 
-  dplyr::select(rgn_id, old_pressure= pressure_score)
-  
-compare_pressure <-  read.csv("output/hd_sb_subtidal.csv")%>%
-  filter(year==2014) %>%
-  dplyr::select(rgn_id, pressure=pressure_score) %>%
-  left_join(old_pressure)
-
-plot(pressure ~old_pressure, data=compare_pressure)
-abline(0,1, col = 'red')
-
-compare_pressure_plot <- ggplot(data = compare_pressure, aes(x = old_pressure, y = pressure, label = rgn_id))+
-  geom_point()+
-  geom_abline(color = "red")
-
-plot(compare_plot)
-library(plotly)
-ggplotly(compare_pressure_plot)
-
-# Compare pressure with v2018
 old_pressure <- read.csv("../v2018/output/hd_sb_subtidal.csv") %>%
   dplyr::filter(year == 2014) %>% 
   dplyr::select(rgn_id, old_pressure= pressure_score)
@@ -508,19 +462,6 @@ ggplotly(compare_pressure_plot)
 
 
 ## Trend
-old_trend <- read.csv("../v2019/output/habitat_trend_softbottom.csv") %>%
-  dplyr::filter(year == 2014) %>% 
-  dplyr::select(rgn_id, old_trend= trend)
-  
-compare_trend <-  read.csv("output/habitat_trend_softbottom.csv")%>%
-  filter(year==2014) %>%
-  dplyr::select(rgn_id, trend) %>%
-  left_join(old_trend)
-
-plot(trend ~old_trend, data=compare_trend)
-abline(0,1, col = 'red')
-
-# Compare trend with v2018
 old_trend <- read.csv("../v2018/output/habitat_trend_softbottom.csv") %>%
   dplyr::filter(year == 2014) %>% 
   dplyr::select(rgn_id, old_trend= trend)
@@ -533,21 +474,8 @@ compare_trend <-  read.csv("output/habitat_trend_softbottom.csv")%>%
 plot(trend ~old_trend, data=compare_trend)
 abline(0,1, col = 'red')
 
-## Comparisons in general are not great but not too bad. Consider:this year we included more destructive gear, we also included artisanal (non-commercial catches) and Watson updated its methods
 
-
-# old <- sb_catch_all_2018 %>%
-#   dplyr::filter(year == 2015) %>% 
-#   dplyr::select(rgn_id, old_tonnes=tonnes)
-#   
-# 
-# compare <- sb_catch_all %>%
-#   filter(year==2015) %>%
-#   dplyr::select(rgn_id, tonnes) %>%
-#   left_join(old)
-# 
-# plot(tonnes ~old_tonnes, data=compare)
-# abline(0,1, col = 'red')
+## Comparisons in general are not great but not too bad. Consider: compared to v2018 we included more destructive gear, we also included artisanal (non-commercial catches) and Watson updated its methods.
 
 ```
 
