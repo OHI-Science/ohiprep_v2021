@@ -372,13 +372,15 @@ save_dir <- "output"
 
 condition_pressure <- data_rescale %>%
   mutate(habitat = "soft_bottom") %>%
-  mutate(pressure = 1 - density_rescaled_median_capped) %>% # Transforms it back into pressure-measure
-  dplyr::select(rgn_id, year, habitat, health=density_rescaled_median_capped, pressure) %>%
+  mutate(pressure = density_rescaled_median_capped) %>% 
+  mutate(health = 1 - density_rescaled_median_capped) %>% 
+  dplyr::select(rgn_id, year, habitat, health, pressure) %>%
   filter(!is.na(pressure))
 
 hist(condition_pressure$pressure)
+hist(condition_pressure$health)
 
-# Get habitat trends
+## Get habitat trends
 stop_year <- max(condition_pressure$year)
 
 trend <- data.frame()
