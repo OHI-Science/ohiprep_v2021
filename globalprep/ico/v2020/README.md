@@ -1,6 +1,6 @@
 ## Ocean Health Index: Iconic Species (Sense of Place)
 
-See full data prep details: ICO [here](https://rawgit.com/OHI-Science/ohiprep/master/globalprep/spp_ico/v2017/ico_data_prep.html).
+See full data prep details: ICO [here](http://ohi-science.org/ohiprep_v2020/globalprep/ico/v2020/ico_data_prep.html).
 
 More information about the Sense of Place Goal [here](https://ohi-science.org/goals/#sense-of-place)
 

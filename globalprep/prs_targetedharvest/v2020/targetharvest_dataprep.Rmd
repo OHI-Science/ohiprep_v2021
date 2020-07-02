@@ -18,7 +18,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-[REFERENCE RMD FILE](https://cdn.rawgit.com/OHI-Science/ohiprep/master/globalprep/np/v2020/targetharvest_dataprep.html)
+[REFERENCE RMD FILE](http://ohi-science.org/ohiprep_v2020/globalprep/prs_targetedharvest/v2020/targetharvest_dataprep.html)
 
 #Summary
 This analysis converts FAO capture production data into the OHI 2020 targeted harvest pressure data.  

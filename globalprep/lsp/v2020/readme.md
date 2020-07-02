@@ -1,6 +1,7 @@
 ## Ocean Health Index: Lasting Special Places (LSP) 
 
-See full data prep details [here](https://rawgit.com/OHI-Science/ohiprep_v2018/master/globalprep/lsp/v2018/lsp_data_prep.html).
+See full data prep details [here](http://ohi-science.org/ohiprep_v2020/globalprep/lsp/v2020/lsp_data_prep.html).
+
 
 If using these data, please see our [citation policy](http://ohi-science.org/citation-policy/).
 

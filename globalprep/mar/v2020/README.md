@@ -1,6 +1,6 @@
 ## Ocean Health Index: Mariculture Sub-goal and pressure data (MAR)
 
-The following data layers were generated (here)[https://rawgit.com/OHI-Science/ohiprep_v2018/master/globalprep/mar/v2018/mar_dataprep.html].
+The following data layers were generated (here)[http://ohi-science.org/ohiprep_v2020/globalprep/mar/v2020/mar_dataprep.html].
 
 If using these data, please see our [citation policy](http://ohi-science.org/citation-policy/).
 

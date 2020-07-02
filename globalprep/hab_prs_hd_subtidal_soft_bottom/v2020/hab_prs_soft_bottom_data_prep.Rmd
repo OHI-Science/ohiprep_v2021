@@ -20,7 +20,7 @@ editor_options:
 
 
 # Summary
-The habitat pressure data layer is created from fish catch by gear type of industrial and non industrial fishing provided by Watson (2018). Total tonnes of catch are calculated for each OHI region and then standardized by area (km^2) soft-bottom habitat in each region. These values are then rescaled to be between 0 and 1. 
+The habitat pressure data layer is created from fish catch by gear type of industrial and non industrial fishing provided by Watson (2019). Total tonnes of catch are calculated for each OHI region and then standardized by area (km^2) soft-bottom habitat in each region. These values are then rescaled to be between 0 and 1. 
 
 # Updates from previous assessment
 Instead of using the maximum density, used the 95th quantile (line ~255).
@@ -30,7 +30,7 @@ Instead of using the maximum density, used the 95th quantile (line ~255).
 # Data Source 
 **Reference**: Watson, R. A. and Tidd, A. 2018. Mapping nearly a century and a half of global marine fishing: 1869–2015. Marine Policy, 93, pp. 171-177. [(Paper URL)](https://www.sciencedirect.com/science/article/pii/S0308597X18300605?via%3Dihub)
 
-**Downloaded**: July 3, 2019 from IMAS portal (see prs_fish layer for more details)
+**Downloaded**: December 11, 2019 from [IMAS portal](http://data.imas.utas.edu.au/portal/search?uuid=ff1274e1-c0ab-411b-a8a2-5a12eb27f2c0)
 
 **Description**:  Global fisheries landings data per cell separated by Industrial versus Non-Industrial catch, IUU, and discards.
 

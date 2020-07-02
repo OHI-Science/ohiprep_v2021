@@ -16,7 +16,7 @@ editor_options:
 ---
 
 
-[REFERENCE RMD FILE](https://rawgit.com/OHI-Science/ohi-global/draft/global_supplement/Supplement.html#591_iconic_species_(subgoal_of_sense_of_place))
+[REFERENCE RMD FILE](http://ohi-science.org/ohiprep_v2020/globalprep/ico/v2020/ico_data_prep.Rmd)
 
 
 # Summary:  Iconic Species Subgoal (Sense of Place)

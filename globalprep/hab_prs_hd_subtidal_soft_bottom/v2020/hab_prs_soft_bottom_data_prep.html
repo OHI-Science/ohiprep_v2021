@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Wed Oct 30 14:29:57 2019 by sgclawson" />
+<meta name="author" content="Compiled on Thu Jul 2 10:03:38 2020 by sgclawson" />
 
 
-<title>OHI 2019 - Soft bottom pressure data prep</title>
+<title>OHI 2020 - Soft bottom pressure data prep</title>
 
 <script>/*! jQuery v1.11.3 | (c) 2005, 2015 jQuery Foundation, Inc. | jquery.org/license */
 !function(a,b){"object"==typeof module&&"object"==typeof module.exports?module.exports=a.document?b(a,!0):function(a){if(!a.document)throw new Error("jQuery requires a window with a document");return b(a)}:b(a)}("undefined"!=typeof window?window:this,function(a,b){var c=[],d=c.slice,e=c.concat,f=c.push,g=c.indexOf,h={},i=h.toString,j=h.hasOwnProperty,k={},l="1.11.3",m=function(a,b){return new m.fn.init(a,b)},n=/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,o=/^-ms-/,p=/-([\da-z])/gi,q=function(a,b){return b.toUpperCase()};m.fn=m.prototype={jquery:l,constructor:m,selector:"",length:0,toArray:function(){return d.call(this)},get:function(a){return null!=a?0>a?this[a+this.length]:this[a]:d.call(this)},pushStack:function(a){var b=m.merge(this.constructor(),a);return b.prevObject=this,b.context=this.context,b},each:function(a,b){return m.each(this,a,b)},map:function(a){return this.pushStack(m.map(this,function(b,c){return a.call(b,c,b)}))},slice:function(){return this.pushStack(d.apply(this,arguments))},first:function(){return this.eq(0)},last:function(){return this.eq(-1)},eq:function(a){var b=this.length,c=+a+(0>a?b:0);return this.pushStack(c>=0&&b>c?[this[c]]:[])},end:function(){return this.prevObject||this.constructor(null)},push:f,sort:c.sort,splice:c.splice},m.extend=m.fn.extend=function(){var a,b,c,d,e,f,g=arguments[0]||{},h=1,i=arguments.length,j=!1;for("boolean"==typeof g&&(j=g,g=arguments[h]||{},h++),"object"==typeof g||m.isFunction(g)||(g={}),h===i&&(g=this,h--);i>h;h++)if(null!=(e=arguments[h]))for(d in e)a=g[d],c=e[d],g!==c&&(j&&c&&(m.isPlainObject(c)||(b=m.isArray(c)))?(b?(b=!1,f=a&&m.isArray(a)?a:[]):f=a&&m.isPlainObject(a)?a:{},g[d]=m.extend(j,f,c)):void 0!==c&&(g[d]=c));return g},m.extend({expando:"jQuery"+(l+Math.random()).replace(/\D/g,""),isReady:!0,error:function(a){throw new Error(a)},noop:function(){},isFunction:function(a){return"function"===m.type(a)},isArray:Array.isArray||function(a){return"array"===m.type(a)},isWindow:function(a){return null!=a&&a==a.window},isNumeric:function(a){return!m.isArray(a)&&a-parseFloat(a)+1>=0},isEmptyObject:function(a){var b;for(b in a)return!1;return!0},isPlainObject:function(a){var b;if(!a||"object"!==m.type(a)||a.nodeType||m.isWindow(a))return!1;try{if(a.constructor&&!j.call(a,"constructor")&&!j.call(a.constructor.prototype,"isPrototypeOf"))return!1}catch(c){return!1}if(k.ownLast)for(b in a)return j.call(a,b);for(b in a);return void 0===b||j.call(a,b)},type:function(a){return null==a?a+"":"object"==typeof a||"function"==typeof a?h[i.call(a)]||"object":typeof a},globalEval:function(b){b&&m.trim(b)&&(a.execScript||function(b){a.eval.call(a,b)})(b)},camelCase:function(a){return a.replace(o,"ms-").replace(p,q)},nodeName:function(a,b){return a.nodeName&&a.nodeName.toLowerCase()===b.toLowerCase()},each:function(a,b,c){var d,e=0,f=a.length,g=r(a);if(c){if(g){for(;f>e;e++)if(d=b.apply(a[e],c),d===!1)break}else for(e in a)if(d=b.apply(a[e],c),d===!1)break}else if(g){for(;f>e;e++)if(d=b.call(a[e],e,a[e]),d===!1)break}else for(e in a)if(d=b.call(a[e],e,a[e]),d===!1)break;return a},trim:function(a){return null==a?"":(a+"").replace(n,"")},makeArray:function(a,b){var c=b||[];return null!=a&&(r(Object(a))?m.merge(c,"string"==typeof a?[a]:a):f.call(c,a)),c},inArray:function(a,b,c){var d;if(b){if(g)return g.call(b,a,c);for(d=b.length,c=c?0>c?Math.max(0,d+c):c:0;d>c;c++)if(c in b&&b[c]===a)return c}return-1},merge:function(a,b){var c=+b.length,d=0,e=a.length;while(c>d)a[e++]=b[d++];if(c!==c)while(void 0!==b[d])a[e++]=b[d++];return a.length=e,a},grep:function(a,b,c){for(var d,e=[],f=0,g=a.length,h=!c;g>f;f++)d=!b(a[f],f),d!==h&&e.push(a[f]);return e},map:function(a,b,c){var d,f=0,g=a.length,h=r(a),i=[];if(h)for(;g>f;f++)d=b(a[f],f,c),null!=d&&i.push(d);else for(f in a)d=b(a[f],f,c),null!=d&&i.push(d);return e.apply([],i)},guid:1,proxy:function(a,b){var c,e,f;return"string"==typeof b&&(f=a[b],b=a,a=f),m.isFunction(a)?(c=d.call(arguments,2),e=function(){return a.apply(b||this,c.concat(d.call(arguments)))},e.guid=a.guid=a.guid||m.guid++,e):void 0},now:function(){return+new Date},support:k}),m.each("Boolean Number String Function Array Date RegExp Object Error".split(" "),function(a,b){h["[object "+b+"]"]=b.toLowerCase()});function r(a){var b="length"in a&&a.length,c=m.type(a);return"function"===c||m.isWindow(a)?!1:1===a.nodeType&&b?!0:"array"===c||0===b||"number"==typeof b&&b>0&&b-1 in a}var s=function(a){var b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u="sizzle"+1*new Date,v=a.document,w=0,x=0,y=ha(),z=ha(),A=ha(),B=function(a,b){return a===b&&(l=!0),0},C=1<<31,D={}.hasOwnProperty,E=[],F=E.pop,G=E.push,H=E.push,I=E.slice,J=function(a,b){for(var c=0,d=a.length;d>c;c++)if(a[c]===b)return c;return-1},K="checked|selected|async|autofocus|autoplay|controls|defer|disabled|hidden|ismap|loop|multiple|open|readonly|required|scoped",L="[\\x20\\t\\r\\n\\f]",M="(?:\\\\.|[\\w-]|[^\\x00-\\xa0])+",N=M.replace("w","w#"),O="\\["+L+"*("+M+")(?:"+L+"*([*^$|!~]?=)"+L+"*(?:'((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\"|("+N+"))|)"+L+"*\\]",P=":("+M+")(?:\\((('((?:\\\\.|[^\\\\'])*)'|\"((?:\\\\.|[^\\\\\"])*)\")|((?:\\\\.|[^\\\\()[\\]]|"+O+")*)|.*)\\)|)",Q=new RegExp(L+"+","g"),R=new RegExp("^"+L+"+|((?:^|[^\\\\])(?:\\\\.)*)"+L+"+$","g"),S=new RegExp("^"+L+"*,"+L+"*"),T=new RegExp("^"+L+"*([>+~]|"+L+")"+L+"*"),U=new RegExp("="+L+"*([^\\]'\"]*?)"+L+"*\\]","g"),V=new RegExp(P),W=new RegExp("^"+N+"$"),X={ID:new RegExp("^#("+M+")"),CLASS:new RegExp("^\\.("+M+")"),TAG:new RegExp("^("+M.replace("w","w*")+")"),ATTR:new RegExp("^"+O),PSEUDO:new RegExp("^"+P),CHILD:new RegExp("^:(only|first|last|nth|nth-last)-(child|of-type)(?:\\("+L+"*(even|odd|(([+-]|)(\\d*)n|)"+L+"*(?:([+-]|)"+L+"*(\\d+)|))"+L+"*\\)|)","i"),bool:new RegExp("^(?:"+K+")$","i"),needsContext:new RegExp("^"+L+"*[>+~]|:(even|odd|eq|gt|lt|nth|first|last)(?:\\("+L+"*((?:-\\d)?\\d*)"+L+"*\\)|)(?=[^-]|$)","i")},Y=/^(?:input|select|textarea|button)$/i,Z=/^h\d$/i,$=/^[^{]+\{\s*\[native \w/,_=/^(?:#([\w-]+)|(\w+)|\.([\w-]+))$/,aa=/[+~]/,ba=/'|\\/g,ca=new RegExp("\\\\([\\da-f]{1,6}"+L+"?|("+L+")|.)","ig"),da=function(a,b,c){var d="0x"+b-65536;return d!==d||c?b:0>d?String.fromCharCode(d+65536):String.fromCharCode(d>>10|55296,1023&d|56320)},ea=function(){m()};try{H.apply(E=I.call(v.childNodes),v.childNodes),E[v.childNodes.length].nodeType}catch(fa){H={apply:E.length?function(a,b){G.apply(a,I.call(b))}:function(a,b){var c=a.length,d=0;while(a[c++]=b[d++]);a.length=c-1}}}function ga(a,b,d,e){var f,h,j,k,l,o,r,s,w,x;if((b?b.ownerDocument||b:v)!==n&&m(b),b=b||n,d=d||[],k=b.nodeType,"string"!=typeof a||!a||1!==k&&9!==k&&11!==k)return d;if(!e&&p){if(11!==k&&(f=_.exec(a)))if(j=f[1]){if(9===k){if(h=b.getElementById(j),!h||!h.parentNode)return d;if(h.id===j)return d.push(h),d}else if(b.ownerDocument&&(h=b.ownerDocument.getElementById(j))&&t(b,h)&&h.id===j)return d.push(h),d}else{if(f[2])return H.apply(d,b.getElementsByTagName(a)),d;if((j=f[3])&&c.getElementsByClassName)return H.apply(d,b.getElementsByClassName(j)),d}if(c.qsa&&(!q||!q.test(a))){if(s=r=u,w=b,x=1!==k&&a,1===k&&"object"!==b.nodeName.toLowerCase()){o=g(a),(r=b.getAttribute("id"))?s=r.replace(ba,"\\$&"):b.setAttribute("id",s),s="[id='"+s+"'] ",l=o.length;while(l--)o[l]=s+ra(o[l]);w=aa.test(a)&&pa(b.parentNode)||b,x=o.join(",")}if(x)try{return H.apply(d,w.querySelectorAll(x)),d}catch(y){}finally{r||b.removeAttribute("id")}}}return i(a.replace(R,"$1"),b,d,e)}function ha(){var a=[];function b(c,e){return a.push(c+" ")>d.cacheLength&&delete b[a.shift()],b[c+" "]=e}return b}function ia(a){return a[u]=!0,a}function ja(a){var b=n.createElement("div");try{return!!a(b)}catch(c){return!1}finally{b.parentNode&&b.parentNode.removeChild(b),b=null}}function ka(a,b){var c=a.split("|"),e=a.length;while(e--)d.attrHandle[c[e]]=b}function la(a,b){var c=b&&a,d=c&&1===a.nodeType&&1===b.nodeType&&(~b.sourceIndex||C)-(~a.sourceIndex||C);if(d)return d;if(c)while(c=c.nextSibling)if(c===b)return-1;return a?1:-1}function ma(a){return function(b){var c=b.nodeName.toLowerCase();return"input"===c&&b.type===a}}function na(a){return function(b){var c=b.nodeName.toLowerCase();return("input"===c||"button"===c)&&b.type===a}}function oa(a){return ia(function(b){return b=+b,ia(function(c,d){var e,f=a([],c.length,b),g=f.length;while(g--)c[e=f[g]]&&(c[e]=!(d[e]=c[e]))})})}function pa(a){return a&&"undefined"!=typeof a.getElementsByTagName&&a}c=ga.support={},f=ga.isXML=function(a){var b=a&&(a.ownerDocument||a).documentElement;return b?"HTML"!==b.nodeName:!1},m=ga.setDocument=function(a){var b,e,g=a?a.ownerDocument||a:v;return g!==n&&9===g.nodeType&&g.documentElement?(n=g,o=g.documentElement,e=g.defaultView,e&&e!==e.top&&(e.addEventListener?e.addEventListener("unload",ea,!1):e.attachEvent&&e.attachEvent("onunload",ea)),p=!f(g),c.attributes=ja(function(a){return a.className="i",!a.getAttribute("className")}),c.getElementsByTagName=ja(function(a){return a.appendChild(g.createComment("")),!a.getElementsByTagName("*").length}),c.getElementsByClassName=$.test(g.getElementsByClassName),c.getById=ja(function(a){return o.appendChild(a).id=u,!g.getElementsByName||!g.getElementsByName(u).length}),c.getById?(d.find.ID=function(a,b){if("undefined"!=typeof b.getElementById&&p){var c=b.getElementById(a);return c&&c.parentNode?[c]:[]}},d.filter.ID=function(a){var b=a.replace(ca,da);return function(a){return a.getAttribute("id")===b}}):(delete d.find.ID,d.filter.ID=function(a){var b=a.replace(ca,da);return function(a){var c="undefined"!=typeof a.getAttributeNode&&a.getAttributeNode("id");return c&&c.value===b}}),d.find.TAG=c.getElementsByTagName?function(a,b){return"undefined"!=typeof b.getElementsByTagName?b.getElementsByTagName(a):c.qsa?b.querySelectorAll(a):void 0}:function(a,b){var c,d=[],e=0,f=b.getElementsByTagName(a);if("*"===a){while(c=f[e++])1===c.nodeType&&d.push(c);return d}return f},d.find.CLASS=c.getElementsByClassName&&function(a,b){return p?b.getElementsByClassName(a):void 0},r=[],q=[],(c.qsa=$.test(g.querySelectorAll))&&(ja(function(a){o.appendChild(a).innerHTML="<a id='"+u+"'></a><select id='"+u+"-\f]' msallowcapture=''><option selected=''></option></select>",a.querySelectorAll("[msallowcapture^='']").length&&q.push("[*^$]="+L+"*(?:''|\"\")"),a.querySelectorAll("[selected]").length||q.push("\\["+L+"*(?:value|"+K+")"),a.querySelectorAll("[id~="+u+"-]").length||q.push("~="),a.querySelectorAll(":checked").length||q.push(":checked"),a.querySelectorAll("a#"+u+"+*").length||q.push(".#.+[+~]")}),ja(function(a){var b=g.createElement("input");b.setAttribute("type","hidden"),a.appendChild(b).setAttribute("name","D"),a.querySelectorAll("[name=d]").length&&q.push("name"+L+"*[*^$|!~]?="),a.querySelectorAll(":enabled").length||q.push(":enabled",":disabled"),a.querySelectorAll("*,:x"),q.push(",.*:")})),(c.matchesSelector=$.test(s=o.matches||o.webkitMatchesSelector||o.mozMatchesSelector||o.oMatchesSelector||o.msMatchesSelector))&&ja(function(a){c.disconnectedMatch=s.call(a,"div"),s.call(a,"[s!='']:x"),r.push("!=",P)}),q=q.length&&new RegExp(q.join("|")),r=r.length&&new RegExp(r.join("|")),b=$.test(o.compareDocumentPosition),t=b||$.test(o.contains)?function(a,b){var c=9===a.nodeType?a.documentElement:a,d=b&&b.parentNode;return a===d||!(!d||1!==d.nodeType||!(c.contains?c.contains(d):a.compareDocumentPosition&&16&a.compareDocumentPosition(d)))}:function(a,b){if(b)while(b=b.parentNode)if(b===a)return!0;return!1},B=b?function(a,b){if(a===b)return l=!0,0;var d=!a.compareDocumentPosition-!b.compareDocumentPosition;return d?d:(d=(a.ownerDocument||a)===(b.ownerDocument||b)?a.compareDocumentPosition(b):1,1&d||!c.sortDetached&&b.compareDocumentPosition(a)===d?a===g||a.ownerDocument===v&&t(v,a)?-1:b===g||b.ownerDocument===v&&t(v,b)?1:k?J(k,a)-J(k,b):0:4&d?-1:1)}:function(a,b){if(a===b)return l=!0,0;var c,d=0,e=a.parentNode,f=b.parentNode,h=[a],i=[b];if(!e||!f)return a===g?-1:b===g?1:e?-1:f?1:k?J(k,a)-J(k,b):0;if(e===f)return la(a,b);c=a;while(c=c.parentNode)h.unshift(c);c=b;while(c=c.parentNode)i.unshift(c);while(h[d]===i[d])d++;return d?la(h[d],i[d]):h[d]===v?-1:i[d]===v?1:0},g):n},ga.matches=function(a,b){return ga(a,null,null,b)},ga.matchesSelector=function(a,b){if((a.ownerDocument||a)!==n&&m(a),b=b.replace(U,"='$1']"),!(!c.matchesSelector||!p||r&&r.test(b)||q&&q.test(b)))try{var d=s.call(a,b);if(d||c.disconnectedMatch||a.document&&11!==a.document.nodeType)return d}catch(e){}return ga(b,n,null,[a]).length>0},ga.contains=function(a,b){return(a.ownerDocument||a)!==n&&m(a),t(a,b)},ga.attr=function(a,b){(a.ownerDocument||a)!==n&&m(a);var e=d.attrHandle[b.toLowerCase()],f=e&&D.call(d.attrHandle,b.toLowerCase())?e(a,b,!p):void 0;return void 0!==f?f:c.attributes||!p?a.getAttribute(b):(f=a.getAttributeNode(b))&&f.specified?f.value:null},ga.error=function(a){throw new Error("Syntax error, unrecognized expression: "+a)},ga.uniqueSort=function(a){var b,d=[],e=0,f=0;if(l=!c.detectDuplicates,k=!c.sortStable&&a.slice(0),a.sort(B),l){while(b=a[f++])b===a[f]&&(e=d.push(f));while(e--)a.splice(d[e],1)}return k=null,a},e=ga.getText=function(a){var b,c="",d=0,f=a.nodeType;if(f){if(1===f||9===f||11===f){if("string"==typeof a.textContent)return a.textContent;for(a=a.firstChild;a;a=a.nextSibling)c+=e(a)}else if(3===f||4===f)return a.nodeValue}else while(b=a[d++])c+=e(b);return c},d=ga.selectors={cacheLength:50,createPseudo:ia,match:X,attrHandle:{},find:{},relative:{">":{dir:"parentNode",first:!0}," ":{dir:"parentNode"},"+":{dir:"previousSibling",first:!0},"~":{dir:"previousSibling"}},preFilter:{ATTR:function(a){return a[1]=a[1].replace(ca,da),a[3]=(a[3]||a[4]||a[5]||"").replace(ca,da),"~="===a[2]&&(a[3]=" "+a[3]+" "),a.slice(0,4)},CHILD:function(a){return a[1]=a[1].toLowerCase(),"nth"===a[1].slice(0,3)?(a[3]||ga.error(a[0]),a[4]=+(a[4]?a[5]+(a[6]||1):2*("even"===a[3]||"odd"===a[3])),a[5]=+(a[7]+a[8]||"odd"===a[3])):a[3]&&ga.error(a[0]),a},PSEUDO:function(a){var b,c=!a[6]&&a[2];return X.CHILD.test(a[0])?null:(a[3]?a[2]=a[4]||a[5]||"":c&&V.test(c)&&(b=g(c,!0))&&(b=c.indexOf(")",c.length-b)-c.length)&&(a[0]=a[0].slice(0,b),a[2]=c.slice(0,b)),a.slice(0,3))}},filter:{TAG:function(a){var b=a.replace(ca,da).toLowerCase();return"*"===a?function(){return!0}:function(a){return a.nodeName&&a.nodeName.toLowerCase()===b}},CLASS:function(a){var b=y[a+" "];return b||(b=new RegExp("(^|"+L+")"+a+"("+L+"|$)"))&&y(a,function(a){return b.test("string"==typeof a.className&&a.className||"undefined"!=typeof a.getAttribute&&a.getAttribute("class")||"")})},ATTR:function(a,b,c){return function(d){var e=ga.attr(d,a);return null==e?"!="===b:b?(e+="","="===b?e===c:"!="===b?e!==c:"^="===b?c&&0===e.indexOf(c):"*="===b?c&&e.indexOf(c)>-1:"$="===b?c&&e.slice(-c.length)===c:"~="===b?(" "+e.replace(Q," ")+" ").indexOf(c)>-1:"|="===b?e===c||e.slice(0,c.length+1)===c+"-":!1):!0}},CHILD:function(a,b,c,d,e){var f="nth"!==a.slice(0,3),g="last"!==a.slice(-4),h="of-type"===b;return 1===d&&0===e?function(a){return!!a.parentNode}:function(b,c,i){var j,k,l,m,n,o,p=f!==g?"nextSibling":"previousSibling",q=b.parentNode,r=h&&b.nodeName.toLowerCase(),s=!i&&!h;if(q){if(f){while(p){l=b;while(l=l[p])if(h?l.nodeName.toLowerCase()===r:1===l.nodeType)return!1;o=p="only"===a&&!o&&"nextSibling"}return!0}if(o=[g?q.firstChild:q.lastChild],g&&s){k=q[u]||(q[u]={}),j=k[a]||[],n=j[0]===w&&j[1],m=j[0]===w&&j[2],l=n&&q.childNodes[n];while(l=++n&&l&&l[p]||(m=n=0)||o.pop())if(1===l.nodeType&&++m&&l===b){k[a]=[w,n,m];break}}else if(s&&(j=(b[u]||(b[u]={}))[a])&&j[0]===w)m=j[1];else while(l=++n&&l&&l[p]||(m=n=0)||o.pop())if((h?l.nodeName.toLowerCase()===r:1===l.nodeType)&&++m&&(s&&((l[u]||(l[u]={}))[a]=[w,m]),l===b))break;return m-=e,m===d||m%d===0&&m/d>=0}}},PSEUDO:function(a,b){var c,e=d.pseudos[a]||d.setFilters[a.toLowerCase()]||ga.error("unsupported pseudo: "+a);return e[u]?e(b):e.length>1?(c=[a,a,"",b],d.setFilters.hasOwnProperty(a.toLowerCase())?ia(function(a,c){var d,f=e(a,b),g=f.length;while(g--)d=J(a,f[g]),a[d]=!(c[d]=f[g])}):function(a){return e(a,0,c)}):e}},pseudos:{not:ia(function(a){var b=[],c=[],d=h(a.replace(R,"$1"));return d[u]?ia(function(a,b,c,e){var f,g=d(a,null,e,[]),h=a.length;while(h--)(f=g[h])&&(a[h]=!(b[h]=f))}):function(a,e,f){return b[0]=a,d(b,null,f,c),b[0]=null,!c.pop()}}),has:ia(function(a){return function(b){return ga(a,b).length>0}}),contains:ia(function(a){return a=a.replace(ca,da),function(b){return(b.textContent||b.innerText||e(b)).indexOf(a)>-1}}),lang:ia(function(a){return W.test(a||"")||ga.error("unsupported lang: "+a),a=a.replace(ca,da).toLowerCase(),function(b){var c;do if(c=p?b.lang:b.getAttribute("xml:lang")||b.getAttribute("lang"))return c=c.toLowerCase(),c===a||0===c.indexOf(a+"-");while((b=b.parentNode)&&1===b.nodeType);return!1}}),target:function(b){var c=a.location&&a.location.hash;return c&&c.slice(1)===b.id},root:function(a){return a===o},focus:function(a){return a===n.activeElement&&(!n.hasFocus||n.hasFocus())&&!!(a.type||a.href||~a.tabIndex)},enabled:function(a){return a.disabled===!1},disabled:function(a){return a.disabled===!0},checked:function(a){var b=a.nodeName.toLowerCase();return"input"===b&&!!a.checked||"option"===b&&!!a.selected},selected:function(a){return a.parentNode&&a.parentNode.selectedIndex,a.selected===!0},empty:function(a){for(a=a.firstChild;a;a=a.nextSibling)if(a.nodeType<6)return!1;return!0},parent:function(a){return!d.pseudos.empty(a)},header:function(a){return Z.test(a.nodeName)},input:function(a){return Y.test(a.nodeName)},button:function(a){var b=a.nodeName.toLowerCase();return"input"===b&&"button"===a.type||"button"===b},text:function(a){var b;return"input"===a.nodeName.toLowerCase()&&"text"===a.type&&(null==(b=a.getAttribute("type"))||"text"===b.toLowerCase())},first:oa(function(){return[0]}),last:oa(function(a,b){return[b-1]}),eq:oa(function(a,b,c){return[0>c?c+b:c]}),even:oa(function(a,b){for(var c=0;b>c;c+=2)a.push(c);return a}),odd:oa(function(a,b){for(var c=1;b>c;c+=2)a.push(c);return a}),lt:oa(function(a,b,c){for(var d=0>c?c+b:c;--d>=0;)a.push(d);return a}),gt:oa(function(a,b,c){for(var d=0>c?c+b:c;++d<b;)a.push(d);return a})}},d.pseudos.nth=d.pseudos.eq;for(b in{radio:!0,checkbox:!0,file:!0,password:!0,image:!0})d.pseudos[b]=ma(b);for(b in{submit:!0,reset:!0})d.pseudos[b]=na(b);function qa(){}qa.prototype=d.filters=d.pseudos,d.setFilters=new qa,g=ga.tokenize=function(a,b){var c,e,f,g,h,i,j,k=z[a+" "];if(k)return b?0:k.slice(0);h=a,i=[],j=d.preFilter;while(h){(!c||(e=S.exec(h)))&&(e&&(h=h.slice(e[0].length)||h),i.push(f=[])),c=!1,(e=T.exec(h))&&(c=e.shift(),f.push({value:c,type:e[0].replace(R," ")}),h=h.slice(c.length));for(g in d.filter)!(e=X[g].exec(h))||j[g]&&!(e=j[g](e))||(c=e.shift(),f.push({value:c,type:g,matches:e}),h=h.slice(c.length));if(!c)break}return b?h.length:h?ga.error(a):z(a,i).slice(0)};function ra(a){for(var b=0,c=a.length,d="";c>b;b++)d+=a[b].value;return d}function sa(a,b,c){var d=b.dir,e=c&&"parentNode"===d,f=x++;return b.first?function(b,c,f){while(b=b[d])if(1===b.nodeType||e)return a(b,c,f)}:function(b,c,g){var h,i,j=[w,f];if(g){while(b=b[d])if((1===b.nodeType||e)&&a(b,c,g))return!0}else while(b=b[d])if(1===b.nodeType||e){if(i=b[u]||(b[u]={}),(h=i[d])&&h[0]===w&&h[1]===f)return j[2]=h[2];if(i[d]=j,j[2]=a(b,c,g))return!0}}}function ta(a){return a.length>1?function(b,c,d){var e=a.length;while(e--)if(!a[e](b,c,d))return!1;return!0}:a[0]}function ua(a,b,c){for(var d=0,e=b.length;e>d;d++)ga(a,b[d],c);return c}function va(a,b,c,d,e){for(var f,g=[],h=0,i=a.length,j=null!=b;i>h;h++)(f=a[h])&&(!c||c(f,d,e))&&(g.push(f),j&&b.push(h));return g}function wa(a,b,c,d,e,f){return d&&!d[u]&&(d=wa(d)),e&&!e[u]&&(e=wa(e,f)),ia(function(f,g,h,i){var j,k,l,m=[],n=[],o=g.length,p=f||ua(b||"*",h.nodeType?[h]:h,[]),q=!a||!f&&b?p:va(p,m,a,h,i),r=c?e||(f?a:o||d)?[]:g:q;if(c&&c(q,r,h,i),d){j=va(r,n),d(j,[],h,i),k=j.length;while(k--)(l=j[k])&&(r[n[k]]=!(q[n[k]]=l))}if(f){if(e||a){if(e){j=[],k=r.length;while(k--)(l=r[k])&&j.push(q[k]=l);e(null,r=[],j,i)}k=r.length;while(k--)(l=r[k])&&(j=e?J(f,l):m[k])>-1&&(f[j]=!(g[j]=l))}}else r=va(r===g?r.splice(o,r.length):r),e?e(null,g,r,i):H.apply(g,r)})}function xa(a){for(var b,c,e,f=a.length,g=d.relative[a[0].type],h=g||d.relative[" "],i=g?1:0,k=sa(function(a){return a===b},h,!0),l=sa(function(a){return J(b,a)>-1},h,!0),m=[function(a,c,d){var e=!g&&(d||c!==j)||((b=c).nodeType?k(a,c,d):l(a,c,d));return b=null,e}];f>i;i++)if(c=d.relative[a[i].type])m=[sa(ta(m),c)];else{if(c=d.filter[a[i].type].apply(null,a[i].matches),c[u]){for(e=++i;f>e;e++)if(d.relative[a[e].type])break;return wa(i>1&&ta(m),i>1&&ra(a.slice(0,i-1).concat({value:" "===a[i-2].type?"*":""})).replace(R,"$1"),c,e>i&&xa(a.slice(i,e)),f>e&&xa(a=a.slice(e)),f>e&&ra(a))}m.push(c)}return ta(m)}function ya(a,b){var c=b.length>0,e=a.length>0,f=function(f,g,h,i,k){var l,m,o,p=0,q="0",r=f&&[],s=[],t=j,u=f||e&&d.find.TAG("*",k),v=w+=null==t?1:Math.random()||.1,x=u.length;for(k&&(j=g!==n&&g);q!==x&&null!=(l=u[q]);q++){if(e&&l){m=0;while(o=a[m++])if(o(l,g,h)){i.push(l);break}k&&(w=v)}c&&((l=!o&&l)&&p--,f&&r.push(l))}if(p+=q,c&&q!==p){m=0;while(o=b[m++])o(r,s,g,h);if(f){if(p>0)while(q--)r[q]||s[q]||(s[q]=F.call(i));s=va(s)}H.apply(i,s),k&&!f&&s.length>0&&p+b.length>1&&ga.uniqueSort(i)}return k&&(w=v,j=t),r};return c?ia(f):f}return h=ga.compile=function(a,b){var c,d=[],e=[],f=A[a+" "];if(!f){b||(b=g(a)),c=b.length;while(c--)f=xa(b[c]),f[u]?d.push(f):e.push(f);f=A(a,ya(e,d)),f.selector=a}return f},i=ga.select=function(a,b,e,f){var i,j,k,l,m,n="function"==typeof a&&a,o=!f&&g(a=n.selector||a);if(e=e||[],1===o.length){if(j=o[0]=o[0].slice(0),j.length>2&&"ID"===(k=j[0]).type&&c.getById&&9===b.nodeType&&p&&d.relative[j[1].type]){if(b=(d.find.ID(k.matches[0].replace(ca,da),b)||[])[0],!b)return e;n&&(b=b.parentNode),a=a.slice(j.shift().value.length)}i=X.needsContext.test(a)?0:j.length;while(i--){if(k=j[i],d.relative[l=k.type])break;if((m=d.find[l])&&(f=m(k.matches[0].replace(ca,da),aa.test(j[0].type)&&pa(b.parentNode)||b))){if(j.splice(i,1),a=f.length&&ra(j),!a)return H.apply(e,f),e;break}}}return(n||h(a,o))(f,b,!p,e,aa.test(a)&&pa(b.parentNode)||b),e},c.sortStable=u.split("").sort(B).join("")===u,c.detectDuplicates=!!l,m(),c.sortDetached=ja(function(a){return 1&a.compareDocumentPosition(n.createElement("div"))}),ja(function(a){return a.innerHTML="<a href='#'></a>","#"===a.firstChild.getAttribute("href")})||ka("type|href|height|width",function(a,b,c){return c?void 0:a.getAttribute(b,"type"===b.toLowerCase()?1:2)}),c.attributes&&ja(function(a){return a.innerHTML="<input/>",a.firstChild.setAttribute("value",""),""===a.firstChild.getAttribute("value")})||ka("value",function(a,b,c){return c||"input"!==a.nodeName.toLowerCase()?void 0:a.defaultValue}),ja(function(a){return null==a.getAttribute("disabled")})||ka(K,function(a,b,c){var d;return c?void 0:a[b]===!0?b.toLowerCase():(d=a.getAttributeNode(b))&&d.specified?d.value:null}),ga}(a);m.find=s,m.expr=s.selectors,m.expr[":"]=m.expr.pseudos,m.unique=s.uniqueSort,m.text=s.getText,m.isXMLDoc=s.isXML,m.contains=s.contains;var t=m.expr.match.needsContext,u=/^<(\w+)\s*\/?>(?:<\/\1>|)$/,v=/^.[^:#\[\.,]*$/;function w(a,b,c){if(m.isFunction(b))return m.grep(a,function(a,d){return!!b.call(a,d,a)!==c});if(b.nodeType)return m.grep(a,function(a){return a===b!==c});if("string"==typeof b){if(v.test(b))return m.filter(b,a,c);b=m.filter(b,a)}return m.grep(a,function(a){return m.inArray(a,b)>=0!==c})}m.filter=function(a,b,c){var d=b[0];return c&&(a=":not("+a+")"),1===b.length&&1===d.nodeType?m.find.matchesSelector(d,a)?[d]:[]:m.find.matches(a,m.grep(b,function(a){return 1===a.nodeType}))},m.fn.extend({find:function(a){var b,c=[],d=this,e=d.length;if("string"!=typeof a)return this.pushStack(m(a).filter(function(){for(b=0;e>b;b++)if(m.contains(d[b],this))return!0}));for(b=0;e>b;b++)m.find(a,d[b],c);return c=this.pushStack(e>1?m.unique(c):c),c.selector=this.selector?this.selector+" "+a:a,c},filter:function(a){return this.pushStack(w(this,a||[],!1))},not:function(a){return this.pushStack(w(this,a||[],!0))},is:function(a){return!!w(this,"string"==typeof a&&t.test(a)?m(a):a||[],!1).length}});var x,y=a.document,z=/^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]*))$/,A=m.fn.init=function(a,b){var c,d;if(!a)return this;if("string"==typeof a){if(c="<"===a.charAt(0)&&">"===a.charAt(a.length-1)&&a.length>=3?[null,a,null]:z.exec(a),!c||!c[1]&&b)return!b||b.jquery?(b||x).find(a):this.constructor(b).find(a);if(c[1]){if(b=b instanceof m?b[0]:b,m.merge(this,m.parseHTML(c[1],b&&b.nodeType?b.ownerDocument||b:y,!0)),u.test(c[1])&&m.isPlainObject(b))for(c in b)m.isFunction(this[c])?this[c](b[c]):this.attr(c,b[c]);return this}if(d=y.getElementById(c[2]),d&&d.parentNode){if(d.id!==c[2])return x.find(a);this.length=1,this[0]=d}return this.context=y,this.selector=a,this}return a.nodeType?(this.context=this[0]=a,this.length=1,this):m.isFunction(a)?"undefined"!=typeof x.ready?x.ready(a):a(m):(void 0!==a.selector&&(this.selector=a.selector,this.context=a.context),m.makeArray(a,this))};A.prototype=m.fn,x=m(y);var B=/^(?:parents|prev(?:Until|All))/,C={children:!0,contents:!0,next:!0,prev:!0};m.extend({dir:function(a,b,c){var d=[],e=a[b];while(e&&9!==e.nodeType&&(void 0===c||1!==e.nodeType||!m(e).is(c)))1===e.nodeType&&d.push(e),e=e[b];return d},sibling:function(a,b){for(var c=[];a;a=a.nextSibling)1===a.nodeType&&a!==b&&c.push(a);return c}}),m.fn.extend({has:function(a){var b,c=m(a,this),d=c.length;return this.filter(function(){for(b=0;d>b;b++)if(m.contains(this,c[b]))return!0})},closest:function(a,b){for(var c,d=0,e=this.length,f=[],g=t.test(a)||"string"!=typeof a?m(a,b||this.context):0;e>d;d++)for(c=this[d];c&&c!==b;c=c.parentNode)if(c.nodeType<11&&(g?g.index(c)>-1:1===c.nodeType&&m.find.matchesSelector(c,a))){f.push(c);break}return this.pushStack(f.length>1?m.unique(f):f)},index:function(a){return a?"string"==typeof a?m.inArray(this[0],m(a)):m.inArray(a.jquery?a[0]:a,this):this[0]&&this[0].parentNode?this.first().prevAll().length:-1},add:function(a,b){return this.pushStack(m.unique(m.merge(this.get(),m(a,b))))},addBack:function(a){return this.add(null==a?this.prevObject:this.prevObject.filter(a))}});function D(a,b){do a=a[b];while(a&&1!==a.nodeType);return a}m.each({parent:function(a){var b=a.parentNode;return b&&11!==b.nodeType?b:null},parents:function(a){return m.dir(a,"parentNode")},parentsUntil:function(a,b,c){return m.dir(a,"parentNode",c)},next:function(a){return D(a,"nextSibling")},prev:function(a){return D(a,"previousSibling")},nextAll:function(a){return m.dir(a,"nextSibling")},prevAll:function(a){return m.dir(a,"previousSibling")},nextUntil:function(a,b,c){return m.dir(a,"nextSibling",c)},prevUntil:function(a,b,c){return m.dir(a,"previousSibling",c)},siblings:function(a){return m.sibling((a.parentNode||{}).firstChild,a)},children:function(a){return m.sibling(a.firstChild)},contents:function(a){return m.nodeName(a,"iframe")?a.contentDocument||a.contentWindow.document:m.merge([],a.childNodes)}},function(a,b){m.fn[a]=function(c,d){var e=m.map(this,b,c);return"Until"!==a.slice(-5)&&(d=c),d&&"string"==typeof d&&(e=m.filter(d,e)),this.length>1&&(C[a]||(e=m.unique(e)),B.test(a)&&(e=e.reverse())),this.pushStack(e)}});var E=/\S+/g,F={};function G(a){var b=F[a]={};return m.each(a.match(E)||[],function(a,c){b[c]=!0}),b}m.Callbacks=function(a){a="string"==typeof a?F[a]||G(a):m.extend({},a);var b,c,d,e,f,g,h=[],i=!a.once&&[],j=function(l){for(c=a.memory&&l,d=!0,f=g||0,g=0,e=h.length,b=!0;h&&e>f;f++)if(h[f].apply(l[0],l[1])===!1&&a.stopOnFalse){c=!1;break}b=!1,h&&(i?i.length&&j(i.shift()):c?h=[]:k.disable())},k={add:function(){if(h){var d=h.length;!function f(b){m.each(b,function(b,c){var d=m.type(c);"function"===d?a.unique&&k.has(c)||h.push(c):c&&c.length&&"string"!==d&&f(c)})}(arguments),b?e=h.length:c&&(g=d,j(c))}return this},remove:function(){return h&&m.each(arguments,function(a,c){var d;while((d=m.inArray(c,h,d))>-1)h.splice(d,1),b&&(e>=d&&e--,f>=d&&f--)}),this},has:function(a){return a?m.inArray(a,h)>-1:!(!h||!h.length)},empty:function(){return h=[],e=0,this},disable:function(){return h=i=c=void 0,this},disabled:function(){return!h},lock:function(){return i=void 0,c||k.disable(),this},locked:function(){return!i},fireWith:function(a,c){return!h||d&&!i||(c=c||[],c=[a,c.slice?c.slice():c],b?i.push(c):j(c)),this},fire:function(){return k.fireWith(this,arguments),this},fired:function(){return!!d}};return k},m.extend({Deferred:function(a){var b=[["resolve","done",m.Callbacks("once memory"),"resolved"],["reject","fail",m.Callbacks("once memory"),"rejected"],["notify","progress",m.Callbacks("memory")]],c="pending",d={state:function(){return c},always:function(){return e.done(arguments).fail(arguments),this},then:function(){var a=arguments;return m.Deferred(function(c){m.each(b,function(b,f){var g=m.isFunction(a[b])&&a[b];e[f[1]](function(){var a=g&&g.apply(this,arguments);a&&m.isFunction(a.promise)?a.promise().done(c.resolve).fail(c.reject).progress(c.notify):c[f[0]+"With"](this===d?c.promise():this,g?[a]:arguments)})}),a=null}).promise()},promise:function(a){return null!=a?m.extend(a,d):d}},e={};return d.pipe=d.then,m.each(b,function(a,f){var g=f[2],h=f[3];d[f[1]]=g.add,h&&g.add(function(){c=h},b[1^a][2].disable,b[2][2].lock),e[f[0]]=function(){return e[f[0]+"With"](this===e?d:this,arguments),this},e[f[0]+"With"]=g.fireWith}),d.promise(e),a&&a.call(e,e),e},when:function(a){var b=0,c=d.call(arguments),e=c.length,f=1!==e||a&&m.isFunction(a.promise)?e:0,g=1===f?a:m.Deferred(),h=function(a,b,c){return function(e){b[a]=this,c[a]=arguments.length>1?d.call(arguments):e,c===i?g.notifyWith(b,c):--f||g.resolveWith(b,c)}},i,j,k;if(e>1)for(i=new Array(e),j=new Array(e),k=new Array(e);e>b;b++)c[b]&&m.isFunction(c[b].promise)?c[b].promise().done(h(b,k,c)).fail(g.reject).progress(h(b,j,i)):--f;return f||g.resolveWith(k,c),g.promise()}});var H;m.fn.ready=function(a){return m.ready.promise().done(a),this},m.extend({isReady:!1,readyWait:1,holdReady:function(a){a?m.readyWait++:m.ready(!0)},ready:function(a){if(a===!0?!--m.readyWait:!m.isReady){if(!y.body)return setTimeout(m.ready);m.isReady=!0,a!==!0&&--m.readyWait>0||(H.resolveWith(y,[m]),m.fn.triggerHandler&&(m(y).triggerHandler("ready"),m(y).off("ready")))}}});function I(){y.addEventListener?(y.removeEventListener("DOMContentLoaded",J,!1),a.removeEventListener("load",J,!1)):(y.detachEvent("onreadystatechange",J),a.detachEvent("onload",J))}function J(){(y.addEventListener||"load"===event.type||"complete"===y.readyState)&&(I(),m.ready())}m.ready.promise=function(b){if(!H)if(H=m.Deferred(),"complete"===y.readyState)setTimeout(m.ready);else if(y.addEventListener)y.addEventListener("DOMContentLoaded",J,!1),a.addEventListener("load",J,!1);else{y.attachEvent("onreadystatechange",J),a.attachEvent("onload",J);var c=!1;try{c=null==a.frameElement&&y.documentElement}catch(d){}c&&c.doScroll&&!function e(){if(!m.isReady){try{c.doScroll("left")}catch(a){return setTimeout(e,50)}I(),m.ready()}}()}return H.promise(b)};var K="undefined",L;for(L in m(k))break;k.ownLast="0"!==L,k.inlineBlockNeedsLayout=!1,m(function(){var a,b,c,d;c=y.getElementsByTagName("body")[0],c&&c.style&&(b=y.createElement("div"),d=y.createElement("div"),d.style.cssText="position:absolute;border:0;width:0;height:0;top:0;left:-9999px",c.appendChild(d).appendChild(b),typeof b.style.zoom!==K&&(b.style.cssText="display:inline;margin:0;border:0;padding:1px;width:1px;zoom:1",k.inlineBlockNeedsLayout=a=3===b.offsetWidth,a&&(c.style.zoom=1)),c.removeChild(d))}),function(){var a=y.createElement("div");if(null==k.deleteExpando){k.deleteExpando=!0;try{delete a.test}catch(b){k.deleteExpando=!1}}a=null}(),m.acceptData=function(a){var b=m.noData[(a.nodeName+" ").toLowerCase()],c=+a.nodeType||1;return 1!==c&&9!==c?!1:!b||b!==!0&&a.getAttribute("classid")===b};var M=/^(?:\{[\w\W]*\}|\[[\w\W]*\])$/,N=/([A-Z])/g;function O(a,b,c){if(void 0===c&&1===a.nodeType){var d="data-"+b.replace(N,"-$1").toLowerCase();if(c=a.getAttribute(d),"string"==typeof c){try{c="true"===c?!0:"false"===c?!1:"null"===c?null:+c+""===c?+c:M.test(c)?m.parseJSON(c):c}catch(e){}m.data(a,b,c)}else c=void 0}return c}function P(a){var b;for(b in a)if(("data"!==b||!m.isEmptyObject(a[b]))&&"toJSON"!==b)return!1;
@@ -1288,7 +1287,7 @@ window.initializeCodeFolding = function(show) {
 
     // create a collapsable div to wrap the code in
     var div = $('<div class="collapse r-code-collapse"></div>');
-    if (show)
+    if (show || $(this)[0].classList.contains('fold-show'))
       div.addClass('in');
     var id = 'rcode-643E0F36' + currentIndex++;
     div.attr('id', id);
@@ -1331,9 +1330,9 @@ window.initializeCodeFolding = function(show) {
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode { white-space: pre; position: relative; }
 div.sourceCode { margin: 1em 0; }
@@ -1343,14 +1342,16 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -1359,9 +1360,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; } /* Alert */
 code span.an { color: #008000; } /* Annotation */
@@ -1468,7 +1469,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -1530,6 +1530,7 @@ summary {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -1561,6 +1562,12 @@ summary {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -1639,505 +1646,447 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">OHI 2019 - Soft bottom pressure data prep</h1>
-<h4 class="author"><em>Compiled on Wed Oct 30 14:29:57 2019 by sgclawson</em></h4>
+<h1 class="title toc-ignore">OHI 2020 - Soft bottom pressure data prep</h1>
+<h4 class="author"><em>Compiled on Thu Jul 2 10:03:38 2020 by sgclawson</em></h4>
 
 </div>
 
 
 <div id="summary" class="section level1">
 <h1>Summary</h1>
-<p>The habitat pressure data layer is created from fish catch by gear type of industrial and non industrial fishing profided by Watson (2019). Total tonnes of catch are calculated for each OHI region and then standarized by area (km^2) soft-bottom habitat in each region. These values are then rescaled to be between 0 and 1.</p>
+<p>The habitat pressure data layer is created from fish catch by gear type of industrial and non industrial fishing provided by Watson (2019). Total tonnes of catch are calculated for each OHI region and then standardized by area (km^2) soft-bottom habitat in each region. These values are then rescaled to be between 0 and 1.</p>
 </div>
 <div id="updates-from-previous-assessment" class="section level1">
 <h1>Updates from previous assessment</h1>
-<p>Data reports catch by gear type. For each gear type we assing a multiplier acording to how much the gear affects the sea bottom. Here the table with the multipliers (1 is extramly harmfull and 0 is not harmful)</p>
-<table>
-<thead>
-<tr class="header">
-<th>Gear</th>
-<th>Multiplier</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Trawl</td>
-<td>1</td>
-</tr>
-<tr class="even">
-<td>Dredge</td>
-<td>1</td>
-</tr>
-<tr class="odd">
-<td>Gillnet</td>
-<td>0.5</td>
-</tr>
-<tr class="even">
-<td>Trap</td>
-<td>0.5</td>
-</tr>
-<tr class="odd">
-<td>Other</td>
-<td>0.25</td>
-</tr>
-<tr class="even">
-<td>Trawl midwater</td>
-<td>0</td>
-</tr>
-<tr class="odd">
-<td>Pole and Line</td>
-<td>0</td>
-</tr>
-<tr class="even">
-<td>Longline</td>
-<td>0</td>
-</tr>
-<tr class="odd">
-<td>Purse seine</td>
-<td>0</td>
-</tr>
-<tr class="even">
-<td>Seine</td>
-<td>0</td>
-</tr>
-</tbody>
-</table>
+<p>Instead of using the maximum density, used the 95th quantile (line ~255).</p>
 <hr />
 </div>
 <div id="data-source" class="section level1">
 <h1>Data Source</h1>
 <p><strong>Reference</strong>: Watson, R. A. and Tidd, A. 2018. Mapping nearly a century and a half of global marine fishing: 1869–2015. Marine Policy, 93, pp. 171-177. <a href="https://www.sciencedirect.com/science/article/pii/S0308597X18300605?via%3Dihub">(Paper URL)</a></p>
-<p><strong>Downloaded</strong>: July 3, 2019 from IMAS portal (see prs_fish layer for more details)</p>
+<p><strong>Downloaded</strong>: December 11, 2019 from <a href="http://data.imas.utas.edu.au/portal/search?uuid=ff1274e1-c0ab-411b-a8a2-5a12eb27f2c0">IMAS portal</a></p>
 <p><strong>Description</strong>: Global fisheries landings data per cell separated by Industrial versus Non-Industrial catch, IUU, and discards.</p>
 <p><strong>Native data resolution</strong>:</p>
-<p><strong>Time range</strong>: 1950 - 2015</p>
+<p><strong>Time range</strong>: 1950 - 2017</p>
 <p><strong>Format</strong>: csv format</p>
 <hr />
 </div>
 <div id="methods" class="section level1">
 <h1>Methods</h1>
-<p>First create one raster a year with all catches (industrial and non industrial) using gear that harm soft-bottom. Then extract catches per OHI regions and standarize by soft-bottom habitat of each region.We usd a ln(x + 1) transformation because density data was extremely skewed. Finally, we rescale the transformed data dividing by the maximum value across all years. A second rescale was done using the media values across years.</p>
-<p>This script provides pressure scores, health indicators and trend values for soft bottom habitats.</p>
+<p>First create one raster a year with all catches (industrial and non industrial) using gear that harm soft-bottom habitat. Then extract catches per OHI regions and standardize by soft-bottom habitat of each region. We used a ln(x + 1) transformation because density data were extremely skewed. Finally, we rescale the transformed data dividing by the maximum value across all years. A second rescale was done using the media values across years.</p>
+<p>This script provides pressure scores, health indicators, and trend values for soft-bottom habitats.</p>
 <hr />
 <div id="setup" class="section level2">
 <h2>Setup</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">library</span>(tidyverse)</a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="kw">library</span>(parallel)</a>
-<a class="sourceLine" id="cb1-3" title="3"><span class="kw">library</span>(foreach)</a>
-<a class="sourceLine" id="cb1-4" title="4"><span class="kw">library</span>(doParallel)</a>
-<a class="sourceLine" id="cb1-5" title="5"><span class="kw">library</span>(raster)</a>
-<a class="sourceLine" id="cb1-6" title="6"><span class="kw">library</span>(rasterVis)</a>
-<a class="sourceLine" id="cb1-7" title="7"><span class="kw">library</span>(seaaroundus)</a>
-<a class="sourceLine" id="cb1-8" title="8"><span class="kw">library</span>(RColorBrewer)</a>
-<a class="sourceLine" id="cb1-9" title="9"><span class="kw">library</span>(cowplot)</a>
-<a class="sourceLine" id="cb1-10" title="10"><span class="kw">library</span>(colorspace)</a>
-<a class="sourceLine" id="cb1-11" title="11"><span class="kw">library</span>(sp)</a>
-<a class="sourceLine" id="cb1-12" title="12"><span class="kw">library</span>(rgdal)</a>
-<a class="sourceLine" id="cb1-13" title="13"><span class="kw">library</span>(sf)</a>
-<a class="sourceLine" id="cb1-14" title="14"><span class="kw">library</span>(readxl)</a>
-<a class="sourceLine" id="cb1-15" title="15"><span class="kw">library</span>(here)</a>
-<a class="sourceLine" id="cb1-16" title="16"></a>
-<a class="sourceLine" id="cb1-17" title="17"><span class="co">#setwd(&quot;~/github/ohiprep_v2018/globalprep/hab_prs_hd_subtidal_soft_bottom/v2018&quot;)</span></a>
-<a class="sourceLine" id="cb1-18" title="18"><span class="co">#setwd(&quot;globalprep/hab_prs_hd_subtidal_soft_bottom/v2018&quot;)</span></a>
-<a class="sourceLine" id="cb1-19" title="19"></a>
-<a class="sourceLine" id="cb1-20" title="20"><span class="kw">registerDoParallel</span>(<span class="dv">4</span>) <span class="co"># registering cores for parallel processing</span></a>
-<a class="sourceLine" id="cb1-21" title="21"></a>
-<a class="sourceLine" id="cb1-22" title="22"></a>
-<a class="sourceLine" id="cb1-23" title="23"><span class="kw">source</span>(<span class="st">&#39;http://ohi-science.org/ohiprep_v2019/workflow/R/common.R&#39;</span>)</a>
-<a class="sourceLine" id="cb1-24" title="24"></a>
-<a class="sourceLine" id="cb1-25" title="25"></a>
-<a class="sourceLine" id="cb1-26" title="26"><span class="co">## color palette</span></a>
-<a class="sourceLine" id="cb1-27" title="27">cols =<span class="st"> </span><span class="kw">rev</span>(<span class="kw">colorRampPalette</span>(<span class="kw">brewer.pal</span>(<span class="dv">11</span>, <span class="st">&#39;Spectral&#39;</span>))(<span class="dv">255</span>)) <span class="co"># rainbow color scheme</span></a>
-<a class="sourceLine" id="cb1-28" title="28">mytheme=<span class="kw">rasterTheme</span>(<span class="dt">region=</span>cols)</a>
-<a class="sourceLine" id="cb1-29" title="29"></a>
-<a class="sourceLine" id="cb1-30" title="30"></a>
-<a class="sourceLine" id="cb1-31" title="31"><span class="kw">options</span>(<span class="dt">scipen=</span><span class="dv">999</span>)</a>
-<a class="sourceLine" id="cb1-32" title="32"></a>
-<a class="sourceLine" id="cb1-33" title="33">IMAS_d2019 &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&quot;git-annex/globalprep/_raw_data/IMAS_GlobalFisheriesLandings/d2019&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">library</span>(parallel)</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="kw">library</span>(foreach)</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">library</span>(doParallel)</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">library</span>(raster)</span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="kw">library</span>(rasterVis)</span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="kw">library</span>(seaaroundus) <span class="co"># devtools::install_github(&quot;ropensci/seaaroundus&quot;) if install.packages(&quot;seaaroundus&quot;) doesn&#39;t work.</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="kw">library</span>(RColorBrewer)</span>
+<span id="cb1-9"><a href="#cb1-9"></a><span class="kw">library</span>(cowplot)</span>
+<span id="cb1-10"><a href="#cb1-10"></a><span class="kw">library</span>(colorspace)</span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="kw">library</span>(sp)</span>
+<span id="cb1-12"><a href="#cb1-12"></a><span class="kw">library</span>(rgdal)</span>
+<span id="cb1-13"><a href="#cb1-13"></a><span class="kw">library</span>(sf)</span>
+<span id="cb1-14"><a href="#cb1-14"></a><span class="kw">library</span>(readxl)</span>
+<span id="cb1-15"><a href="#cb1-15"></a><span class="kw">library</span>(here)</span>
+<span id="cb1-16"><a href="#cb1-16"></a></span>
+<span id="cb1-17"><a href="#cb1-17"></a></span>
+<span id="cb1-18"><a href="#cb1-18"></a><span class="kw">registerDoParallel</span>(<span class="dv">4</span>) <span class="co"># Registering cores for parallel processing</span></span>
+<span id="cb1-19"><a href="#cb1-19"></a></span>
+<span id="cb1-20"><a href="#cb1-20"></a></span>
+<span id="cb1-21"><a href="#cb1-21"></a><span class="kw">source</span>(<span class="st">&#39;http://ohi-science.org/ohiprep_v2020/workflow/R/common.R&#39;</span>)</span>
+<span id="cb1-22"><a href="#cb1-22"></a></span>
+<span id="cb1-23"><a href="#cb1-23"></a></span>
+<span id="cb1-24"><a href="#cb1-24"></a><span class="co">## Color palette</span></span>
+<span id="cb1-25"><a href="#cb1-25"></a>cols =<span class="st"> </span><span class="kw">rev</span>(<span class="kw">colorRampPalette</span>(<span class="kw">brewer.pal</span>(<span class="dv">11</span>, <span class="st">&#39;Spectral&#39;</span>))(<span class="dv">255</span>)) <span class="co"># Rainbow color scheme</span></span>
+<span id="cb1-26"><a href="#cb1-26"></a>mytheme =<span class="st"> </span><span class="kw">rasterTheme</span>(<span class="dt">region =</span> cols)</span>
+<span id="cb1-27"><a href="#cb1-27"></a></span>
+<span id="cb1-28"><a href="#cb1-28"></a></span>
+<span id="cb1-29"><a href="#cb1-29"></a><span class="kw">options</span>(<span class="dt">scipen =</span> <span class="dv">999</span>)</span>
+<span id="cb1-30"><a href="#cb1-30"></a></span>
+<span id="cb1-31"><a href="#cb1-31"></a>IMAS_d2020 &lt;-<span class="st"> </span><span class="kw">file.path</span>(dir_M, <span class="st">&quot;git-annex/globalprep/_raw_data/IMAS_GlobalFisheriesLandings/d2020&quot;</span>)</span></code></pre></div>
 </div>
 <div id="aggregate-annual-industrial-catch-by-type-of-gear" class="section level2">
 <h2>Aggregate annual industrial catch by type of gear</h2>
 <p>First get the template raster with a resolution of 0.5 degree cells. The <code>getcells()</code> function comes from the <a href="https://github.com/ropensci/seaaroundus">seaaroundus R package</a>.</p>
 <p>The values of these cells are the Cell ID numbers. In the fisheries catch dataset, these Cell ID numbers match up with the “Seq” numbers.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="co">#create a raster of Cell numbers</span></a>
-<a class="sourceLine" id="cb2-2" title="2"><span class="co">## This Codes.xlsx was downloaded from the same place as the raw Watson data.</span></a>
-<a class="sourceLine" id="cb2-3" title="3">cells &lt;-<span class="st"> </span><span class="kw">read_excel</span>(<span class="kw">file.path</span>(IMAS_d2019, <span class="st">&quot;Codes.xlsx&quot;</span>), <span class="dt">sheet =</span> <span class="st">&quot;Cell&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-4" title="4"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">rename</span>(<span class="dt">x =</span> LonCentre,  <span class="dt">y =</span> LatCentre, <span class="dt">z =</span> Cell) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">#I renamed these xyz to use in the rasterFromXYZ() function below</span></a>
-<a class="sourceLine" id="cb2-5" title="5"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(x,y,z)</a>
-<a class="sourceLine" id="cb2-6" title="6"></a>
-<a class="sourceLine" id="cb2-7" title="7"><span class="co">#turn the lat/long points into a raster</span></a>
-<a class="sourceLine" id="cb2-8" title="8">cells_raster &lt;-<span class="st"> </span><span class="kw">rasterFromXYZ</span>(cells)</a>
-<a class="sourceLine" id="cb2-9" title="9"></a>
-<a class="sourceLine" id="cb2-10" title="10"><span class="kw">crs</span>(cells_raster) &lt;-<span class="st"> &quot;+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0&quot;</span> </a>
-<a class="sourceLine" id="cb2-11" title="11"><span class="kw">crs</span>(cells_raster)</a>
-<a class="sourceLine" id="cb2-12" title="12"><span class="co">#check out the cells raster to make sure it looks good</span></a>
-<a class="sourceLine" id="cb2-13" title="13"><span class="kw">plot</span>(cells_raster)</a></code></pre></div>
-<p>Then create one raster per year for industrial and non industrial catches using gear that harm soft bottom.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">years &lt;-<span class="st">  </span><span class="kw">c</span>(<span class="dv">2003</span><span class="op">:</span><span class="dv">2015</span>)</a>
-<a class="sourceLine" id="cb3-2" title="2"></a>
-<a class="sourceLine" id="cb3-3" title="3"><span class="co">##Data frame with each gear in the dataset with the corresponding multiplier according to how much they harm the ocean bottom</span></a>
-<a class="sourceLine" id="cb3-4" title="4">multipliers &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">FleetGearName =</span> <span class="kw">c</span>(<span class="st">&quot;Dredge&quot;</span>, <span class="st">&quot;Gillnet&quot;</span>, <span class="st">&quot;Lines Non-tuna&quot;</span>, <span class="st">&quot;Longline Non-tuna&quot;</span>, <span class="st">&quot;LonglineTuna&quot;</span>, <span class="st">&quot;Other&quot;</span>, <span class="st">&quot;Pole and Line Tuna&quot;</span>, <span class="st">&quot;Purse seine Non-tuna&quot;</span>, <span class="st">&quot;Purse seine Tuna&quot;</span>, <span class="st">&quot;Seine&quot;</span>, <span class="st">&quot;Trap&quot;</span>, <span class="st">&quot;Trawl&quot;</span>, <span class="st">&quot;Trawl midwater&quot;</span>), <span class="dt">multiplier =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="fl">0.5</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.25</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">0</span>))</a>
-<a class="sourceLine" id="cb3-5" title="5"></a>
-<a class="sourceLine" id="cb3-6" title="6"><span class="co">##Loop to create rasters of catches using gear that hasr the soft bottom.</span></a>
-<a class="sourceLine" id="cb3-7" title="7"></a>
-<a class="sourceLine" id="cb3-8" title="8"><span class="kw">foreach</span>(<span class="dt">yr =</span> years) <span class="op">%dopar%</span>{ </a>
-<a class="sourceLine" id="cb3-9" title="9">  <span class="co">#yr = 2015</span></a>
-<a class="sourceLine" id="cb3-10" title="10">  </a>
-<a class="sourceLine" id="cb3-11" title="11">  <span class="co">##read in raw data for indurtrial catch per the year</span></a>
-<a class="sourceLine" id="cb3-12" title="12">  raw_ind &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="kw">paste0</span>(<span class="kw">file.path</span>(dir_M,<span class="st">&#39;git-annex/globalprep/prs_fish/v2019/int/annual_catch/CatchInd_&#39;</span>),yr,<span class="st">&#39;.rds&#39;</span>))</a>
-<a class="sourceLine" id="cb3-13" title="13">  </a>
-<a class="sourceLine" id="cb3-14" title="14">  <span class="co">## Wrangle data, discount catch by multiplier and add catches per cell</span></a>
-<a class="sourceLine" id="cb3-15" title="15">  catch_ind &lt;-<span class="st"> </span>raw_ind <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-16" title="16"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">rowwise</span>() <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-17" title="17"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">catch =</span> <span class="kw">sum</span>(Reported, IUU, Discards, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-18" title="18"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">left_join</span>(multipliers, <span class="dt">by =</span> <span class="st">&quot;FleetGearName&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb3-19" title="19"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">catch_discount =</span> catch<span class="op">*</span>multiplier) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb3-20" title="20"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">group_by</span>(Cell) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-21" title="21"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">summarise</span>(<span class="dt">cell_catch_ind =</span> <span class="kw">sum</span>(catch_discount)) </a>
-<a class="sourceLine" id="cb3-22" title="22">  </a>
-<a class="sourceLine" id="cb3-23" title="23">   <span class="co">##read in raw data for non-indurtrial catch per the year</span></a>
-<a class="sourceLine" id="cb3-24" title="24">  raw_Nind &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="kw">paste0</span>(<span class="kw">file.path</span>(dir_M,<span class="st">&#39;git-annex/globalprep/prs_fish/v2019/int/annual_catch/CatchNInd_&#39;</span>),yr,<span class="st">&#39;.rds&#39;</span>))</a>
-<a class="sourceLine" id="cb3-25" title="25">  </a>
-<a class="sourceLine" id="cb3-26" title="26">  <span class="co">## Wrangle data, discount catch by multipleir and add catches per cell</span></a>
-<a class="sourceLine" id="cb3-27" title="27">  catch_Nind &lt;-<span class="st"> </span>raw_Nind <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-28" title="28"><span class="st">    </span><span class="kw">rowwise</span>() <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-29" title="29"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">catch =</span> <span class="kw">sum</span>(Reported, IUU, Discards, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-30" title="30"><span class="st">    </span><span class="kw">left_join</span>(multipliers, <span class="dt">by =</span> <span class="st">&quot;FleetGearName&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb3-31" title="31"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">catch_discount =</span> catch<span class="op">*</span>multiplier) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb3-32" title="32"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">group_by</span>(Cell) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-33" title="33"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">summarise</span>(<span class="dt">cell_catch_Nind =</span> <span class="kw">sum</span>(catch_discount))</a>
-<a class="sourceLine" id="cb3-34" title="34">  </a>
-<a class="sourceLine" id="cb3-35" title="35"></a>
-<a class="sourceLine" id="cb3-36" title="36">  <span class="co">##Sum industrial and non-industrial</span></a>
-<a class="sourceLine" id="cb3-37" title="37">  catch_total &lt;-<span class="st"> </span>catch_ind <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb3-38" title="38"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">full_join</span>(catch_Nind, <span class="dt">by=</span> <span class="st">&quot;Cell&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-39" title="39"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">rowwise</span>() <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-40" title="40"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">total =</span> <span class="kw">sum</span>(cell_catch_ind, cell_catch_Nind, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb3-41" title="41"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(Cell, total)</a>
-<a class="sourceLine" id="cb3-42" title="42"></a>
-<a class="sourceLine" id="cb3-43" title="43">  <span class="co">#rasterize catch by swapping cell ids with (calls the cells raster we made above)</span></a>
-<a class="sourceLine" id="cb3-44" title="44">  raster<span class="op">::</span><span class="kw">subs</span>(cells_raster, catch_total, <span class="dt">by =</span> <span class="st">&#39;Cell&#39;</span>, <span class="dt">which =</span> <span class="st">&#39;total&#39;</span>, <span class="dt">subsWithNA=</span><span class="ot">TRUE</span>, <span class="dt">filename =</span> <span class="kw">file.path</span>(dir_M, <span class="kw">paste0</span>(<span class="st">&#39;git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2019/int/catch_count_&#39;</span>,yr,<span class="st">&#39;.tif&#39;</span>)), <span class="dt">overwrite=</span><span class="ot">TRUE</span>) <span class="co">#saves raster directly to Mazu</span></a>
-<a class="sourceLine" id="cb3-45" title="45">  </a>
-<a class="sourceLine" id="cb3-46" title="46">}</a>
-<a class="sourceLine" id="cb3-47" title="47"></a>
-<a class="sourceLine" id="cb3-48" title="48"><span class="co">##Reading in the raster to make sure it looks as expected</span></a>
-<a class="sourceLine" id="cb3-49" title="49">test&lt;-<span class="st"> </span><span class="kw">raster</span>(<span class="kw">file.path</span>(dir_M, (<span class="st">&#39;git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2019/int/catch_count_2015.tif&#39;</span>)))</a>
-<a class="sourceLine" id="cb3-50" title="50"></a>
-<a class="sourceLine" id="cb3-51" title="51"><span class="kw">plot</span>(test) <span class="co">##Looks like all information is there!</span></a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">## Create a raster of Cell numbers</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="co"># This Codes.xlsx was downloaded from the same place as the raw Watson data.</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>cells &lt;-<span class="st"> </span><span class="kw">read_excel</span>(<span class="kw">file.path</span>(IMAS_d2020, <span class="st">&quot;Codes.xlsx&quot;</span>), <span class="dt">sheet =</span> <span class="st">&quot;Cell&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">rename</span>(<span class="dt">x =</span> LonCentre,  <span class="dt">y =</span> LatCentre, <span class="dt">z =</span> Cell) <span class="op">%&gt;%</span><span class="st"> </span><span class="co"># renamed these xyz to use in the rasterFromXYZ() function below</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(x,y,z)</span>
+<span id="cb2-6"><a href="#cb2-6"></a></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="co">## Turn the lat/long points into a raster</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>cells_raster &lt;-<span class="st"> </span><span class="kw">rasterFromXYZ</span>(cells)</span>
+<span id="cb2-9"><a href="#cb2-9"></a></span>
+<span id="cb2-10"><a href="#cb2-10"></a><span class="kw">crs</span>(cells_raster) &lt;-<span class="st"> &quot;+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0&quot;</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a><span class="kw">crs</span>(cells_raster)</span>
+<span id="cb2-12"><a href="#cb2-12"></a><span class="co"># Check out the cells raster to make sure it looks good</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a><span class="kw">plot</span>(cells_raster)</span></code></pre></div>
+<p>Then create one raster per year for industrial and non industrial catches using gear that harm soft-bottom habitat.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>years &lt;-<span class="st">  </span><span class="kw">c</span>(<span class="dv">2003</span><span class="op">:</span><span class="dv">2017</span>)</span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co">## Data frame with each gear in the dataset with the corresponding multiplier according to how much they harm the ocean bottom.</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>multipliers &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">FleetGearName =</span> <span class="kw">c</span>(<span class="st">&quot;Dredge&quot;</span>, <span class="st">&quot;Gillnet&quot;</span>, <span class="st">&quot;Lines Non-tuna&quot;</span>, <span class="st">&quot;Longline Non-tuna&quot;</span>, <span class="st">&quot;LonglineTuna&quot;</span>, <span class="st">&quot;Other&quot;</span>, <span class="st">&quot;Pole and Line Tuna&quot;</span>, <span class="st">&quot;Purse seine Non-tuna&quot;</span>, <span class="st">&quot;Purse seine Tuna&quot;</span>, <span class="st">&quot;Seine&quot;</span>, <span class="st">&quot;Trap&quot;</span>, <span class="st">&quot;Trawl&quot;</span>, <span class="st">&quot;Trawl midwater&quot;</span>), <span class="dt">multiplier =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="fl">0.5</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.25</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span>
+<span id="cb3-5"><a href="#cb3-5"></a></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co">## Loop to create rasters of catches using gear that harm soft-bottom habitat.</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="kw">foreach</span>(<span class="dt">yr =</span> years) <span class="op">%dopar%</span>{ </span>
+<span id="cb3-9"><a href="#cb3-9"></a>  <span class="co"># yr = 2015 if you want to just run one year without looping through all of them</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>  </span>
+<span id="cb3-11"><a href="#cb3-11"></a>  <span class="co">## Read in raw data for industrial catch per the year</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a>  raw_ind &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="kw">paste0</span>(<span class="kw">file.path</span>(dir_M,<span class="st">&#39;git-annex/globalprep/prs_fish/v2020/int/annual_catch/IndCatch_&#39;</span>),yr,<span class="st">&#39;.rds&#39;</span>))</span>
+<span id="cb3-13"><a href="#cb3-13"></a>  </span>
+<span id="cb3-14"><a href="#cb3-14"></a>  <span class="co">## Wrangle data, discount catch by multiplier and add catches per cell</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a>  catch_ind &lt;-<span class="st"> </span>raw_ind <span class="op">%&gt;%</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">rowwise</span>() <span class="op">%&gt;%</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">catch =</span> <span class="kw">sum</span>(Reported, IUU, Discards, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">left_join</span>(multipliers, <span class="dt">by =</span> <span class="st">&quot;FleetGearName&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb3-19"><a href="#cb3-19"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">catch_discount =</span> catch<span class="op">*</span>multiplier) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb3-20"><a href="#cb3-20"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">group_by</span>(Cell) <span class="op">%&gt;%</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">summarise</span>(<span class="dt">cell_catch_ind =</span> <span class="kw">sum</span>(catch_discount)) </span>
+<span id="cb3-22"><a href="#cb3-22"></a>  </span>
+<span id="cb3-23"><a href="#cb3-23"></a>   <span class="co">## Read in raw data for non-industrial catch per the year</span></span>
+<span id="cb3-24"><a href="#cb3-24"></a>  raw_Nind &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="kw">paste0</span>(<span class="kw">file.path</span>(dir_M,<span class="st">&#39;git-annex/globalprep/prs_fish/v2020/int/annual_catch/NIndCatch_&#39;</span>),yr,<span class="st">&#39;.rds&#39;</span>))</span>
+<span id="cb3-25"><a href="#cb3-25"></a>  </span>
+<span id="cb3-26"><a href="#cb3-26"></a>  <span class="co">## Wrangle data, discount catch by multiplier and add catches per cell</span></span>
+<span id="cb3-27"><a href="#cb3-27"></a>  catch_Nind &lt;-<span class="st"> </span>raw_Nind <span class="op">%&gt;%</span></span>
+<span id="cb3-28"><a href="#cb3-28"></a><span class="st">    </span><span class="kw">rowwise</span>() <span class="op">%&gt;%</span></span>
+<span id="cb3-29"><a href="#cb3-29"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">catch =</span> <span class="kw">sum</span>(Reported, IUU, Discards, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb3-30"><a href="#cb3-30"></a><span class="st">    </span><span class="kw">left_join</span>(multipliers, <span class="dt">by =</span> <span class="st">&quot;FleetGearName&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb3-31"><a href="#cb3-31"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">catch_discount =</span> catch<span class="op">*</span>multiplier) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb3-32"><a href="#cb3-32"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">group_by</span>(Cell) <span class="op">%&gt;%</span></span>
+<span id="cb3-33"><a href="#cb3-33"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">summarise</span>(<span class="dt">cell_catch_Nind =</span> <span class="kw">sum</span>(catch_discount))</span>
+<span id="cb3-34"><a href="#cb3-34"></a>  </span>
+<span id="cb3-35"><a href="#cb3-35"></a></span>
+<span id="cb3-36"><a href="#cb3-36"></a>  <span class="co">## Sum industrial and non-industrial catches</span></span>
+<span id="cb3-37"><a href="#cb3-37"></a>  catch_total &lt;-<span class="st"> </span>catch_ind <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb3-38"><a href="#cb3-38"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">full_join</span>(catch_Nind, <span class="dt">by=</span> <span class="st">&quot;Cell&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb3-39"><a href="#cb3-39"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">rowwise</span>() <span class="op">%&gt;%</span></span>
+<span id="cb3-40"><a href="#cb3-40"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">total =</span> <span class="kw">sum</span>(cell_catch_ind, cell_catch_Nind, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb3-41"><a href="#cb3-41"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(Cell, total)</span>
+<span id="cb3-42"><a href="#cb3-42"></a></span>
+<span id="cb3-43"><a href="#cb3-43"></a>  <span class="co">## Rasterize catch by swapping cell IDs with (calls the cells raster we made above)</span></span>
+<span id="cb3-44"><a href="#cb3-44"></a>  raster<span class="op">::</span><span class="kw">subs</span>(cells_raster, catch_total, <span class="dt">by =</span> <span class="st">&#39;Cell&#39;</span>, <span class="dt">which =</span> <span class="st">&#39;total&#39;</span>, <span class="dt">subsWithNA=</span><span class="ot">TRUE</span>, <span class="dt">filename =</span> <span class="kw">file.path</span>(dir_M, <span class="kw">paste0</span>(<span class="st">&#39;git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int/catch_count_&#39;</span>,yr,<span class="st">&#39;.tif&#39;</span>)), <span class="dt">overwrite=</span><span class="ot">TRUE</span>) <span class="co"># Saves raster directly to Mazu</span></span>
+<span id="cb3-45"><a href="#cb3-45"></a>  </span>
+<span id="cb3-46"><a href="#cb3-46"></a>}</span>
+<span id="cb3-47"><a href="#cb3-47"></a></span>
+<span id="cb3-48"><a href="#cb3-48"></a><span class="co">## Reading in the raster to make sure it looks as expected</span></span>
+<span id="cb3-49"><a href="#cb3-49"></a>test &lt;-<span class="st"> </span><span class="kw">raster</span>(<span class="kw">file.path</span>(dir_M, (<span class="st">&#39;git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int/catch_count_2014.tif&#39;</span>)))</span>
+<span id="cb3-50"><a href="#cb3-50"></a></span>
+<span id="cb3-51"><a href="#cb3-51"></a><span class="kw">plot</span>(test) <span class="co">## Looks like all information is there!</span></span></code></pre></div>
 </div>
 <div id="extract-values-for-each-ohi-region" class="section level2">
 <h2>Extract values for each OHI region</h2>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1"><span class="co">## Read tif as rasters for all catches using gear that harm soft bottom</span></a>
-<a class="sourceLine" id="cb4-2" title="2"></a>
-<a class="sourceLine" id="cb4-3" title="3"><span class="co">## Reference raster</span></a>
-<a class="sourceLine" id="cb4-4" title="4">catch_crs &lt;-<span class="st"> </span><span class="kw">raster</span>(<span class="kw">file.path</span> (dir_M,<span class="st">&#39;git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2019/int/catch_count_2003.tif&#39;</span>))</a>
-<a class="sourceLine" id="cb4-5" title="5"></a>
-<a class="sourceLine" id="cb4-6" title="6"><span class="co">## OHI region polygons</span></a>
-<a class="sourceLine" id="cb4-7" title="7">ohi_regions &lt;-<span class="st"> </span><span class="kw">st_read</span>(<span class="dt">dsn =</span> <span class="kw">file.path</span>(dir_M, <span class="st">&quot;git-annex/globalprep/spatial/v2017&quot;</span>), <span class="dt">layer=</span><span class="st">&quot;regions_2017_update&quot;</span>)</a>
-<a class="sourceLine" id="cb4-8" title="8"></a>
-<a class="sourceLine" id="cb4-9" title="9"><span class="co">## Make the region coordinate reference system the same as the catch data</span></a>
-<a class="sourceLine" id="cb4-10" title="10">ohi_regions_wgs &lt;-<span class="st">  </span><span class="kw">st_transform</span>(ohi_regions, <span class="kw">proj4string</span>(catch_crs))</a>
-<a class="sourceLine" id="cb4-11" title="11"></a>
-<a class="sourceLine" id="cb4-12" title="12"></a>
-<a class="sourceLine" id="cb4-13" title="13"><span class="co">## List of all tifs with catches that need to be read in the loop</span></a>
-<a class="sourceLine" id="cb4-14" title="14">catch_rasts &lt;-<span class="st"> </span><span class="kw">list.files</span>(<span class="kw">file.path</span>(dir_M, <span class="st">&quot;git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2019/int&quot;</span>), <span class="dt">pattern =</span> <span class="st">&#39;catch_count_.*.tif&#39;</span>, <span class="dt">full.names =</span> <span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb4-15" title="15"></a>
-<a class="sourceLine" id="cb4-16" title="16">catch_rasts &lt;-<span class="st"> </span>catch_rasts[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">6</span>,<span class="dv">7</span>,<span class="dv">8</span>,<span class="dv">9</span>,<span class="dv">10</span>,<span class="dv">11</span>,<span class="dv">13</span>)] <span class="co">#Filter for the 12 missing rasters to run in the loop</span></a>
-<a class="sourceLine" id="cb4-17" title="17"><span class="co"># catch_rasts &lt;- catch_rasts[c(9,10,11,13)]</span></a>
-<a class="sourceLine" id="cb4-18" title="18"></a>
-<a class="sourceLine" id="cb4-19" title="19"><span class="co">#registering cores for parallel processing</span></a>
-<a class="sourceLine" id="cb4-20" title="20"><span class="kw">registerDoParallel</span>(<span class="dv">4</span>)</a>
-<a class="sourceLine" id="cb4-21" title="21"></a>
-<a class="sourceLine" id="cb4-22" title="22"><span class="kw">foreach</span>(<span class="dt">sb_catch =</span> catch_rasts) <span class="op">%dopar%</span><span class="st"> </span>{ </a>
-<a class="sourceLine" id="cb4-23" title="23">   <span class="co">#sb_catch = catch_rasts[12]</span></a>
-<a class="sourceLine" id="cb4-24" title="24"></a>
-<a class="sourceLine" id="cb4-25" title="25"><span class="kw">cat</span>(sb_catch)</a>
-<a class="sourceLine" id="cb4-26" title="26"></a>
-<a class="sourceLine" id="cb4-27" title="27">catch_year &lt;-<span class="st"> </span><span class="kw">str_extract</span>(<span class="kw">basename</span>(sb_catch), <span class="st">&quot;(</span><span class="ch">\\</span><span class="st">d)+&quot;</span>) <span class="co">##extract the correspending year for each file</span></a>
-<a class="sourceLine" id="cb4-28" title="28"></a>
-<a class="sourceLine" id="cb4-29" title="29">catch &lt;-<span class="st"> </span><span class="kw">raster</span>(sb_catch)</a>
-<a class="sourceLine" id="cb4-30" title="30"></a>
-<a class="sourceLine" id="cb4-31" title="31">data &lt;-<span class="st"> </span>raster<span class="op">::</span><span class="kw">extract</span>(catch, ohi_regions_wgs, <span class="dt">weights =</span> <span class="ot">TRUE</span>, <span class="dt">normalizeWeights =</span> <span class="ot">FALSE</span>, <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>) </a>
-<a class="sourceLine" id="cb4-32" title="32"></a>
-<a class="sourceLine" id="cb4-33" title="33"><span class="kw">names</span>(data) &lt;-<span class="st"> </span><span class="kw">paste</span>(ohi_regions<span class="op">$</span>type_w_ant, ohi_regions<span class="op">$</span>rgn_ant_id, <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>) </a>
-<a class="sourceLine" id="cb4-34" title="34">sb_catch_rgn   &lt;-<span class="st"> </span>plyr<span class="op">::</span><span class="kw">ldply</span>(data, rbind)</a>
-<a class="sourceLine" id="cb4-35" title="35"></a>
-<a class="sourceLine" id="cb4-36" title="36"><span class="co"># the following code keeps the raster information when the raster lands partially on the land polygons</span></a>
-<a class="sourceLine" id="cb4-37" title="37">sb_catch_rgn &lt;-<span class="st"> </span>sb_catch_rgn <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-38" title="38"><span class="st">  </span>tidyr<span class="op">::</span><span class="kw">separate</span>(.id, <span class="kw">c</span>(<span class="st">&quot;rgn_type&quot;</span>, <span class="st">&quot;rgn_id&quot;</span>), <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-39" title="39"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">tonnes =</span> value<span class="op">*</span>weight) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-40" title="40"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">group_by</span>(rgn_type, rgn_id) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-41" title="41"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">summarize</span>(<span class="dt">tonnes =</span> <span class="kw">sum</span>(tonnes, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-42" title="42"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">group_by</span>(rgn_id) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-43" title="43"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">summarize</span>(<span class="dt">tonnes =</span> <span class="kw">sum</span>(tonnes, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-44" title="44"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-45" title="45"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">arrange</span>(<span class="kw">as.numeric</span>(<span class="kw">as.character</span>(rgn_id))) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb4-46" title="46"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">year =</span> catch_year)</a>
-<a class="sourceLine" id="cb4-47" title="47"></a>
-<a class="sourceLine" id="cb4-48" title="48"><span class="kw">write.csv</span>(sb_catch_rgn, <span class="dt">file =</span> <span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/hab_prs_hd_subtidal_soft_bottom/v2019/int&quot;</span>, <span class="kw">sprintf</span>(<span class="st">&quot;sb_catch_rgn_%s.csv&quot;</span>, catch_year)), <span class="dt">row.names=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb4-49" title="49"></a>
-<a class="sourceLine" id="cb4-50" title="50">}</a></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">## Read tif as rasters for all catches using gear that harm soft-bottom habitat</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co">## Reference raster</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>catch_crs &lt;-<span class="st"> </span><span class="kw">raster</span>(<span class="kw">file.path</span> (dir_M,<span class="st">&#39;git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int/catch_count_2003.tif&#39;</span>))</span>
+<span id="cb4-5"><a href="#cb4-5"></a></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="co">## OHI region polygons</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a>ohi_regions &lt;-<span class="st"> </span><span class="kw">st_read</span>(<span class="dt">dsn =</span> <span class="kw">file.path</span>(dir_M, <span class="st">&quot;git-annex/globalprep/spatial/v2017&quot;</span>), <span class="dt">layer=</span><span class="st">&quot;regions_2017_update&quot;</span>)</span>
+<span id="cb4-8"><a href="#cb4-8"></a></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="co">## Make the region coordinate reference system the same as the catch data</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a>ohi_regions_wgs &lt;-<span class="st">  </span><span class="kw">st_transform</span>(ohi_regions, <span class="kw">proj4string</span>(catch_crs))</span>
+<span id="cb4-11"><a href="#cb4-11"></a></span>
+<span id="cb4-12"><a href="#cb4-12"></a></span>
+<span id="cb4-13"><a href="#cb4-13"></a><span class="co">## List of all tifs with catches that need to be read in the loop</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a>catch_rasts &lt;-<span class="st"> </span><span class="kw">list.files</span>(<span class="kw">file.path</span>(dir_M, <span class="st">&quot;git-annex/globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int&quot;</span>), <span class="dt">pattern =</span> <span class="st">&#39;catch_count_.*.tif&#39;</span>, <span class="dt">full.names =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb4-15"><a href="#cb4-15"></a></span>
+<span id="cb4-16"><a href="#cb4-16"></a><span class="co">## Registering cores for parallel processing</span></span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="kw">registerDoParallel</span>(<span class="dv">4</span>)</span>
+<span id="cb4-18"><a href="#cb4-18"></a></span>
+<span id="cb4-19"><a href="#cb4-19"></a><span class="co">## Loop to extract values for each OHI region</span></span>
+<span id="cb4-20"><a href="#cb4-20"></a><span class="kw">foreach</span>(<span class="dt">sb_catch =</span> catch_rasts) <span class="op">%dopar%</span><span class="st"> </span>{ </span>
+<span id="cb4-21"><a href="#cb4-21"></a>   <span class="co"># sb_catch = catch_rasts[12] if you just want to run one year&#39;s raster without looping through all of them</span></span>
+<span id="cb4-22"><a href="#cb4-22"></a></span>
+<span id="cb4-23"><a href="#cb4-23"></a><span class="kw">cat</span>(sb_catch)</span>
+<span id="cb4-24"><a href="#cb4-24"></a></span>
+<span id="cb4-25"><a href="#cb4-25"></a>catch_year &lt;-<span class="st"> </span><span class="kw">str_extract</span>(<span class="kw">basename</span>(sb_catch), <span class="st">&quot;(</span><span class="ch">\\</span><span class="st">d)+&quot;</span>) <span class="co"># Extract the corresponding year for each file</span></span>
+<span id="cb4-26"><a href="#cb4-26"></a></span>
+<span id="cb4-27"><a href="#cb4-27"></a>catch &lt;-<span class="st"> </span><span class="kw">raster</span>(sb_catch)</span>
+<span id="cb4-28"><a href="#cb4-28"></a></span>
+<span id="cb4-29"><a href="#cb4-29"></a>data &lt;-<span class="st"> </span>raster<span class="op">::</span><span class="kw">extract</span>(catch, ohi_regions_wgs, <span class="dt">weights =</span> <span class="ot">TRUE</span>, <span class="dt">normalizeWeights =</span> <span class="ot">FALSE</span>, <span class="dt">progress =</span> <span class="st">&#39;text&#39;</span>) </span>
+<span id="cb4-30"><a href="#cb4-30"></a></span>
+<span id="cb4-31"><a href="#cb4-31"></a><span class="kw">names</span>(data) &lt;-<span class="st"> </span><span class="kw">paste</span>(ohi_regions<span class="op">$</span>type_w_ant, ohi_regions<span class="op">$</span>rgn_ant_id, <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>) </span>
+<span id="cb4-32"><a href="#cb4-32"></a>sb_catch_rgn   &lt;-<span class="st"> </span>plyr<span class="op">::</span><span class="kw">ldply</span>(data, rbind)</span>
+<span id="cb4-33"><a href="#cb4-33"></a></span>
+<span id="cb4-34"><a href="#cb4-34"></a><span class="co"># The following code keeps the raster information when the raster lands partially on the land polygons</span></span>
+<span id="cb4-35"><a href="#cb4-35"></a>sb_catch_rgn &lt;-<span class="st"> </span>sb_catch_rgn <span class="op">%&gt;%</span></span>
+<span id="cb4-36"><a href="#cb4-36"></a><span class="st">  </span>tidyr<span class="op">::</span><span class="kw">separate</span>(.id, <span class="kw">c</span>(<span class="st">&quot;rgn_type&quot;</span>, <span class="st">&quot;rgn_id&quot;</span>), <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb4-37"><a href="#cb4-37"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">tonnes =</span> value<span class="op">*</span>weight) <span class="op">%&gt;%</span></span>
+<span id="cb4-38"><a href="#cb4-38"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">group_by</span>(rgn_type, rgn_id) <span class="op">%&gt;%</span></span>
+<span id="cb4-39"><a href="#cb4-39"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">summarize</span>(<span class="dt">tonnes =</span> <span class="kw">sum</span>(tonnes, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb4-40"><a href="#cb4-40"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">group_by</span>(rgn_id) <span class="op">%&gt;%</span></span>
+<span id="cb4-41"><a href="#cb4-41"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">summarize</span>(<span class="dt">tonnes =</span> <span class="kw">sum</span>(tonnes, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb4-42"><a href="#cb4-42"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></span>
+<span id="cb4-43"><a href="#cb4-43"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">arrange</span>(<span class="kw">as.numeric</span>(<span class="kw">as.character</span>(rgn_id))) <span class="op">%&gt;%</span></span>
+<span id="cb4-44"><a href="#cb4-44"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">year =</span> catch_year)</span>
+<span id="cb4-45"><a href="#cb4-45"></a></span>
+<span id="cb4-46"><a href="#cb4-46"></a><span class="kw">write.csv</span>(sb_catch_rgn, <span class="dt">file =</span> <span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/hab_prs_hd_subtidal_soft_bottom/v2020/int&quot;</span>, <span class="kw">sprintf</span>(<span class="st">&quot;sb_catch_rgn_%s.csv&quot;</span>, catch_year)), <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span>
+<span id="cb4-47"><a href="#cb4-47"></a></span>
+<span id="cb4-48"><a href="#cb4-48"></a>}</span></code></pre></div>
 </div>
 <div id="standarized-catches-per-soft-bottom-area" class="section level2">
 <h2>Standarized catches per soft-bottom area</h2>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">area &lt;-<span class="st">  </span><span class="kw">read.csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/hab_prs_hd_subtidal_soft_bottom/v2016/output/habitat_extent_softbottom.csv&quot;</span>))</a>
-<a class="sourceLine" id="cb5-2" title="2"></a>
-<a class="sourceLine" id="cb5-3" title="3"><span class="co">## Read in csv for each year and combine them in one data frame</span></a>
-<a class="sourceLine" id="cb5-4" title="4"></a>
-<a class="sourceLine" id="cb5-5" title="5"><span class="co">## Make sure you are in the correct wd</span></a>
-<a class="sourceLine" id="cb5-6" title="6"><span class="co">#setwd(&quot;~/github/ohiprep_v2019/globalprep/hab_prs_hd_subtidal_soft_bottom/v2019&quot;) </span></a>
-<a class="sourceLine" id="cb5-7" title="7"></a>
-<a class="sourceLine" id="cb5-8" title="8">files &lt;-<span class="st"> </span><span class="kw">list.files</span>(<span class="st">&quot;int&quot;</span>, <span class="dt">pattern =</span> <span class="st">&quot;sb_catch_rgn_.*.csv&quot;</span>, <span class="dt">full.names =</span> <span class="ot">TRUE</span>) </a>
-<a class="sourceLine" id="cb5-9" title="9"></a>
-<a class="sourceLine" id="cb5-10" title="10"><span class="co">#files_2018 &lt;- list.files(&quot;../v2018/int&quot;, pattern = &quot;sb_catch_rgn_.*.csv&quot;, full.names = TRUE)</span></a>
-<a class="sourceLine" id="cb5-11" title="11"></a>
-<a class="sourceLine" id="cb5-12" title="12">sb_catch_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(files, <span class="cf">function</span>(x){<span class="kw">read.csv</span>(<span class="dt">file=</span>x)})</a>
-<a class="sourceLine" id="cb5-13" title="13"></a>
-<a class="sourceLine" id="cb5-14" title="14">sb_catch_all &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(sb_catch_list)</a>
-<a class="sourceLine" id="cb5-15" title="15">  </a>
-<a class="sourceLine" id="cb5-16" title="16"><span class="co">#sb_catch_list_2018 &lt;- lapply(files_2018, function(x){read.csv(file=x)})</span></a>
-<a class="sourceLine" id="cb5-17" title="17"></a>
-<a class="sourceLine" id="cb5-18" title="18"><span class="co">#sb_catch_all_2018 &lt;- bind_rows(sb_catch_list_2018)</span></a>
-<a class="sourceLine" id="cb5-19" title="19">  </a>
-<a class="sourceLine" id="cb5-20" title="20"><span class="co">#sum(sb_catch_all$tonnes) #5899354</span></a>
-<a class="sourceLine" id="cb5-21" title="21"><span class="co">#sum(sb_catch_all_2018$tonnes) #707463134</span></a>
-<a class="sourceLine" id="cb5-22" title="22"></a>
-<a class="sourceLine" id="cb5-23" title="23"></a>
-<a class="sourceLine" id="cb5-24" title="24">data_density &lt;-<span class="st"> </span>sb_catch_all <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-25" title="25"><span class="st">  </span><span class="kw">left_join</span>(area, <span class="dt">by=</span><span class="st">&quot;rgn_id&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-26" title="26"><span class="st">  </span><span class="kw">filter</span>(rgn_id <span class="op">&lt;=</span><span class="st"> </span><span class="dv">250</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-27" title="27"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">density =</span> tonnes<span class="op">/</span>km2)</a>
-<a class="sourceLine" id="cb5-28" title="28"></a>
-<a class="sourceLine" id="cb5-29" title="29"><span class="co">## find max density for each year</span></a>
-<a class="sourceLine" id="cb5-30" title="30">max &lt;-<span class="st"> </span>data_density <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-31" title="31"><span class="st">  </span><span class="kw">group_by</span>(year) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-32" title="32"><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">maxDensity =</span> <span class="kw">max</span>(density, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-33" title="33"><span class="st">  </span><span class="kw">data.frame</span>()</a>
-<a class="sourceLine" id="cb5-34" title="34"></a>
-<a class="sourceLine" id="cb5-35" title="35"><span class="kw">write.csv</span>(max, <span class="st">&quot;int/reference_point_max.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>) <span class="co">##Make sure you are working in the correct working directory</span></a>
-<a class="sourceLine" id="cb5-36" title="36"></a>
-<a class="sourceLine" id="cb5-37" title="37"><span class="co">## Reference point = max values accroass all years</span></a>
-<a class="sourceLine" id="cb5-38" title="38">ref_point &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;int/reference_point_max.csv&quot;</span>)</a>
-<a class="sourceLine" id="cb5-39" title="39">ref_point_max &lt;-<span class="st"> </span><span class="kw">max</span>(ref_point<span class="op">$</span>maxDensity)</a>
-<a class="sourceLine" id="cb5-40" title="40"></a>
-<a class="sourceLine" id="cb5-41" title="41"><span class="co">##ref_point 2018 = 7052.172 (year 2015)</span></a>
-<a class="sourceLine" id="cb5-42" title="42"><span class="co">##ref_point 2019 = 45.76575 (year 2015)</span></a>
-<a class="sourceLine" id="cb5-43" title="43"></a>
-<a class="sourceLine" id="cb5-44" title="44"><span class="co">## checking for distribution of data. In the past density data happens to be very skewed</span></a>
-<a class="sourceLine" id="cb5-45" title="45"><span class="kw">hist</span>(data_density<span class="op">$</span>density) <span class="co">## Yes, very skewed data</span></a>
-<a class="sourceLine" id="cb5-46" title="46"></a>
-<a class="sourceLine" id="cb5-47" title="47"><span class="co">## rescale the density: </span></a>
-<a class="sourceLine" id="cb5-48" title="48"><span class="co">## density is rescaled twice to reduce skew</span></a>
-<a class="sourceLine" id="cb5-49" title="49"></a>
-<a class="sourceLine" id="cb5-50" title="50">data_rescaled &lt;-<span class="st"> </span>data_density <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-51" title="51"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">density_rescaled_max =</span> <span class="kw">log</span>(density <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)<span class="op">/</span><span class="kw">log</span>(ref_point_max <span class="op">+</span><span class="st"> </span><span class="dv">1</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">#pressure-type measure</span></a>
-<a class="sourceLine" id="cb5-52" title="52"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">inv_dens_rescaled_max =</span> <span class="dv">1</span> <span class="op">-</span><span class="st"> </span>density_rescaled_max)  <span class="co"># health-type measure</span></a>
-<a class="sourceLine" id="cb5-53" title="53"></a>
-<a class="sourceLine" id="cb5-54" title="54"><span class="kw">hist</span>(data_rescaled<span class="op">$</span>density_rescaled_max)</a>
-<a class="sourceLine" id="cb5-55" title="55"><span class="kw">hist</span>(data_rescaled<span class="op">$</span>inv_dens_rescaled_max)</a>
-<a class="sourceLine" id="cb5-56" title="56"></a>
-<a class="sourceLine" id="cb5-57" title="57"></a>
-<a class="sourceLine" id="cb5-58" title="58"><span class="co">## Find the second rescaling point - median value of healthy-type meassure for each year</span></a>
-<a class="sourceLine" id="cb5-59" title="59">ref_median &lt;-<span class="st"> </span>data_rescaled <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-60" title="60"><span class="st">  </span><span class="kw">group_by</span>(year) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-61" title="61"><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">ref_median =</span> <span class="kw">median</span>(inv_dens_rescaled_max, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-62" title="62"><span class="st">  </span><span class="kw">data.frame</span>()</a>
-<a class="sourceLine" id="cb5-63" title="63"></a>
-<a class="sourceLine" id="cb5-64" title="64"><span class="kw">write.csv</span>(ref_median, <span class="st">&quot;int/reference_point_median.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb5-65" title="65"></a>
-<a class="sourceLine" id="cb5-66" title="66"></a>
-<a class="sourceLine" id="cb5-67" title="67">ref_point_median &lt;-<span class="st"> </span><span class="kw">min</span>(ref_median<span class="op">$</span>ref_median) <span class="co"># 0.8590695</span></a>
-<a class="sourceLine" id="cb5-68" title="68">                                               <span class="co"># 0.99485138963124</span></a>
-<a class="sourceLine" id="cb5-69" title="69"></a>
-<a class="sourceLine" id="cb5-70" title="70"></a>
-<a class="sourceLine" id="cb5-71" title="71"><span class="co">## Rescale for second time:  </span></a>
-<a class="sourceLine" id="cb5-72" title="72">data_rescaled_<span class="dv">2</span> &lt;-<span class="st"> </span>data_rescaled <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-73" title="73"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">density_rescaled_median =</span> inv_dens_rescaled_max<span class="op">/</span>ref_point_median) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb5-74" title="74"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">density_rescaled_median_capped =</span> <span class="kw">ifelse</span>(density_rescaled_median <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>, </a>
-<a class="sourceLine" id="cb5-75" title="75">                                                   <span class="dv">1</span>, </a>
-<a class="sourceLine" id="cb5-76" title="76">                                                   density_rescaled_median))</a>
-<a class="sourceLine" id="cb5-77" title="77"></a>
-<a class="sourceLine" id="cb5-78" title="78">  <span class="kw">hist</span>(data_rescaled_<span class="dv">2</span><span class="op">$</span>density_rescaled_median_capped)</a>
-<a class="sourceLine" id="cb5-79" title="79">  </a>
-<a class="sourceLine" id="cb5-80" title="80"> </a>
-<a class="sourceLine" id="cb5-81" title="81">  <span class="kw">hist</span>(data_rescaled_<span class="dv">2</span><span class="op">$</span>density_rescaled_median_capped[data_rescaled_<span class="dv">2</span><span class="op">$</span>year<span class="op">==</span><span class="dv">2014</span>])</a>
-<a class="sourceLine" id="cb5-82" title="82">  <span class="kw">filter</span>(data_rescaled_<span class="dv">2</span>, rgn_id<span class="op">==</span><span class="dv">163</span>)</a>
-<a class="sourceLine" id="cb5-83" title="83">  <span class="kw">filter</span>(data_rescaled_<span class="dv">2</span>, year<span class="op">==</span><span class="dv">2010</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>area &lt;-<span class="st">  </span><span class="kw">read.csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/hab_prs_hd_subtidal_soft_bottom/v2016/output/habitat_extent_softbottom.csv&quot;</span>))</span>
+<span id="cb5-2"><a href="#cb5-2"></a></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="co">## Read in csv for each year and combine them in one data frame</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a></span>
+<span id="cb5-5"><a href="#cb5-5"></a>files &lt;-<span class="st"> </span><span class="kw">list.files</span>(<span class="st">&quot;int&quot;</span>, <span class="dt">pattern =</span> <span class="st">&quot;sb_catch_rgn_.*.csv&quot;</span>, <span class="dt">full.names =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb5-6"><a href="#cb5-6"></a></span>
+<span id="cb5-7"><a href="#cb5-7"></a>sb_catch_list &lt;-<span class="st"> </span><span class="kw">lapply</span>(files, <span class="cf">function</span>(x){<span class="kw">read.csv</span>(<span class="dt">file=</span>x)})</span>
+<span id="cb5-8"><a href="#cb5-8"></a></span>
+<span id="cb5-9"><a href="#cb5-9"></a>sb_catch_all &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(sb_catch_list)</span>
+<span id="cb5-10"><a href="#cb5-10"></a>  </span>
+<span id="cb5-11"><a href="#cb5-11"></a><span class="co"># sum(sb_catch_all$tonnes) # v2018: 707463134</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a>                           <span class="co"># v2019: 5899354</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a>                           <span class="co"># v2020: 682566393</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a></span>
+<span id="cb5-15"><a href="#cb5-15"></a>data_density &lt;-<span class="st"> </span>sb_catch_all <span class="op">%&gt;%</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a><span class="st">  </span><span class="kw">left_join</span>(area, <span class="dt">by=</span><span class="st">&quot;rgn_id&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a><span class="st">  </span><span class="kw">filter</span>(rgn_id <span class="op">&lt;=</span><span class="st"> </span><span class="dv">250</span>) <span class="op">%&gt;%</span></span>
+<span id="cb5-18"><a href="#cb5-18"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">density =</span> tonnes<span class="op">/</span>km2)</span>
+<span id="cb5-19"><a href="#cb5-19"></a></span>
+<span id="cb5-20"><a href="#cb5-20"></a><span class="co">## Find 95th quantile density for each year</span></span>
+<span id="cb5-21"><a href="#cb5-21"></a>quant_<span class="dv">95</span> &lt;-<span class="st"> </span>data_density <span class="op">%&gt;%</span></span>
+<span id="cb5-22"><a href="#cb5-22"></a><span class="st">  </span><span class="kw">group_by</span>(year) <span class="op">%&gt;%</span></span>
+<span id="cb5-23"><a href="#cb5-23"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">quantDensity =</span> <span class="kw">quantile</span>(density, <span class="kw">c</span>(<span class="fl">0.95</span>), <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb5-24"><a href="#cb5-24"></a><span class="st">  </span><span class="kw">data.frame</span>()</span>
+<span id="cb5-25"><a href="#cb5-25"></a></span>
+<span id="cb5-26"><a href="#cb5-26"></a><span class="kw">write.csv</span>(quant_<span class="dv">95</span>, <span class="st">&quot;int/reference_point_quant_95.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>) <span class="co"># Make sure you are working in the correct working directory</span></span>
+<span id="cb5-27"><a href="#cb5-27"></a></span>
+<span id="cb5-28"><a href="#cb5-28"></a><span class="co"># # Scatterplot of 2014 and 2015</span></span>
+<span id="cb5-29"><a href="#cb5-29"></a><span class="co"># catch_2014 &lt;- read.csv(&quot;int/sb_catch_rgn_2014.csv&quot;) %&gt;% </span></span>
+<span id="cb5-30"><a href="#cb5-30"></a><span class="co">#   mutate(tonnes_2014 = tonnes) %&gt;% </span></span>
+<span id="cb5-31"><a href="#cb5-31"></a><span class="co">#   dplyr::select(-year)</span></span>
+<span id="cb5-32"><a href="#cb5-32"></a><span class="co"># </span></span>
+<span id="cb5-33"><a href="#cb5-33"></a><span class="co"># catch_2015 &lt;- read.csv(&quot;int/sb_catch_rgn_2015.csv&quot;) %&gt;% </span></span>
+<span id="cb5-34"><a href="#cb5-34"></a><span class="co">#   mutate(tonnes_2015 = tonnes) %&gt;% </span></span>
+<span id="cb5-35"><a href="#cb5-35"></a><span class="co">#   dplyr::select(-year)</span></span>
+<span id="cb5-36"><a href="#cb5-36"></a><span class="co"># </span></span>
+<span id="cb5-37"><a href="#cb5-37"></a><span class="co"># catch_combined &lt;- catch_2014 %&gt;% </span></span>
+<span id="cb5-38"><a href="#cb5-38"></a><span class="co">#   left_join(catch_2015, &quot;rgn_id&quot;)</span></span>
+<span id="cb5-39"><a href="#cb5-39"></a><span class="co"># </span></span>
+<span id="cb5-40"><a href="#cb5-40"></a><span class="co"># catch_plot &lt;- catch_combined %&gt;% </span></span>
+<span id="cb5-41"><a href="#cb5-41"></a><span class="co">#   ggplot(aes(x=tonnes_2014, y=tonnes_2015)) +</span></span>
+<span id="cb5-42"><a href="#cb5-42"></a><span class="co">#   geom_point()</span></span>
+<span id="cb5-43"><a href="#cb5-43"></a><span class="co"># </span></span>
+<span id="cb5-44"><a href="#cb5-44"></a><span class="co"># catch_plot</span></span>
+<span id="cb5-45"><a href="#cb5-45"></a></span>
+<span id="cb5-46"><a href="#cb5-46"></a><span class="co">## Reference point = max values across all years</span></span>
+<span id="cb5-47"><a href="#cb5-47"></a>ref_point &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;int/reference_point_quant_95.csv&quot;</span>)</span>
+<span id="cb5-48"><a href="#cb5-48"></a>ref_point_median &lt;-<span class="st"> </span><span class="kw">median</span>(ref_point<span class="op">$</span>quantDensity) <span class="co"># v2020: 20.5649376263763</span></span>
+<span id="cb5-49"><a href="#cb5-49"></a></span>
+<span id="cb5-50"><a href="#cb5-50"></a><span class="co"># ref_point (max) 2018 = 7052.172 (year 2015)</span></span>
+<span id="cb5-51"><a href="#cb5-51"></a><span class="co"># ref_point (max) 2019 = 45.76575 (year 2015)</span></span>
+<span id="cb5-52"><a href="#cb5-52"></a><span class="co"># ref_point (max) 2020 = 4842.57385 (year 2015)</span></span>
+<span id="cb5-53"><a href="#cb5-53"></a><span class="co"># ref_point (95th quantile) 2020 = 19.62075 (year 2015)</span></span>
+<span id="cb5-54"><a href="#cb5-54"></a></span>
+<span id="cb5-55"><a href="#cb5-55"></a><span class="co">## Checking for distribution of data. In the past density data happens to be very skewed</span></span>
+<span id="cb5-56"><a href="#cb5-56"></a><span class="kw">hist</span>(data_density<span class="op">$</span>density) <span class="co"># Yes, very skewed data</span></span>
+<span id="cb5-57"><a href="#cb5-57"></a></span>
+<span id="cb5-58"><a href="#cb5-58"></a><span class="co">## Rescale the density:</span></span>
+<span id="cb5-59"><a href="#cb5-59"></a>data_rescale &lt;-<span class="st"> </span>data_density <span class="op">%&gt;%</span></span>
+<span id="cb5-60"><a href="#cb5-60"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">density_rescaled_median =</span> density<span class="op">/</span>ref_point_median) <span class="op">%&gt;%</span></span>
+<span id="cb5-61"><a href="#cb5-61"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">density_rescaled_median_capped =</span> <span class="kw">ifelse</span>(density_rescaled_median <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>,</span>
+<span id="cb5-62"><a href="#cb5-62"></a>                                                   <span class="dv">1</span>,</span>
+<span id="cb5-63"><a href="#cb5-63"></a>                                                   density_rescaled_median))</span>
+<span id="cb5-64"><a href="#cb5-64"></a></span>
+<span id="cb5-65"><a href="#cb5-65"></a><span class="kw">hist</span>(data_rescale<span class="op">$</span>density_rescaled_median_capped)</span>
+<span id="cb5-66"><a href="#cb5-66"></a></span>
+<span id="cb5-67"><a href="#cb5-67"></a><span class="co">## code from v2019: </span></span>
+<span id="cb5-68"><a href="#cb5-68"></a><span class="co">## Rescale the density:</span></span>
+<span id="cb5-69"><a href="#cb5-69"></a><span class="co">## Density is rescaled twice to reduce skew</span></span>
+<span id="cb5-70"><a href="#cb5-70"></a></span>
+<span id="cb5-71"><a href="#cb5-71"></a><span class="co"># data_rescaled &lt;- data_density %&gt;%</span></span>
+<span id="cb5-72"><a href="#cb5-72"></a><span class="co">#   mutate(density_rescaled_max = log(density + 1)/log(ref_point_max + 1)) %&gt;% # pressure-type measure</span></span>
+<span id="cb5-73"><a href="#cb5-73"></a><span class="co">#   mutate(inv_dens_rescaled_max = 1 - density_rescaled_max)  # health-type measure</span></span>
+<span id="cb5-74"><a href="#cb5-74"></a><span class="co"># </span></span>
+<span id="cb5-75"><a href="#cb5-75"></a><span class="co"># hist(data_rescaled$density_rescaled_max)</span></span>
+<span id="cb5-76"><a href="#cb5-76"></a><span class="co"># hist(data_rescaled$inv_dens_rescaled_max)</span></span>
+<span id="cb5-77"><a href="#cb5-77"></a><span class="co"># </span></span>
+<span id="cb5-78"><a href="#cb5-78"></a><span class="co"># </span></span>
+<span id="cb5-79"><a href="#cb5-79"></a><span class="co"># ## Find the second rescaling point - median value of healthy-type measure for each year</span></span>
+<span id="cb5-80"><a href="#cb5-80"></a><span class="co"># ref_median &lt;- data_rescaled %&gt;%</span></span>
+<span id="cb5-81"><a href="#cb5-81"></a><span class="co">#   group_by(year) %&gt;%</span></span>
+<span id="cb5-82"><a href="#cb5-82"></a><span class="co">#   summarize(ref_median = median(inv_dens_rescaled_max, na.rm=TRUE)) %&gt;%</span></span>
+<span id="cb5-83"><a href="#cb5-83"></a><span class="co">#   data.frame()</span></span>
+<span id="cb5-84"><a href="#cb5-84"></a><span class="co"># </span></span>
+<span id="cb5-85"><a href="#cb5-85"></a><span class="co"># write.csv(ref_median, &quot;int/reference_point_median.csv&quot;, row.names=FALSE)</span></span>
+<span id="cb5-86"><a href="#cb5-86"></a><span class="co"># </span></span>
+<span id="cb5-87"><a href="#cb5-87"></a><span class="co"># </span></span>
+<span id="cb5-88"><a href="#cb5-88"></a><span class="co"># ref_point_median &lt;- min(ref_median$ref_median) # 0.8590695 (v2018)</span></span>
+<span id="cb5-89"><a href="#cb5-89"></a><span class="co">#                                                # 0.99485138963124 (v2019)</span></span>
+<span id="cb5-90"><a href="#cb5-90"></a><span class="co">#                                                # 0.87582237227035 (v2020)</span></span>
+<span id="cb5-91"><a href="#cb5-91"></a><span class="co"># </span></span>
+<span id="cb5-92"><a href="#cb5-92"></a><span class="co"># </span></span>
+<span id="cb5-93"><a href="#cb5-93"></a><span class="co"># ## Rescale for second time:  </span></span>
+<span id="cb5-94"><a href="#cb5-94"></a><span class="co"># data_rescaled_2 &lt;- data_rescaled %&gt;%</span></span>
+<span id="cb5-95"><a href="#cb5-95"></a><span class="co">#   mutate(density_rescaled_median = inv_dens_rescaled_max/ref_point_median) %&gt;%</span></span>
+<span id="cb5-96"><a href="#cb5-96"></a><span class="co">#   mutate(density_rescaled_median_capped = ifelse(density_rescaled_median &gt; 1, </span></span>
+<span id="cb5-97"><a href="#cb5-97"></a><span class="co">#                                                    1, </span></span>
+<span id="cb5-98"><a href="#cb5-98"></a><span class="co">#                                                    density_rescaled_median))</span></span>
+<span id="cb5-99"><a href="#cb5-99"></a><span class="co"># </span></span>
+<span id="cb5-100"><a href="#cb5-100"></a><span class="co">#   hist(data_rescaled_2$density_rescaled_median_capped)</span></span>
+<span id="cb5-101"><a href="#cb5-101"></a><span class="co">#   </span></span>
+<span id="cb5-102"><a href="#cb5-102"></a><span class="co">#  </span></span>
+<span id="cb5-103"><a href="#cb5-103"></a><span class="co">#   hist(data_rescaled_2$density_rescaled_median_capped[data_rescaled_2$year==2014])</span></span>
+<span id="cb5-104"><a href="#cb5-104"></a><span class="co">#   filter(data_rescaled_2, rgn_id==163)</span></span>
+<span id="cb5-105"><a href="#cb5-105"></a><span class="co">#   filter(data_rescaled_2, year==2010)</span></span></code></pre></div>
 </div>
 <div id="comparing-to-old-data" class="section level2">
 <h2>Comparing to old data</h2>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" title="1">  <span class="co">## check against old data</span></a>
-<a class="sourceLine" id="cb6-2" title="2">old &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2018/output/habitat_health_softbottom.csv&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb6-3" title="3"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-4" title="4"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">old_health=</span>health)</a>
-<a class="sourceLine" id="cb6-5" title="5">  </a>
-<a class="sourceLine" id="cb6-6" title="6"></a>
-<a class="sourceLine" id="cb6-7" title="7">compare &lt;-<span class="st"> </span>data_rescaled_<span class="dv">2</span> <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb6-8" title="8"><span class="st">  </span><span class="kw">filter</span>(year<span class="op">==</span><span class="dv">2014</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb6-9" title="9"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">health =</span> density_rescaled_median_capped) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb6-10" title="10"><span class="st">  </span><span class="kw">left_join</span>(old)</a>
-<a class="sourceLine" id="cb6-11" title="11"></a>
-<a class="sourceLine" id="cb6-12" title="12"><span class="kw">plot</span>(health <span class="op">~</span>old_health, <span class="dt">data=</span>compare)</a>
-<a class="sourceLine" id="cb6-13" title="13"><span class="kw">abline</span>(<span class="dv">0</span>,<span class="dv">1</span>, <span class="dt">col =</span> <span class="st">&#39;red&#39;</span>)</a>
-<a class="sourceLine" id="cb6-14" title="14"><span class="co">## Not a great correlation, but different years data and fisheries data is very different</span></a>
-<a class="sourceLine" id="cb6-15" title="15"><span class="co">## some new NA values, but it doesn&#39;t seem like these have soft-bottom habitat</span></a>
-<a class="sourceLine" id="cb6-16" title="16"><span class="co">## (at least according to our raster data)</span></a>
-<a class="sourceLine" id="cb6-17" title="17"></a>
-<a class="sourceLine" id="cb6-18" title="18"></a>
-<a class="sourceLine" id="cb6-19" title="19">compare_plot &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="dt">data =</span> test, <span class="kw">aes</span>(<span class="dt">x =</span> old_health, <span class="dt">y =</span> health, <span class="dt">label =</span> rgn_id))<span class="op">+</span></a>
-<a class="sourceLine" id="cb6-20" title="20"><span class="st">  </span><span class="kw">geom_point</span>()<span class="op">+</span></a>
-<a class="sourceLine" id="cb6-21" title="21"><span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">color =</span> <span class="st">&quot;red&quot;</span>)</a>
-<a class="sourceLine" id="cb6-22" title="22"></a>
-<a class="sourceLine" id="cb6-23" title="23"><span class="kw">plot</span>(compare_plot)</a>
-<a class="sourceLine" id="cb6-24" title="24"><span class="kw">ggplotly</span>(compare_plot)</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">## Check against old data</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>old &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2018/output/habitat_health_softbottom.csv&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">old_health=</span>health)</span>
+<span id="cb6-5"><a href="#cb6-5"></a>  </span>
+<span id="cb6-6"><a href="#cb6-6"></a>compare &lt;-<span class="st"> </span>data_rescale <span class="op">%&gt;%</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="st">  </span><span class="kw">filter</span>(year<span class="op">==</span><span class="dv">2014</span>) <span class="op">%&gt;%</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">health =</span> density_rescaled_median_capped) <span class="op">%&gt;%</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="st">  </span><span class="kw">left_join</span>(old)</span>
+<span id="cb6-10"><a href="#cb6-10"></a></span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="kw">plot</span>(health <span class="op">~</span>old_health, <span class="dt">data=</span>compare)</span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="kw">abline</span>(<span class="dv">0</span>,<span class="dv">1</span>, <span class="dt">col =</span> <span class="st">&#39;red&#39;</span>)</span>
+<span id="cb6-13"><a href="#cb6-13"></a><span class="co"># Not a great correlation, but different years data and fisheries data is very different</span></span></code></pre></div>
 </div>
 <div id="calculate-and-save-trend" class="section level2">
 <h2>Calculate and save trend</h2>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="co">### Get relevant data</span></a>
-<a class="sourceLine" id="cb7-2" title="2"></a>
-<a class="sourceLine" id="cb7-3" title="3">save_dir &lt;-<span class="st"> &quot;output&quot;</span></a>
-<a class="sourceLine" id="cb7-4" title="4"></a>
-<a class="sourceLine" id="cb7-5" title="5">condition_pressure &lt;-<span class="st"> </span>data_rescaled_<span class="dv">2</span> <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-6" title="6"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">habitat =</span> <span class="st">&quot;soft_bottom&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-7" title="7"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pressure =</span> <span class="dv">1</span> <span class="op">-</span><span class="st"> </span>density_rescaled_median_capped) <span class="op">%&gt;%</span><span class="st"> </span><span class="co">##transformes it back into pressure-measssure</span></a>
-<a class="sourceLine" id="cb7-8" title="8"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, habitat, <span class="dt">health=</span>density_rescaled_median_capped, pressure) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-9" title="9"><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(pressure))</a>
-<a class="sourceLine" id="cb7-10" title="10"></a>
-<a class="sourceLine" id="cb7-11" title="11"><span class="kw">hist</span>(condition_pressure<span class="op">$</span>pressure)</a>
-<a class="sourceLine" id="cb7-12" title="12"></a>
-<a class="sourceLine" id="cb7-13" title="13"><span class="co"># get habitat trends</span></a>
-<a class="sourceLine" id="cb7-14" title="14">stop_year &lt;-<span class="st"> </span><span class="kw">max</span>(condition_pressure<span class="op">$</span>year)</a>
-<a class="sourceLine" id="cb7-15" title="15"></a>
-<a class="sourceLine" id="cb7-16" title="16">trend &lt;-<span class="st"> </span><span class="kw">data.frame</span>()</a>
-<a class="sourceLine" id="cb7-17" title="17"></a>
-<a class="sourceLine" id="cb7-18" title="18"><span class="cf">for</span> (status_year <span class="cf">in</span> (stop_year<span class="dv">-4</span>)<span class="op">:</span>stop_year){ <span class="co">#status_year = 2011</span></a>
-<a class="sourceLine" id="cb7-19" title="19">  trend_years &lt;-<span class="st"> </span>status_year<span class="op">:</span>(status_year <span class="op">-</span><span class="st"> </span><span class="dv">4</span>)</a>
-<a class="sourceLine" id="cb7-20" title="20">  first_trend_year &lt;-<span class="st"> </span><span class="kw">min</span>(trend_years)</a>
-<a class="sourceLine" id="cb7-21" title="21">  </a>
-<a class="sourceLine" id="cb7-22" title="22">  trend_new &lt;-<span class="st"> </span>condition_pressure <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-23" title="23"><span class="st">    </span><span class="kw">filter</span>(year <span class="op">%in%</span><span class="st"> </span>trend_years) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-24" title="24"><span class="st">    </span><span class="kw">group_by</span>(rgn_id) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-25" title="25"><span class="st">    </span><span class="kw">do</span>(<span class="dt">mdl =</span> <span class="kw">lm</span>(health <span class="op">~</span><span class="st"> </span>year, <span class="dt">data=</span>.),</a>
-<a class="sourceLine" id="cb7-26" title="26">       <span class="dt">adjust_trend =</span> .<span class="op">$</span>health[.<span class="op">$</span>year <span class="op">==</span><span class="st"> </span>first_trend_year]) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-27" title="27"><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">rgn_id =</span> rgn_id,</a>
-<a class="sourceLine" id="cb7-28" title="28">              <span class="dt">trend =</span> <span class="kw">round</span>(<span class="kw">coef</span>(mdl)[<span class="st">&#39;year&#39;</span>]<span class="op">/</span>adjust_trend <span class="op">*</span><span class="st"> </span><span class="dv">5</span>, <span class="dv">4</span>)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-29" title="29"><span class="st">    </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-30" title="30"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">trend =</span> <span class="kw">ifelse</span>(trend <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>, <span class="dv">1</span>, trend)) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-31" title="31"><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">trend =</span> <span class="kw">ifelse</span>(trend <span class="op">&lt;</span><span class="st"> </span>(<span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>), trend))</a>
-<a class="sourceLine" id="cb7-32" title="32">  </a>
-<a class="sourceLine" id="cb7-33" title="33">  trend_new &lt;-<span class="st"> </span>trend_new <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-34" title="34"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">habitat =</span> <span class="st">&quot;soft_bottom&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-35" title="35"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">year =</span> status_year) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-36" title="36"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, habitat, trend)</a>
-<a class="sourceLine" id="cb7-37" title="37">  </a>
-<a class="sourceLine" id="cb7-38" title="38">  trend &lt;-<span class="st"> </span><span class="kw">rbind</span>(trend, trend_new)</a>
-<a class="sourceLine" id="cb7-39" title="39">}</a>
-<a class="sourceLine" id="cb7-40" title="40">  </a>
-<a class="sourceLine" id="cb7-41" title="41"><span class="kw">write.csv</span>(trend, <span class="kw">file.path</span>(save_dir, <span class="st">&quot;habitat_trend_softbottom.csv&quot;</span>), <span class="dt">row.names=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb7-42" title="42"> </a>
-<a class="sourceLine" id="cb7-43" title="43">  health &lt;-<span class="st"> </span>condition_pressure <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-44" title="44"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">habitat =</span> <span class="st">&quot;soft_bottom&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-45" title="45"><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, habitat, health)</a>
-<a class="sourceLine" id="cb7-46" title="46">  </a>
-<a class="sourceLine" id="cb7-47" title="47">  <span class="kw">write.csv</span>(health, <span class="kw">file.path</span>(save_dir, <span class="st">&quot;habitat_health_softbottom.csv&quot;</span>), <span class="dt">row.names=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb7-48" title="48">  </a>
-<a class="sourceLine" id="cb7-49" title="49">  pressure &lt;-<span class="st"> </span>condition_pressure <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb7-50" title="50"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, <span class="dt">pressure_score =</span> pressure)</a>
-<a class="sourceLine" id="cb7-51" title="51">  </a>
-<a class="sourceLine" id="cb7-52" title="52">  <span class="kw">write.csv</span>(pressure, <span class="kw">file.path</span>(save_dir, <span class="st">&quot;hd_sb_subtidal.csv&quot;</span>), <span class="dt">row.names=</span><span class="ot">FALSE</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">## Get relevant data</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3"></a>save_dir &lt;-<span class="st"> &quot;output&quot;</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a></span>
+<span id="cb7-5"><a href="#cb7-5"></a>condition_pressure &lt;-<span class="st"> </span>data_rescale <span class="op">%&gt;%</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">habitat =</span> <span class="st">&quot;soft_bottom&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pressure =</span> density_rescaled_median_capped) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-8"><a href="#cb7-8"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">health =</span> <span class="dv">1</span> <span class="op">-</span><span class="st"> </span>density_rescaled_median_capped) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-9"><a href="#cb7-9"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, habitat, health, pressure) <span class="op">%&gt;%</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(pressure))</span>
+<span id="cb7-11"><a href="#cb7-11"></a></span>
+<span id="cb7-12"><a href="#cb7-12"></a><span class="kw">hist</span>(condition_pressure<span class="op">$</span>pressure)</span>
+<span id="cb7-13"><a href="#cb7-13"></a><span class="kw">hist</span>(condition_pressure<span class="op">$</span>health)</span>
+<span id="cb7-14"><a href="#cb7-14"></a></span>
+<span id="cb7-15"><a href="#cb7-15"></a><span class="co">## Get habitat trends</span></span>
+<span id="cb7-16"><a href="#cb7-16"></a>stop_year &lt;-<span class="st"> </span><span class="kw">max</span>(condition_pressure<span class="op">$</span>year)</span>
+<span id="cb7-17"><a href="#cb7-17"></a></span>
+<span id="cb7-18"><a href="#cb7-18"></a>trend &lt;-<span class="st"> </span><span class="kw">data.frame</span>()</span>
+<span id="cb7-19"><a href="#cb7-19"></a></span>
+<span id="cb7-20"><a href="#cb7-20"></a><span class="cf">for</span> (status_year <span class="cf">in</span> (stop_year<span class="dv">-4</span>)<span class="op">:</span>stop_year){ <span class="co"># status_year = 2011</span></span>
+<span id="cb7-21"><a href="#cb7-21"></a>  trend_years &lt;-<span class="st"> </span>status_year<span class="op">:</span>(status_year <span class="op">-</span><span class="st"> </span><span class="dv">4</span>)</span>
+<span id="cb7-22"><a href="#cb7-22"></a>  first_trend_year &lt;-<span class="st"> </span><span class="kw">min</span>(trend_years)</span>
+<span id="cb7-23"><a href="#cb7-23"></a>  </span>
+<span id="cb7-24"><a href="#cb7-24"></a>  trend_new &lt;-<span class="st"> </span>condition_pressure <span class="op">%&gt;%</span></span>
+<span id="cb7-25"><a href="#cb7-25"></a><span class="st">    </span><span class="kw">filter</span>(year <span class="op">%in%</span><span class="st"> </span>trend_years) <span class="op">%&gt;%</span></span>
+<span id="cb7-26"><a href="#cb7-26"></a><span class="st">    </span><span class="kw">group_by</span>(rgn_id) <span class="op">%&gt;%</span></span>
+<span id="cb7-27"><a href="#cb7-27"></a><span class="st">    </span><span class="kw">do</span>(<span class="dt">mdl =</span> <span class="kw">lm</span>(health <span class="op">~</span><span class="st"> </span>year, <span class="dt">data=</span>.),</span>
+<span id="cb7-28"><a href="#cb7-28"></a>       <span class="dt">adjust_trend =</span> .<span class="op">$</span>health[.<span class="op">$</span>year <span class="op">==</span><span class="st"> </span>first_trend_year]) <span class="op">%&gt;%</span></span>
+<span id="cb7-29"><a href="#cb7-29"></a><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">rgn_id =</span> rgn_id,</span>
+<span id="cb7-30"><a href="#cb7-30"></a>              <span class="dt">trend =</span> <span class="kw">round</span>(<span class="kw">coef</span>(mdl)[<span class="st">&#39;year&#39;</span>]<span class="op">/</span>adjust_trend <span class="op">*</span><span class="st"> </span><span class="dv">5</span>, <span class="dv">4</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb7-31"><a href="#cb7-31"></a><span class="st">    </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span></span>
+<span id="cb7-32"><a href="#cb7-32"></a><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">trend =</span> <span class="kw">ifelse</span>(trend <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>, <span class="dv">1</span>, trend)) <span class="op">%&gt;%</span></span>
+<span id="cb7-33"><a href="#cb7-33"></a><span class="st">    </span><span class="kw">mutate</span>(<span class="dt">trend =</span> <span class="kw">ifelse</span>(trend <span class="op">&lt;</span><span class="st"> </span>(<span class="op">-</span><span class="dv">1</span>), (<span class="op">-</span><span class="dv">1</span>), trend))</span>
+<span id="cb7-34"><a href="#cb7-34"></a>  </span>
+<span id="cb7-35"><a href="#cb7-35"></a>  trend_new &lt;-<span class="st"> </span>trend_new <span class="op">%&gt;%</span></span>
+<span id="cb7-36"><a href="#cb7-36"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">habitat =</span> <span class="st">&quot;soft_bottom&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb7-37"><a href="#cb7-37"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">year =</span> status_year) <span class="op">%&gt;%</span></span>
+<span id="cb7-38"><a href="#cb7-38"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, habitat, trend)</span>
+<span id="cb7-39"><a href="#cb7-39"></a>  </span>
+<span id="cb7-40"><a href="#cb7-40"></a>  trend &lt;-<span class="st"> </span><span class="kw">rbind</span>(trend, trend_new)</span>
+<span id="cb7-41"><a href="#cb7-41"></a>}</span>
+<span id="cb7-42"><a href="#cb7-42"></a>  </span>
+<span id="cb7-43"><a href="#cb7-43"></a><span class="kw">write.csv</span>(trend, <span class="kw">file.path</span>(save_dir, <span class="st">&quot;habitat_trend_softbottom.csv&quot;</span>), <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span>
+<span id="cb7-44"><a href="#cb7-44"></a> </span>
+<span id="cb7-45"><a href="#cb7-45"></a>  health &lt;-<span class="st"> </span>condition_pressure <span class="op">%&gt;%</span></span>
+<span id="cb7-46"><a href="#cb7-46"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">habitat =</span> <span class="st">&quot;soft_bottom&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb7-47"><a href="#cb7-47"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, habitat, health)</span>
+<span id="cb7-48"><a href="#cb7-48"></a>  </span>
+<span id="cb7-49"><a href="#cb7-49"></a>  <span class="kw">write.csv</span>(health, <span class="kw">file.path</span>(save_dir, <span class="st">&quot;habitat_health_softbottom.csv&quot;</span>), <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span>
+<span id="cb7-50"><a href="#cb7-50"></a>  </span>
+<span id="cb7-51"><a href="#cb7-51"></a>  pressure &lt;-<span class="st"> </span>condition_pressure <span class="op">%&gt;%</span></span>
+<span id="cb7-52"><a href="#cb7-52"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, <span class="dt">pressure_score =</span> pressure)</span>
+<span id="cb7-53"><a href="#cb7-53"></a>  </span>
+<span id="cb7-54"><a href="#cb7-54"></a>  <span class="kw">write.csv</span>(pressure, <span class="kw">file.path</span>(save_dir, <span class="st">&quot;hd_sb_subtidal.csv&quot;</span>), <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span></code></pre></div>
 <p>Compare trend, pressure, pressure output to last year’s values</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"> <span class="co">## Health data</span></a>
-<a class="sourceLine" id="cb8-2" title="2">old_health &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2018/output/habitat_health_softbottom.csv&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-3" title="3"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-4" title="4"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">old_health=</span>health)</a>
-<a class="sourceLine" id="cb8-5" title="5">  </a>
-<a class="sourceLine" id="cb8-6" title="6"></a>
-<a class="sourceLine" id="cb8-7" title="7">compare_health &lt;-<span class="st">  </span><span class="kw">read.csv</span>(<span class="st">&quot;output/habitat_health_softbottom.csv&quot;</span>)<span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-8" title="8"><span class="st">  </span><span class="kw">filter</span>(year<span class="op">==</span><span class="dv">2014</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-9" title="9"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, health) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-10" title="10"><span class="st">  </span><span class="kw">left_join</span>(old_health)</a>
-<a class="sourceLine" id="cb8-11" title="11"></a>
-<a class="sourceLine" id="cb8-12" title="12"><span class="kw">plot</span>(health <span class="op">~</span>old_health, <span class="dt">data=</span>compare_health)</a>
-<a class="sourceLine" id="cb8-13" title="13"><span class="kw">abline</span>(<span class="dv">0</span>,<span class="dv">1</span>, <span class="dt">col =</span> <span class="st">&#39;red&#39;</span>)</a>
-<a class="sourceLine" id="cb8-14" title="14"></a>
-<a class="sourceLine" id="cb8-15" title="15"></a>
-<a class="sourceLine" id="cb8-16" title="16"><span class="co">##Pressure</span></a>
-<a class="sourceLine" id="cb8-17" title="17">old_pressure &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2018/output/hd_sb_subtidal.csv&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-18" title="18"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-19" title="19"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">old_pressure=</span> pressure_score)</a>
-<a class="sourceLine" id="cb8-20" title="20">  </a>
-<a class="sourceLine" id="cb8-21" title="21"></a>
-<a class="sourceLine" id="cb8-22" title="22">compare_pressure &lt;-<span class="st">  </span><span class="kw">read.csv</span>(<span class="st">&quot;output/hd_sb_subtidal.csv&quot;</span>)<span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-23" title="23"><span class="st">  </span><span class="kw">filter</span>(year<span class="op">==</span><span class="dv">2014</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-24" title="24"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">pressure=</span>pressure_score) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-25" title="25"><span class="st">  </span><span class="kw">left_join</span>(old_pressure)</a>
-<a class="sourceLine" id="cb8-26" title="26"></a>
-<a class="sourceLine" id="cb8-27" title="27"><span class="kw">plot</span>(pressure <span class="op">~</span>old_pressure, <span class="dt">data=</span>compare_pressure)</a>
-<a class="sourceLine" id="cb8-28" title="28"><span class="kw">abline</span>(<span class="dv">0</span>,<span class="dv">1</span>, <span class="dt">col =</span> <span class="st">&#39;red&#39;</span>)</a>
-<a class="sourceLine" id="cb8-29" title="29"></a>
-<a class="sourceLine" id="cb8-30" title="30">compare_pressure_plot &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="dt">data =</span> compare_pressure, <span class="kw">aes</span>(<span class="dt">x =</span> old_pressure, <span class="dt">y =</span> pressure, <span class="dt">label =</span> rgn_id))<span class="op">+</span></a>
-<a class="sourceLine" id="cb8-31" title="31"><span class="st">  </span><span class="kw">geom_point</span>()<span class="op">+</span></a>
-<a class="sourceLine" id="cb8-32" title="32"><span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">color =</span> <span class="st">&quot;red&quot;</span>)</a>
-<a class="sourceLine" id="cb8-33" title="33"></a>
-<a class="sourceLine" id="cb8-34" title="34"><span class="kw">plot</span>(compare_plot)</a>
-<a class="sourceLine" id="cb8-35" title="35"><span class="kw">library</span>(plotly)</a>
-<a class="sourceLine" id="cb8-36" title="36"><span class="kw">ggplotly</span>(compare_pressure_plot)</a>
-<a class="sourceLine" id="cb8-37" title="37"></a>
-<a class="sourceLine" id="cb8-38" title="38"></a>
-<a class="sourceLine" id="cb8-39" title="39"></a>
-<a class="sourceLine" id="cb8-40" title="40"><span class="co">##Trend</span></a>
-<a class="sourceLine" id="cb8-41" title="41">old_trend &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2018/output/habitat_trend_softbottom.csv&quot;</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-42" title="42"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-43" title="43"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">old_trend=</span> trend)</a>
-<a class="sourceLine" id="cb8-44" title="44">  </a>
-<a class="sourceLine" id="cb8-45" title="45"></a>
-<a class="sourceLine" id="cb8-46" title="46">compare_trend &lt;-<span class="st">  </span><span class="kw">read.csv</span>(<span class="st">&quot;output/habitat_trend_softbottom.csv&quot;</span>)<span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-47" title="47"><span class="st">  </span><span class="kw">filter</span>(year<span class="op">==</span><span class="dv">2014</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-48" title="48"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, trend) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-49" title="49"><span class="st">  </span><span class="kw">left_join</span>(old_trend)</a>
-<a class="sourceLine" id="cb8-50" title="50"></a>
-<a class="sourceLine" id="cb8-51" title="51"><span class="kw">plot</span>(trend <span class="op">~</span>old_trend, <span class="dt">data=</span>compare_trend)</a>
-<a class="sourceLine" id="cb8-52" title="52"><span class="kw">abline</span>(<span class="dv">0</span>,<span class="dv">1</span>, <span class="dt">col =</span> <span class="st">&#39;red&#39;</span>)</a>
-<a class="sourceLine" id="cb8-53" title="53"></a>
-<a class="sourceLine" id="cb8-54" title="54"><span class="co">## Comparisons in general are not great but not too bad. Consider:this year we included more destructive gear, we also included artisanal (non-commercial catches) and Watson updated its methods</span></a>
-<a class="sourceLine" id="cb8-55" title="55"></a>
-<a class="sourceLine" id="cb8-56" title="56"></a>
-<a class="sourceLine" id="cb8-57" title="57">old &lt;-<span class="st"> </span>sb_catch_all_<span class="dv">2018</span> <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-58" title="58"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2015</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-59" title="59"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">old_tonnes=</span>tonnes)</a>
-<a class="sourceLine" id="cb8-60" title="60">  </a>
-<a class="sourceLine" id="cb8-61" title="61"></a>
-<a class="sourceLine" id="cb8-62" title="62">compare &lt;-<span class="st"> </span>sb_catch_all <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-63" title="63"><span class="st">  </span><span class="kw">filter</span>(year<span class="op">==</span><span class="dv">2015</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-64" title="64"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, tonnes) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-65" title="65"><span class="st">  </span><span class="kw">left_join</span>(old)</a>
-<a class="sourceLine" id="cb8-66" title="66"></a>
-<a class="sourceLine" id="cb8-67" title="67"><span class="kw">plot</span>(tonnes <span class="op">~</span>old_tonnes, <span class="dt">data=</span>compare)</a>
-<a class="sourceLine" id="cb8-68" title="68"><span class="kw">abline</span>(<span class="dv">0</span>,<span class="dv">1</span>, <span class="dt">col =</span> <span class="st">&#39;red&#39;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="co">## Health data</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>old_health &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2018/output/habitat_health_softbottom.csv&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">old_health=</span>health)</span>
+<span id="cb8-5"><a href="#cb8-5"></a></span>
+<span id="cb8-6"><a href="#cb8-6"></a>compare_health &lt;-<span class="st">  </span><span class="kw">read.csv</span>(<span class="st">&quot;output/habitat_health_softbottom.csv&quot;</span>)<span class="op">%&gt;%</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="st">  </span><span class="kw">filter</span>(year<span class="op">==</span><span class="dv">2014</span>) <span class="op">%&gt;%</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, health) <span class="op">%&gt;%</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="st">  </span><span class="kw">left_join</span>(old_health)</span>
+<span id="cb8-10"><a href="#cb8-10"></a></span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="kw">plot</span>(health <span class="op">~</span>old_health, <span class="dt">data=</span>compare_health)</span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="kw">abline</span>(<span class="dv">0</span>,<span class="dv">1</span>, <span class="dt">col =</span> <span class="st">&#39;red&#39;</span>)</span>
+<span id="cb8-13"><a href="#cb8-13"></a></span>
+<span id="cb8-14"><a href="#cb8-14"></a></span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="co">## Pressure</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a>old_pressure &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2018/output/hd_sb_subtidal.csv&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb8-17"><a href="#cb8-17"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-18"><a href="#cb8-18"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">old_pressure=</span> pressure_score)</span>
+<span id="cb8-19"><a href="#cb8-19"></a>  </span>
+<span id="cb8-20"><a href="#cb8-20"></a>compare_pressure &lt;-<span class="st">  </span><span class="kw">read.csv</span>(<span class="st">&quot;output/hd_sb_subtidal.csv&quot;</span>)<span class="op">%&gt;%</span></span>
+<span id="cb8-21"><a href="#cb8-21"></a><span class="st">  </span><span class="kw">filter</span>(year<span class="op">==</span><span class="dv">2014</span>) <span class="op">%&gt;%</span></span>
+<span id="cb8-22"><a href="#cb8-22"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">pressure=</span>pressure_score) <span class="op">%&gt;%</span></span>
+<span id="cb8-23"><a href="#cb8-23"></a><span class="st">  </span><span class="kw">left_join</span>(old_pressure)</span>
+<span id="cb8-24"><a href="#cb8-24"></a></span>
+<span id="cb8-25"><a href="#cb8-25"></a><span class="kw">plot</span>(pressure <span class="op">~</span>old_pressure, <span class="dt">data=</span>compare_pressure)</span>
+<span id="cb8-26"><a href="#cb8-26"></a><span class="kw">abline</span>(<span class="dv">0</span>,<span class="dv">1</span>, <span class="dt">col =</span> <span class="st">&#39;red&#39;</span>)</span>
+<span id="cb8-27"><a href="#cb8-27"></a></span>
+<span id="cb8-28"><a href="#cb8-28"></a>compare_pressure_plot &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="dt">data =</span> compare_pressure, <span class="kw">aes</span>(<span class="dt">x =</span> old_pressure, <span class="dt">y =</span> pressure, <span class="dt">label =</span> rgn_id))<span class="op">+</span></span>
+<span id="cb8-29"><a href="#cb8-29"></a><span class="st">  </span><span class="kw">geom_point</span>()<span class="op">+</span></span>
+<span id="cb8-30"><a href="#cb8-30"></a><span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">color =</span> <span class="st">&quot;red&quot;</span>)</span>
+<span id="cb8-31"><a href="#cb8-31"></a></span>
+<span id="cb8-32"><a href="#cb8-32"></a><span class="kw">plot</span>(compare_plot)</span>
+<span id="cb8-33"><a href="#cb8-33"></a><span class="kw">library</span>(plotly)</span>
+<span id="cb8-34"><a href="#cb8-34"></a><span class="kw">ggplotly</span>(compare_pressure_plot)</span>
+<span id="cb8-35"><a href="#cb8-35"></a></span>
+<span id="cb8-36"><a href="#cb8-36"></a></span>
+<span id="cb8-37"><a href="#cb8-37"></a><span class="co">## Trend</span></span>
+<span id="cb8-38"><a href="#cb8-38"></a>old_trend &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2018/output/habitat_trend_softbottom.csv&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb8-39"><a href="#cb8-39"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-40"><a href="#cb8-40"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, <span class="dt">old_trend=</span> trend)</span>
+<span id="cb8-41"><a href="#cb8-41"></a>  </span>
+<span id="cb8-42"><a href="#cb8-42"></a>compare_trend &lt;-<span class="st">  </span><span class="kw">read.csv</span>(<span class="st">&quot;output/habitat_trend_softbottom.csv&quot;</span>)<span class="op">%&gt;%</span></span>
+<span id="cb8-43"><a href="#cb8-43"></a><span class="st">  </span><span class="kw">filter</span>(year<span class="op">==</span><span class="dv">2014</span>) <span class="op">%&gt;%</span></span>
+<span id="cb8-44"><a href="#cb8-44"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, trend) <span class="op">%&gt;%</span></span>
+<span id="cb8-45"><a href="#cb8-45"></a><span class="st">  </span><span class="kw">left_join</span>(old_trend)</span>
+<span id="cb8-46"><a href="#cb8-46"></a></span>
+<span id="cb8-47"><a href="#cb8-47"></a><span class="kw">plot</span>(trend <span class="op">~</span>old_trend, <span class="dt">data=</span>compare_trend)</span>
+<span id="cb8-48"><a href="#cb8-48"></a><span class="kw">abline</span>(<span class="dv">0</span>,<span class="dv">1</span>, <span class="dt">col =</span> <span class="st">&#39;red&#39;</span>)</span>
+<span id="cb8-49"><a href="#cb8-49"></a></span>
+<span id="cb8-50"><a href="#cb8-50"></a></span>
+<span id="cb8-51"><a href="#cb8-51"></a><span class="co">## Comparisons in general are not great but not too bad. Consider: compared to v2018 we included more destructive gear, we also included artisanal (non-commercial catches) and Watson updated its methods.</span></span></code></pre></div>
 </div>
 </div>
 <div id="gapfill" class="section level1">
 <h1>Gapfill</h1>
-<p>There was no gapfilling for these data. Created gapfill files with values of 0. Note: Every data layer has to have a corresponding gapfill file. If there is no gapfilling the gafill column is fill in with 0 as done below.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">hab_health_sb_gf &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;output/habitat_health_softbottom.csv&quot;</span>)<span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-2" title="2"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">gapfilled =</span> <span class="dv">0</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb9-3" title="3"><span class="st">  </span><span class="kw">select</span>(rgn_id, year, gapfilled)</a>
-<a class="sourceLine" id="cb9-4" title="4"></a>
-<a class="sourceLine" id="cb9-5" title="5"><span class="kw">write.csv</span>(hab_health_sb_gf, <span class="st">&quot;output/habitat_health_softbottom_gf.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb9-6" title="6"></a>
-<a class="sourceLine" id="cb9-7" title="7"></a>
-<a class="sourceLine" id="cb9-8" title="8">hab_trend_sb_gf &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;output/habitat_trend_softbottom.csv&quot;</span>)<span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-9" title="9"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">gapfilled =</span> <span class="dv">0</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb9-10" title="10"><span class="st">  </span><span class="kw">select</span>(rgn_id, year, gapfilled)</a>
-<a class="sourceLine" id="cb9-11" title="11"></a>
-<a class="sourceLine" id="cb9-12" title="12"><span class="kw">write.csv</span>(hab_trend_sb_gf, <span class="st">&quot;output/habitat_trend_softbottom_gf.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb9-13" title="13"></a>
-<a class="sourceLine" id="cb9-14" title="14"></a>
-<a class="sourceLine" id="cb9-15" title="15">hd_sb_subtidal_gf &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;output/hd_sb_subtidal.csv&quot;</span>)<span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb9-16" title="16"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">gapfilled =</span> <span class="dv">0</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb9-17" title="17"><span class="st">  </span><span class="kw">select</span>(rgn_id, year, gapfilled)</a>
-<a class="sourceLine" id="cb9-18" title="18"></a>
-<a class="sourceLine" id="cb9-19" title="19"><span class="kw">write.csv</span>(hd_sb_subtidal_gf, <span class="st">&quot;output/hd_sb_subtidal_gf.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</a></code></pre></div>
+<p>There was no gapfilling for these data. Created gapfill files with values of 0. Note: Every data layer has to have a corresponding gapfill file. If there is no gapfilling the gapfill column is filled in with 0 as done below.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>hab_health_sb_gf &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;output/habitat_health_softbottom.csv&quot;</span>)<span class="op">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">gapfilled =</span> <span class="dv">0</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, gapfilled)</span>
+<span id="cb9-4"><a href="#cb9-4"></a></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="kw">write.csv</span>(hab_health_sb_gf, <span class="st">&quot;output/habitat_health_softbottom_gf.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span>
+<span id="cb9-6"><a href="#cb9-6"></a></span>
+<span id="cb9-7"><a href="#cb9-7"></a></span>
+<span id="cb9-8"><a href="#cb9-8"></a>hab_trend_sb_gf &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;output/habitat_trend_softbottom.csv&quot;</span>)<span class="op">%&gt;%</span></span>
+<span id="cb9-9"><a href="#cb9-9"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">gapfilled =</span> <span class="dv">0</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb9-10"><a href="#cb9-10"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, gapfilled)</span>
+<span id="cb9-11"><a href="#cb9-11"></a></span>
+<span id="cb9-12"><a href="#cb9-12"></a><span class="kw">write.csv</span>(hab_trend_sb_gf, <span class="st">&quot;output/habitat_trend_softbottom_gf.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span>
+<span id="cb9-13"><a href="#cb9-13"></a></span>
+<span id="cb9-14"><a href="#cb9-14"></a></span>
+<span id="cb9-15"><a href="#cb9-15"></a>hd_sb_subtidal_gf &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;output/hd_sb_subtidal.csv&quot;</span>)<span class="op">%&gt;%</span></span>
+<span id="cb9-16"><a href="#cb9-16"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">gapfilled =</span> <span class="dv">0</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb9-17"><a href="#cb9-17"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, gapfilled)</span>
+<span id="cb9-18"><a href="#cb9-18"></a></span>
+<span id="cb9-19"><a href="#cb9-19"></a><span class="kw">write.csv</span>(hd_sb_subtidal_gf, <span class="st">&quot;output/hd_sb_subtidal_gf.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span></code></pre></div>
 </div>
 
 

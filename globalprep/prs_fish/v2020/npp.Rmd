@@ -20,7 +20,7 @@ editor_options:
 
 # Summary
 
-This script calculates log-transformed, mean annual net primary production values globally from 2003 to 2017. This data is used to standardize commercial fishing catch to produce [fishing pressure layers for OHI](https://cdn.rawgit.com/OHI-Science/ohiprep_v2020/master/globalprep/prs_fish/v2020/fishing_pressure_layers.html) and Cumulative Human Impacts.
+This script calculates log-transformed, mean annual net primary production values globally from 2003 to 2017. This data is used to standardize commercial fishing catch to produce [fishing pressure layers for OHI](http://ohi-science.org/ohiprep_v2020/globalprep/prs_fish/v2020/fishing_pressure_layers.html) and Cumulative Human Impacts.
 
 ***
 

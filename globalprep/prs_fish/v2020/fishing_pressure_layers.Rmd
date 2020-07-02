@@ -557,7 +557,7 @@ catch_npp_fun <- function(file, layer){ # file = dem_d_files[1]  layer = 'dem_de
 
 Create corrected catch rasters - apply `catch_npp_fun` function. Resolution and projection will be matched with NPP rasters (8 x 10 km resolution and Mollweide coordinate system).
 
-```{r corrCatch, eval=FALSE}
+```{r corrCatch, eval = FALSE}
 
 ## Specify years of catch data that match with years available in NPP data
 years_of_data <- 2003:2017
@@ -1097,7 +1097,6 @@ write.csv(art_data, "output/art_hb.csv", row.names=FALSE)
 
 Compare with previous year's data
 ```{r, eval = FALSE}
-#### STOPPED HERE APRIL 10 ####
 ## Commercial Low Bycatch pressure 
 new <- read.csv("output/comm_lb.csv") %>%
   filter(year == 2014) %>%
