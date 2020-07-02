@@ -282,7 +282,7 @@ ttci_rgn <- name_2_rgn(df_in = ttci,
 
 ##Duplicated regions weighted mean
 weight_data <- data.frame(country = c("China", "Hong Kong SAR"),
-                          population = c(1386000000, 7392000))
+                          population = c(1439323774, 7496988))
 
 ttci_rgn <- ttci_rgn %>%
   arrange(country) %>%
@@ -302,11 +302,11 @@ write.csv(ttci_rgn, file.path(here(), 'globalprep/tr/v2020/intermediate/wef_ttci
 ## Preparing the gdppcppp data:
 These data are used to gapfill missing values in tourism sustainability.  Most of the data are from the World Bank, but CIA data fill some gaps (CIA data is available for only the most recent year).
 
-The Artisanal Opportunities goal uses gdppcppp data, so we will get the data that was processed for that goal. (NOTE: Just use the AO data from last year for now)
+The Artisanal Opportunities goal uses gdppcppp data, so we will get the data that was processed for that goal.
 
 
 ```{r worldbank, eval=FALSE}
-wb <- read.csv("../../ao/v2019/intermediate/gdppcppp_ohi.csv") %>%
+wb <- read.csv("../../ao/v2020/intermediate/gdppcppp_ohi.csv") %>%
   dplyr::select(rgn_id, year, value)
 
 ```
@@ -350,8 +350,8 @@ cia_gdp_rgn <- name_2_rgn(df_in = cia_gdp,
 population_weights <- data.frame(country = c("Virgin Islands", "Puerto Rico",
                                              "China", "Hong Kong", "Macau",
                                              "Guam", "Northern Mariana Islands"),
-                                 population = c(107268, 3193694,
-                                         1386000000, 7392000, 622567,
+                                 population = c(104423, 2860840,
+                                         1439323774, 7496988, 649342,
                                          168775, 55144))
 
 cia_gdp_rgn <- cia_gdp_rgn %>%
