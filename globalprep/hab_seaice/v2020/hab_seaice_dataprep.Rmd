@@ -44,7 +44,7 @@ To download the raw data, you must go to this website: https://nsidc.org/data/ns
 
 ![](https://user-images.githubusercontent.com/33332753/62662737-de8b9c80-b929-11e9-93a9-9ff413ced067.png)
 
-This is because all monthly files follow the format "nt_YYYYMM_SSS_vVV_R.bin". Click "Order Files" and wait until your order is processed. Once processed (should only take a couple of minutes, you will receive an email with instructions), download the zip file and place it into the /NSIDC_Seaice/v2019/raw folder on Mazu and extract it.
+This is because all monthly files follow the format "nt_YYYYMM_SSS_vVV_R.bin". Click "Order Files" and wait until your order is processed. Once processed (should only take a couple of minutes, you will receive an email with instructions), download the zip file and place it into the git-annex/globalprep/_raw_data/NSIDC_SeaIce/v2020 folder on Mazu and extract it.
 
 The zip file contains numbered folders, each with two files in them, .xml and .bin files. 
 
@@ -80,7 +80,7 @@ Phone: +1 303-492-6199
 Fax: +1 303-492-2468
 E-mail: nsidc@nsidc.org
 
-**Time range**: 1978-2019
+**Time range**: 1979-2019
 
 ***
 
@@ -121,7 +121,7 @@ source("../../../workflow/R/common.R") # directory locations
 
 These maps of the OHI regions were made by the PreparingSpatialFiles.R script. If there are changes to the OHI regions, the `PreparingSpatialFiles.R` script will need to be run. Additionally, it is critical to walk through the `ObtainingData.R` script if any of the spatial files have been modified (this saves the files as spatial points).
 
-The original polygon files are used from: git-annex/globalprep/_raw_data/NSIDC_SeaIce/v2015. However, we use the `fasterize` package to rasterize the polygons and save them to: git-annex/globalprep/_raw_data/NSIDC_SeaIce/v2017. 
+The original polygon files are used from: git-annex/globalprep/_raw_data/NSIDC_SeaIce/v2015. However, we use the `fasterize` package to rasterize the polygons and save them to: git-annex/globalprep/_raw_data/NSIDC_SeaIce/v2020. 
 
 ```{r define file path to ohi region maps (polygons)}
 
@@ -148,7 +148,7 @@ fp.n <- file.path(dir_M, "git-annex/globalprep/_raw_data/NSIDC_SeaIce/v2020/nort
 fp.s <- file.path(dir_M, "git-annex/globalprep/_raw_data/NSIDC_SeaIce/v2020/south")
 
 poles = c("n","s")
-years = c(1978:final.year) # full range of data
+years = c(1979:final.year) # full range of data
 months = 1:12
 n.pym = length(poles)*length(years)*length(months)
 i.pym = 0
@@ -172,8 +172,10 @@ Using the data from the .rdata files created from Function 1 with the `Obtaining
 * Coastal Protection: `n_IceShoreProtection.csv`, `s_IceShoreProtection.csv`
 
 ```{r function 2: source status trend script, eval=FALSE}
+
 ref.years <- 1979:2000
 source("Status_Trend.R") # calculates status and trend for shoreline ice and ice edge habitat
+
 ```
 
 ## Final calculations and organization
@@ -187,7 +189,7 @@ s_edge <- read.csv("int/s_IceEdgeHabitat_ref1979to2000.csv")
 edge <- rbind(n_edge, s_edge)
 edge  <- edge %>%
   dplyr::filter(Reference_avg1979to2000monthlypixels != 0) %>%
-  dplyr::filter(!(rgn_id %in% c(59, 141, 219, 4, 172, 94))) %>%  # anomolous eez regions with very little ice cover
+  dplyr::filter(!(rgn_id %in% c(59, 141, 219, 4, 172, 94))) %>%  # anomalous eez regions with very little ice cover
   dplyr::filter(!(rgn_id %in% c("248300","258510","258520","258600","258700"))) %>% # cut due to minimal ice (<200km2/yr - avg of months)
   dplyr::filter(rgn_nam != "DISPUTED") %>%
   dplyr::mutate(habitat="seaice_edge")
@@ -197,7 +199,7 @@ s_shore <- read.csv("int/s_IceShoreProtection_ref1979to2000.csv")
 shore <- rbind(n_shore, s_shore)
 shore <- shore %>%
   dplyr::filter(Reference_avg1979to2000monthlypixels != 0) %>%
-  dplyr::filter(!(rgn_id %in% c(59, 89, 177, 178))) %>%  # anomolous eez regions with very little ice cover
+  dplyr::filter(!(rgn_id %in% c(59, 89, 177, 178))) %>%  # anomalous eez regions with very little ice cover
   dplyr::filter(rgn_nam != "DISPUTED") %>%
   dplyr::mutate(habitat = "seaice_shoreline")
 
@@ -207,7 +209,7 @@ data  <- data %>%
 
 write.csv(data, "int/sea_ice.csv", row.names = FALSE)
 
-## health data
+## Health data
 health <- data %>%
   dplyr::filter(rgn_typ == "eez") %>%
   dplyr::select(rgn_id, habitat, dplyr::starts_with("pctdevR")) %>%
@@ -216,9 +218,9 @@ health <- data %>%
   dplyr::mutate(year = as.numeric(year)) %>%
   dplyr::mutate(health = ifelse(health > 1, 1, health))
 
-write.csv(health, "output/hab_ice_health_eez.csv", row.names = FALSE)
+write.csv(health, "output/hab_ice_health_eez.csv", row.names = FALSE) # save sea ice health data
 
-## trend data
+## Trend data
 trend <- data %>%
   dplyr::filter(rgn_typ == "eez") %>%
   dplyr::select(rgn_id, habitat, dplyr::starts_with("Trend")) %>%
@@ -229,15 +231,16 @@ trend <- data %>%
   dplyr::mutate(trend = ifelse(trend > 1, 1, trend)) %>%
   dplyr::mutate(trend = ifelse(trend < (-1), -1, trend))
 
-write.csv(trend, "output/hab_ice_trend_eez.csv", row.names = FALSE)
+write.csv(trend, "output/hab_ice_trend_eez.csv", row.names = FALSE) # save sea ice trend data
 
-## seaice extent data
+## Sea ice extent data
 extent <- data %>%
    dplyr::filter(rgn_typ == "eez") %>%
    dplyr::mutate(year = 2016) %>% # extent not updated each year (historic extent of the sea ice habitat); updated last 2016 bc of source methods
   dplyr::select(rgn_id, habitat, year, km2)
 
-write.csv(extent, "output/hab_ice_extent_eez.csv", row.names = FALSE) # save seaice extent data
+write.csv(extent, "output/hab_ice_extent_eez.csv", row.names = FALSE) # save sea ice extent data
+
 ```
 
 ## Data Checks
@@ -247,7 +250,7 @@ write.csv(extent, "output/hab_ice_extent_eez.csv", row.names = FALSE) # save sea
 
 ```{r data checks, eval=FALSE}
 
-## health
+## Health comparison
 health <- read.csv("output/hab_ice_health_eez.csv")
 ice_health_eez <- read.csv(sprintf("../%s/output/hab_ice_health_eez.csv", previous_yr)) %>% # compare to last year's data
   dplyr::rename(health_prev_assess = health) %>%
@@ -256,31 +259,32 @@ ice_health_eez <- read.csv(sprintf("../%s/output/hab_ice_health_eez.csv", previo
 plot(ice_health_eez$health_prev_assess, ice_health_eez$health)
 abline(0, 1, col="red")
 
-## trend
+## Trend comparison
 trend <- read.csv("output/hab_ice_trend_eez.csv")
-ice_trend_eez <- read.csv(sprintf("../%s/output/hab_ice_trend_eez.csv", previous_yr)) %>%
+ice_trend_eez <- read.csv(sprintf("../%s/output/hab_ice_trend_eez.csv", previous_yr)) %>% # compare to last year's data
   dplyr::rename(trend_prev_assess = trend) %>%
   dplyr::left_join(trend, by = c("rgn_id", "habitat", "year")) %>% 
   na.omit("trend")
 plot(ice_trend_eez$trend_prev_assess, ice_trend_eez$trend)
 abline(0, 1, col="red")
 
-## extent
-extent <- read.csv("output/hab_ice_extent_eez.csv", stringsAsFactors = FALSE) # compare to last year's data
-ice_extent_eez <- read.csv(sprintf("../%s/output/hab_ice_extent_eez.csv", previous_yr), stringsAsFactors = FALSE) %>%
-  dplyr::rename(km2_prev_assess = km2) # not sure why left_join won't work- results in NAs in km2 col
+## Extent comparison
+extent <- read.csv("output/hab_ice_extent_eez.csv", stringsAsFactors = FALSE)
+ice_extent_eez <- read.csv(sprintf("../%s/output/hab_ice_extent_eez.csv", previous_yr), stringsAsFactors = FALSE) %>% # compare to last year's data
+  dplyr::rename(km2_prev_assess = km2)
 plot(ice_extent_eez$km2_prev_assess, extent$km2)
 abline(0, 1, col="red")
 
-## pair with region names
+## Pair with region names
 regions <- rgn_master %>%
   dplyr::select(rgn_id = rgn_id_2013, rgn_name = rgn_nam_2013) %>%
   unique()
 
-## make sure sea ice health across regions makes intuitive sense...
+## Make sure sea ice health across regions makes intuitive sense...
 data <- read.csv("output/hab_ice_health_eez.csv") %>%
   dplyr::left_join(regions, by = "rgn_id") %>%
   dplyr::arrange(habitat, health)
+
 ```
 
 ## Gapfill
@@ -290,26 +294,27 @@ Note: all layers need a gf file, eventhough if there was no gapfilling. In this 
 
 
 ```{r, eval=FALSE}
+
+## Health gapfill
 hab_ice_health_gf <- read.csv("output/hab_ice_health_eez.csv")%>%
   dplyr::mutate(gapfilled = 0) %>% 
   dplyr::select(rgn_id, year, gapfilled)
 
-write.csv(hab_ice_health_gf, "output/hab_ice_health_eez_gf.csv", row.names=FALSE)
+write.csv(hab_ice_health_gf, "output/hab_ice_health_eez_gf.csv", row.names=FALSE) # save sea ice health gapfill file
 
-
+## Extent gapfill
 hab_ice_extent_gf <- read.csv("output/hab_ice_extent_eez.csv")%>%
   dplyr::mutate(gapfilled = 0) %>% 
   dplyr::select(rgn_id, year, gapfilled)
 
-write.csv(hab_ice_health_gf, "output/hab_ice_extent_eez_gf.csv", row.names=FALSE)
+write.csv(hab_ice_health_gf, "output/hab_ice_extent_eez_gf.csv", row.names=FALSE) # save sea ice extent gapfill file
 
-
+## Trend gapfill
 hab_ice_trend_gf <- read.csv("output/hab_ice_trend_eez.csv")%>%
   dplyr::mutate(gapfilled = 0) %>% 
   dplyr::select(rgn_id, year, gapfilled)
 
-write.csv(hab_ice_health_gf, "output/hab_ice_trend_eez_gf.csv", row.names=FALSE)
-
+write.csv(hab_ice_health_gf, "output/hab_ice_trend_eez_gf.csv", row.names=FALSE) # save sea ice trend gapfill file
 
 ```
 
