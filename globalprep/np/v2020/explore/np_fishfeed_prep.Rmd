@@ -1,0 +1,141 @@
+---
+title: "np_fishfeed_prep"
+author: "Gage Clawson"
+date: "7/8/2020"
+output: html_document
+---
+
+# Summary
+
+**Steps to this**
+
+1. Subset the forage fish catch stocks for each region/year (keep FAO and OHI rgn ids)
+2. Join this data with the EEZ raster and sum the total catch per each OHI rgn id
+3. Multiply by 0.70 to reflect the amount going to feed/oils
+4. Join with the final B/Bmsy layer used in the FIS model
+5. Convert the B/Bmsy values to scores (this is done in functions.R)
+6. Apply the underharvest penalty
+7. Take a catch weighted average of B/Bmsy scores for each region/year.
+
+```{r setup, warning=FALSE, message=FALSE}
+
+knitr::opts_chunk$set(eval=FALSE)
+
+library(here)
+library(tidyverse)
+source(here('workflow/R/common.R'))
+
+```
+
+# Step 1 
+
+## Create a master list of forage species
+
+This is based on the older Watson data. Basically, the code takes the list from Froehlich et al. (2018) and then cross references it with the Watson taxa data and identifies some extra Watson taxa that appeared to be fish oil/fish meal (FOFM) fish.
+
+The following is a list from:
+Froehlich, H.E., Jacobsen, N.S., Essington, T.E., Clavelle, T., and Halpern, B.S. (2018). Avoiding the ecological limits of forage fish for fed aquaculture. Nature Sustainability 1, 298.
+
+They identify 238 forage fish species which account for >99% of forage fish catches in 2012.
+
+31 million tons per year of captured forage fish (since 1980).
+
+Get the list of forage fish used for fish oil/meal:
+
+```{r, eval=FALSE}
+
+## Read in Froehlich list of forage fish species
+forage <- read_csv(file.path(here(), "globalprep/np/v2020/explore/raw/msleckman.61.1-CatchMSY_Nis_FAOAreas.csv.csv"))
+sort(unique(forage$Species)) #238 forage fish groups listed
+
+## Compare this with Watson list of species (IDed forage fish by hand)
+watson_v3 <- read_csv(file.path(here(), "globalprep/np/v2020/explore/raw/Codes_taxa.csv"))
+sort(setdiff(forage$Species, watson_v3$TaxonName))
+sort(setdiff(watson_v3$TaxonName[watson_v3$forage_fish %in% 1], forage$Species))
+
+
+watson_v5 <- read_csv(file.path(here(), "globalprep/fis/v2020/int/watson_taxon_key_v2020.csv")) %>%
+  dplyr::select(1:3)
+
+sort(setdiff(watson_v5$TaxonName, watson_v3$TaxonName))
+sort(setdiff(watson_v3$TaxonName, watson_v5$TaxonName))
+
+## Combine old and new watson list: 
+watson_combine <- watson_v5 %>%
+  left_join(watson_v3, by = c("Taxonkey" = "TaxonKey", "TaxonName", "CommonName"))
+
+sort(setdiff(watson_combine$TaxonName, watson_v3$TaxonName))
+
+write.csv(watson_combine, "int/watson_new.csv", row.names = FALSE) ## now we will correct the forage fish column by hand. Just look at what species differ from v5 to v3, and look them up to see if they should be classified as forage fish. 
+
+## read in the corrected dataset
+watson_new_corr <- read_csv("int/watson_new_corr.csv")
+
+sort(setdiff(forage$Species, watson_new_corr$TaxonName))
+sort(setdiff(watson_new_corr$TaxonName[watson_new_corr$forage_fish %in% 1], forage$Species))
+
+## Combined list:
+foragefish_list <- data.frame(forage_fish = sort(unique(c(unique(forage$Species), watson_new_corr$TaxonName[watson_new_corr$forage_fish %in% 1]))))
+
+missing <- setdiff(foragefish_list$forage_fish, watson_new_corr$TaxonName)
+foragefish_list <- foragefish_list %>%
+  mutate(inWatson = ifelse(forage_fish %in% missing, NA, "yes"))
+
+write.csv(foragefish_list, here("globalprep/np/v2020/explore/output/master_taxa_list_v5.csv"), row.names=FALSE)
+
+```
+
+## read in v2020 catch data 
+```{r}
+file <- file.path(dir_M,'git-annex/globalprep/fis/v2020/int/stock_catch_by_rgn_taxa.csv')
+
+catch <- read_csv(file) %>%
+  rename(common = CommonName, fao_id = fao_rgn, species=TaxonName)
+
+summary(catch)
+
+
+## filter out non ohi eez regions 
+catch <- catch %>%
+  filter(!is.na(rgn_id)) %>%
+  filter(!is.na(fao_id)) %>%
+  filter(rgn_id <= 250) %>%
+  filter(rgn_id != 213)
+
+```
+
+## subset the v2020 catch data for our forage fish species 
+
+```{r}
+## need to get TaxonKey's for each species to join with catch
+
+forage_fish_taxa_list <- foragefish_list %>%
+  left_join(catch, by = c("forage_fish" = "species")) %>%
+  dplyr::select(forage_fish, inWatson, Taxonkey) %>%
+  unique()
+
+## save a list of species not in watson data... maybe we can gapfill with FAO data later 
+forage_fish_no_watson <- forage_fish_taxa_list %>%
+  filter(is.na(Taxonkey))
+
+write.csv(forage_fish_no_watson,"int/forage_fish_not_in_watson.csv", row.names = FALSE)
+
+## now join with catch data set 
+catch_fishfeed <- catch %>%
+  left_join(forage_fish_taxa_list, by = c("Taxonkey")) %>%
+  dplyr::filter(!is.na(forage_fish))
+
+write.csv(catch_fishfeed, "int/watson_catch_forage_fish.csv", row.names = FALSE)
+
+```
+
+# Step 2 
+
+## Join watson catch filtered for forage fish species with the EEZ raster and sum the total catch per each OHI rgn id
+
+ - We do this because we want only the catch in the EEZ, not the high seas? Not sure where this raster is located though. 
+ 
+```{r}
+
+```
+ 
