@@ -23,6 +23,7 @@ library(ggplot2)
 library(here)
 library(tidyverse)
 library(plotly)
+library(readr)
 
 
 ## Load FAO-specific user-defined functions
@@ -207,5 +208,42 @@ test <- graph_data_2 %>%
   theme_bw() +
   geom_label() + 
   labs(title = "Count of regions with maximum usd per product ")
+```
+
+## Seaweeds
+
+**Steps**
+1. Per country: divide tonnes production / area of suitability
+2. Use the value corresponding to the 95th quantile (across countries and a range of years) of these country data to rescale the data.
+
+```{r}
+
+## Filter out seaweeds
+seaweeds <- h %>% 
+  filter(product == "seaweeds")
+
+## Read in list of seaweed suitable countries from Froehlich (2018)
+urlfile = "https://raw.githubusercontent.com/CART-sci/seaweed/master/Data/sw_feasible_countries.csv"
+sw_feas_countries <- read_csv(url(urlfile)) %>% 
+  rename(rgn_name = country)
+
+## Divide tonnes production / area of suitability
+seaweed_density <- seaweeds %>% 
+  left_join(sw_feas_countries, by = "rgn_name") %>% 
+  mutate(density = tonnes/feas_area) %>% # tonnes/area(km2)
+  dplyr::select(-X1, -ID)
+
+summary(seaweed_density)
+
+## Find 95th quantile density for each region, year
+quant_95 <- seaweed_density %>% 
+  group_by(rgn_name, year) %>% 
+  summarize(quantDensity = quantile(density, c(0.95), na.rm=TRUE)) %>% 
+  data.frame()
+
+## Rescale the density using 95th quantile value across countries and years
+seaweed_rescale <- seaweed_density %>% 
+  mutate(density_rescaled = density/quant_95$quantDensity)
+
 ```
 
