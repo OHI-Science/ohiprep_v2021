@@ -117,7 +117,7 @@ np_harvest_preclip <- function(h) {
     filter(year>=year_beg) %>%
     ### eliminates years prior to first reporting
     
-    select(-year_beg, -year_last, -no_data) %>%
+    dplyr::select(-year_beg, -year_last, -no_data) %>%
     ### cleans up all columns created in this function
     ungroup() %>%    
     arrange(rgn_id, product, commodity, year)

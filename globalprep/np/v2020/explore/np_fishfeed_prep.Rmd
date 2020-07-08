@@ -10,12 +10,11 @@ output: html_document
 **Steps to this**
 
 1. Subset the forage fish catch stocks for each region/year (keep FAO and OHI rgn ids)
-2. Join this data with the EEZ raster and sum the total catch per each OHI rgn id
-3. Multiply by 0.70 to reflect the amount going to feed/oils
-4. Join with the final B/Bmsy layer used in the FIS model
-5. Convert the B/Bmsy values to scores (this is done in functions.R)
-6. Apply the underharvest penalty
-7. Take a catch weighted average of B/Bmsy scores for each region/year.
+2. Multiply by 0.70 to reflect the amount going to feed/oils
+3. Join with the final B/Bmsy layer used in the FIS model
+4. Convert the B/Bmsy values to scores (this is done in functions.R)
+5. Apply the underharvest penalty
+6. Take a catch weighted average of B/Bmsy scores for each region/year.
 
 ```{r setup, warning=FALSE, message=FALSE}
 
@@ -109,6 +108,8 @@ catch <- catch %>%
 ```{r}
 ## need to get TaxonKey's for each species to join with catch
 
+foragefish_list <- read_csv("output/master_taxa_list.csv")
+
 forage_fish_taxa_list <- foragefish_list %>%
   left_join(catch, by = c("forage_fish" = "species")) %>%
   dplyr::select(forage_fish, inWatson, Taxonkey) %>%
@@ -127,15 +128,20 @@ catch_fishfeed <- catch %>%
 
 write.csv(catch_fishfeed, "int/watson_catch_forage_fish.csv", row.names = FALSE)
 
+# sum(catch_fishfeed$tons, na.rm = TRUE)
+# sum(catch$tons, na.rm = TRUE)
+# 
+# 1932000985/4589496167
 ```
 
-# Step 2 
+# Step 3
 
-## Join watson catch filtered for forage fish species with the EEZ raster and sum the total catch per each OHI rgn id
+## Join with the final B/Bmsy layer from the fis model 
 
- - We do this because we want only the catch in the EEZ, not the high seas? Not sure where this raster is located though. 
- 
 ```{r}
 
 ```
- 
+
+
+
+

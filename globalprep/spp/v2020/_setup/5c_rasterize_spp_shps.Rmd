@@ -114,7 +114,6 @@ if(reload == FALSE) {
 #   filter(str_detect(dbf_file, 'CHONDR'))
 # 
 
-#### STOPPED HERE MAY 8 1PM ####
 
 if(nrow(maps_to_rasterize) == 0) { ### all maps accounted for as .csvs
   
