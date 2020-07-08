@@ -218,9 +218,11 @@ test <- graph_data_2 %>%
 
 ```{r}
 
-## Filter out seaweeds
-seaweeds <- h %>% 
-  filter(product == "seaweeds")
+## Filter out seaweeds from tonnes production data
+seaweeds <- read.csv(here('globalprep/np/v2020/output/np_harvest_tonnes.csv')) %>% # using gapfilled layer from np_dataprep.Rmd
+  filter(product == "seaweeds") %>% 
+  left_join(rgns_eez, by = "rgn_id") %>% 
+  dplyr::select(rgn_id, rgn_name, year, tonnes)
 
 ## Read in list of seaweed suitable countries from Froehlich (2018)
 urlfile = "https://raw.githubusercontent.com/CART-sci/seaweed/master/Data/sw_feasible_countries.csv"
@@ -244,6 +246,8 @@ quant_95 <- seaweed_density %>%
 ## Rescale the density using 95th quantile value across countries and years
 seaweed_rescale <- seaweed_density %>% 
   mutate(density_rescaled = density/quant_95$quantDensity)
+
+hist(seaweed_rescale$density_rescaled)
 
 ```
 
