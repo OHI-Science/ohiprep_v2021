@@ -245,9 +245,10 @@ quant_95 <- seaweed_density %>%
 
 ## Rescale the density using 95th quantile value across countries and years
 seaweed_rescale <- seaweed_density %>% 
-  mutate(density_rescaled = density/quant_95$quantDensity)
+  mutate(density_rescaled = density/quant_95$quantDensity) %>% 
+  mutate(density_rescaled_capped = ifelse(density_rescaled > 1, 1, density_rescaled))
 
-hist(seaweed_rescale$density_rescaled)
+hist(seaweed_rescale$density_rescaled_capped)
 
 ```
 
