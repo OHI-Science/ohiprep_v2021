@@ -162,7 +162,7 @@ fofm_tonnes <- read_csv("int/mean_catch_FOFM.csv") %>%
   dplyr::filter(year == 2017) %>%
   mutate(product = "fish_oil") %>%
   group_by(rgn_id, year, product) %>%
-  summarise(tonnes = sum(catch))
+  summarise(tonnes = sum(catch)*0.3) ## Note: multiply by 0.3 to account for water loss when converting fish to fish oil.. about 30% of fish are water and 70% are fish oil
 
 np_tonnes <- read_csv("int/np_harvest_tonnes_usd.csv") %>% 
   filter(rgn_id != 213)
