@@ -1,0 +1,17 @@
+---
+title: "Landbased nutrient and chemical"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(raster)
+library(sf)
+library(mapview)
+```
+
+```{r}
+
+watersheds_af <- st_read("/home/shares/ohi/git-annex/land-based/wastewater/data/raw/basins_laea/af_bas.shp")
+
+```
