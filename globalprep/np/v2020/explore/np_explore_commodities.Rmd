@@ -30,6 +30,7 @@ library(readr)
 source(here('workflow/R/fao_fxn.R')) # function for cleaning FAO files
 source(here('workflow/R/common.R')) # directory locations
 source(here('globalprep/np/v2020/R/np_fxn.R'))
+source(here('globalprep/mar/v2020/mar_fxs.R')) # functions specific to mariculture dealing with compound countries
 
 ```
 
@@ -210,7 +211,188 @@ test <- graph_data_2 %>%
   labs(title = "Count of regions with maximum usd per product ")
 ```
 
-## Seaweeds
+# Seaweeds
+
+**Steps**
+1. Explore using FAO aquaculture dataset for seaweed instead of FAO commodities dataset
+  - compare summed values
+2. New reference point: no net loss of seaweed production within a country
+
+## Import Raw Data: FAO Mariculture data
+
+Mariculture production in tonnes.
+
+```{r}
+
+mar <- read.csv(file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_mariculture/d2020/FAO_GlobalAquacultureProduction_Quantity_1950_2018.csv'), check.names=FALSE, stringsAsFactors=FALSE) ; head(mar) 
+
+```
+
+## Wrangle: 
+
+### Tidy mariculture data
+
+Filter freshwater mariculture, make long format, and clean FAO codes.
+
+```{r}
+
+mar <- mar %>%
+  rename(country = `Country (Country)`,
+         FAO_name = `ASFIS species (ASFIS species)`, 
+         fao = `FAO major fishing area (FAO major fishing area)`, 
+         environment = `Environment (Environment)`)
+table(mar$environment)  
+
+## include only marine environments
+mar <- mar %>%
+filter(environment %in% c("Brackishwater", "Marine"))  
+
+## convert to long format and clean FAO codes:
+mar <- mar %>%
+  select(-Unit) 
+
+mar <- mar %>%
+  gather(key="year", value="value", num_range("",1950:2018)) %>%
+    fao_clean_data() 
+
+```
+
+### Update species names
+
+Update species name in the `raw/species_list.csv` file with names in the `mar` dataset (exclude non-food species). I simplified the species_list.  I cut the "species" name columns because it wasn't clear what this was trying to accomplish and created potential error.  
+
+```{r}
+
+## Read in 'species_list.csv' (originally from 'globalprep/mar/v2020/raw'). Filter out for 'Taxon_code = AL' (only seaweed species). Rename 'exclude' columns to 'include' since we're including previously excluded seaweed species (not primarily used as human food). Therefore, "0" means exclude, and "1" means include. Four scenarios for comparison purposes: 1) "include" - best guess of non-human food species; 2) "include_no_food" - if species is used for human food at all, exclude it; 3) "include_all_seaweed" - including all seaweeds in NP goal (including seaweeds used primarily for human food), 4) "include_all_nei" - including all seaweeds not elsewhere included in the dataset.
+seaweed_sp <- read.csv('raw/species_list.csv', stringsAsFactors=FALSE) %>% 
+  filter(Taxon_code == 'AL') %>% 
+  rename(include = exclude, 
+         include_all_seaweed = exclude_no_seaweed, 
+         include_all_nei = exclude_no_nei) %>% 
+  mutate(include_no_food = include) %>% 
+  dplyr::select(1:2, include_no_food, everything())
+  
+
+## Save in 'globalprep/np/v2020/explore/raw' as 'species_list_np_seaweeds.csv'. Export and edit csv file directly to go through each species and confirm if appropriate to include in NP goal, adding to 'notes_2' column why each species is included/excluded and what proportion (with a reference).
+write.csv(seaweed_sp,"raw/species_list_np_seaweeds.csv", row.names = FALSE)
+
+## Read in edited 'species_list_np_seaweeds_edited.csv'.
+seaweeds <- read.csv('raw/species_list_np_seaweeds_edited.csv', stringsAsFactors = FALSE)
+
+```
+
+Changes made to species_list_np_seaweeds.csv:
+
+FAO_name                   |  change in "include" value  | explanation
+-------------------------- | --------------------------- | -------------
+[Chondracanthus chamissoi] | 0 --> 0.8                   | Used in carrageenan
+[Porphyra columbina]       | 0 --> 0.01                  | Porphyra spp. are produced almost exclusively for direct human consumption
+[Spirulina maxima]         | 0 --> 0.3                   | More than 70% of Spirulina market is for human consumption, mainly as health food
+Aquatic plants nei         | no change (0)               | The important seaweeds for human consumption are already listed
+Babberlocks                | no change (0)               | Only used for human food according to FAO
+Bright green nori          | 0 --> 0.01                  | Used for abalone feed
+Dark green nori            | 0 --> 0.01                  | Used for abalone feed
+Sea lettuces nei           | 0 --> 0.5                   | Used for feed in aquarium trade
+Brown seaweeds             | 0 --> 0.5                   | Main uses: food and alginate
+Caulerpa seaweeds          | 0 --> 0.01                  | Used for abalone feed
+[Meristotheca senegalense] | no change (0)               | Only used for human food
+Dulse                      | 0 --> 0.1                   | Found to be a valuable food for red abalone
+Elkhorn sea moss           | 1 --> 0.99                  | Primarily used to produce carrageenan, but also edible
+Eucheuma seaweeds nei      | 1 --> 0.9                   | Also eaten raw in some countries
+Fragile codium             | 1 --> 0.1                   | Medicinal uses
+Fusiform sargassum         | no change (0)               | Only used for human food
+Gelidium seaweeds          | 1 --> 0.8                   | Primarily used for agar, but also consumed as food
+Giant kelp                 | 1 --> 0.9                   | Primarily used for alginate, but also consumed as food
+Gracilaria seaweeds        | 1 --> 0.75                  | Primarily used for agar, but also consumed as food (Ogo)
+Green laver                | 0 --> 0.01                  | Used for abalone feed
+Harpoon seaweeds           | 1 --> 0.75                  | Also used for human food (ingredient in poke)
+Japanese isinglass         | 1 --> 0.95                  | Primarily used for agar, but also consumed as food, especially in Korea
+Japanese kelp              | 0 --> 0.1                   | Primarily used for human food (kombu), but also for alginate
+Kelp nei                   | 1 --> 0.5                   | Main uses: food and alginate
+Laver (Nori)               | 0 --> 0.01                  | Used for abalone feed
+Mozuku                     | 0 --> 0.01                  | Used for homeopathic purposes
+Nori nei                   | 0 --> 0.01                  | Used for abalone feed
+Red seaweeds               | 1 --> 0.75                  | Main uses: food and 2 sources of hydrocolloids (agar and carrageenan)
+Sea belt                   | 1 --> 0.95                  | Primarily used for agar, but food market growing
+Seaweeds nei               | 0 --> 0.15                  | Most seaweeds are used for human food
+Spiny eucheuma             | 1 --> 0.9                   | Primarily used for carrageenan, but also consumed as food
+Tangle                     | 1 --> 0.99                  | Primarily used for alginate, but also consumed as food
+Wakame                     | 0 --> 0.01                  | Used for abalone feed
+Wakame nei                 | 0 --> 0.01                  | Used for abalone feed
+Warty gracilaria           | 1 --> 0.95                  | Primarily used for agar, but increasingly used for abalone feed
+Giant kelps nei            | 1 --> 0.9                   | Primarily used for alginate, but also consumed as food
+Green seaweeds             | 1 --> 0.75                  | Mixed non-food uses, but also consumed as food
+Coarse seagrape            | no change (0)               | Only used for human food
+[Sargassum spp]            | 1 --> 0.99                  | Primarily used for alginate, but also consumed as food
+Spirulina nei.             | 1 --> 0.3                   | More than 70% of Spirulina market is for human consumption, mainly as health food
+[Dunaliella salina]        | no change (1)               | Used in cosmetics and dietary supplements
+[Capsosiphon fulvescens]   | 1 --> 0.1                   | Used as traditional medicine
+Slender wart weed          | 1 --> 0.75                  | Primarily used for agar and fish feed, but also consumed as food
+
+
+```{r}
+
+## Commented out 'read.csv' lines are different versions of the dataset, representing the three different seaweed exclusion methods (exclude some seaweed, all seaweed, all seaweed nei). Use at the end for data checking.The first one is the one which is saved to the "output" folder. 
+mar_sp <- read.csv('raw/species_list.csv', stringsAsFactors=FALSE)%>%
+  select(FAO_name, exclude, alias, Taxon_code)
+#mar_sp <- read.csv('raw/species_list.csv', stringsAsFactors=FALSE) %>%
+#  select(FAO_name, exclude_no_seaweed, alias, Taxon_code)
+#mar_sp <- read.csv('raw/species_list.csv', stringsAsFactors=FALSE) %>%
+#  select(FAO_name, exclude_no_nei, alias, Taxon_code)
+
+new.spp <- setdiff(mar$FAO_name, mar_sp$FAO_name)
+new.spp # check: if dim has 0 rows it means all match
+## if there is a list of species, hand check species_list.csv to see whether to keep (exclude seaweeds and species harvested for ornamental/medicinal), check if synonyms match Trujillo names. 
+## This is outlined in issue #8 and issue #81 for reference. You need to add the species output from this to species_list.csv and fill out the corresponding information. I.e. add FAO_name, exlude (whether to include in assessment or not. If they are only harvested for medicinal purposes, do not include), alias, and Taxon_code to species_list.csv.
+
+## REMOVE SPECIES not relevant to mariculuture goal (i.e., non-food species)
+mar <- mar %>% left_join(mar_sp, by="FAO_name") 
+
+## Filters out species that should be excluded from the MAR sub-goal, depending on which of the 3 scenarios was read in. Searches for column name "exclude", "exclude_no_seaweed", or "exclude_no_nei"
+if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
+  
+ mar <- mar %>% filter(exclude==0)
+
+ } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
+  
+   mar <- mar %>% filter(exclude_no_seaweed==0)
+
+   } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
+  
+     mar <- mar %>% filter(exclude_no_nei==0)
+
+     }
+ 
+## change names using species alias or FAO species name (global changes)
+mar$species <- ifelse(!is.na(mar$alias), mar$alias, mar$FAO_name) 
+
+## sum production values for each group to account for duplicate rows after name change (remove NA values)
+mar <- mar %>%
+  filter(!is.na(value)) %>%
+  group_by(country, fao, environment, species, year, Taxon_code) %>% 
+    summarize(value = sum(value)) %>% 
+  ungroup()
+
+
+## eliminate country-species data with zero production throughout the time-series (1950-recent)
+mar <- mar %>%
+  group_by(country, species) %>%
+  mutate(total_value = sum(value)) %>%
+  filter(total_value > 0) %>%
+  select(-total_value) %>%
+  ungroup()
+
+```
+
+```{r}
+
+seaweed_culture
+
+seaweed_commod
+
+```
+
+## Exploring new seaweed reference point
 
 **Steps**
 1. Per country: divide tonnes production / area of suitability
@@ -218,37 +400,39 @@ test <- graph_data_2 %>%
 
 ```{r}
 
-## Filter out seaweeds from tonnes production data
-seaweeds <- read.csv(here('globalprep/np/v2020/output/np_harvest_tonnes.csv')) %>% # using gapfilled layer from np_dataprep.Rmd
-  filter(product == "seaweeds") %>% 
-  left_join(rgns_eez, by = "rgn_id") %>% 
-  dplyr::select(rgn_id, rgn_name, year, tonnes)
-
-## Read in list of seaweed suitable countries from Froehlich (2018)
-urlfile = "https://raw.githubusercontent.com/CART-sci/seaweed/master/Data/sw_feasible_countries.csv"
-sw_feas_countries <- read_csv(url(urlfile)) %>% 
-  rename(rgn_name = country)
-
-## Divide tonnes production / area of suitability
-seaweed_density <- seaweeds %>% 
-  left_join(sw_feas_countries, by = "rgn_name") %>% 
-  mutate(density = tonnes/feas_area) %>% # tonnes/area(km2)
-  dplyr::select(-X1, -ID)
-
-summary(seaweed_density)
-
-## Find 95th quantile density for each region, year
-quant_95 <- seaweed_density %>% 
-  group_by(rgn_name, year) %>% 
-  summarize(quantDensity = quantile(density, c(0.95), na.rm=TRUE)) %>% 
-  data.frame()
-
-## Rescale the density using 95th quantile value across countries and years
-seaweed_rescale <- seaweed_density %>% 
-  mutate(density_rescaled = density/quant_95$quantDensity) %>% 
-  mutate(density_rescaled_capped = ifelse(density_rescaled > 1, 1, density_rescaled))
-
-hist(seaweed_rescale$density_rescaled_capped)
+# ## Filter out seaweeds from tonnes production data
+# seaweeds <- read.csv(here('globalprep/np/v2020/output/np_harvest_tonnes.csv')) %>% # using gapfilled layer from np_dataprep.Rmd
+#   filter(product == "seaweeds") %>% 
+#   left_join(rgns_eez, by = "rgn_id") %>% 
+#   dplyr::select(rgn_id, rgn_name, year, tonnes)
+# 
+# ## Read in list of seaweed suitable countries from Froehlich (2018)
+# urlfile = "https://raw.githubusercontent.com/CART-sci/seaweed/master/Data/sw_feasible_countries.csv"
+# sw_feas_countries <- read_csv(url(urlfile)) %>% 
+#   rename(rgn_name = country)
+# 
+# ## Divide tonnes production / area of suitability
+# seaweed_density <- seaweeds %>% 
+#   left_join(sw_feas_countries, by = "rgn_name") %>% 
+#   mutate(density = tonnes/feas_area) %>% # tonnes/area(km2)
+#   dplyr::select(-X1, -ID)
+# 
+# summary(seaweed_density)
+# 
+# ## Find 95th quantile density for each region, year
+# quant_95 <- seaweed_density %>% 
+#   group_by(rgn_name, year) %>% 
+#   summarize(quantDensity = quantile(density, c(0.95), na.rm=TRUE)) %>% 
+#   data.frame()
+# 
+# ## Rescale the density using 95th quantile value across countries and years
+# seaweed_rescale <- seaweed_density %>% 
+#   mutate(density_rescaled = density/quant_95$quantDensity) %>% 
+#   mutate(density_rescaled_capped = ifelse(density_rescaled > 1, 1, density_rescaled))
+# 
+# hist(seaweed_rescale$density_rescaled_capped)
+# 
+# # Scrapping this
 
 ```
 
