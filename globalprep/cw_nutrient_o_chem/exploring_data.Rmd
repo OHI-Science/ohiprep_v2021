@@ -8,10 +8,65 @@ library(tidyverse)
 library(raster)
 library(sf)
 library(mapview)
+
+intermediate_dir <- "/home/shares/ohi/git-annex/land-based/wastewater/data/interim"
 ```
 
 ```{r}
+## Watersheds 
 
 watersheds_af <- st_read("/home/shares/ohi/git-annex/land-based/wastewater/data/raw/basins_laea/af_bas.shp")
+plot(watersheds_af$geometry)
+
+watersheds_au <- st_read("/home/shares/ohi/git-annex/land-based/wastewater/data/raw/basins_laea/au_bas.shp")
+plot(watersheds_au$geometry)
+
+watersheds_eu <- st_read("/home/shares/ohi/git-annex/land-based/wastewater/data/raw/basins_laea/eu_bas.shp")
+plot(watersheds_eu$geometry)
+
+watersheds_na <- st_read("/home/shares/ohi/git-annex/land-based/wastewater/data/raw/basins_laea/na_bas.shp")
+plot(watersheds_na$geometry)
+
+watersheds_pa <- st_read("/home/shares/ohi/git-annex/land-based/wastewater/data/raw/basins_laea/pa_bas.shp")
+plot(watersheds_pa$geometry)
+
+watersheds_sa <- st_read("/home/shares/ohi/git-annex/land-based/wastewater/data/raw/basins_laea/sa_bas.shp")
+plot(watersheds_sa$geometry)
 
 ```
+
+```{r}
+## Pourpoints
+
+global_plume <- st_read("/home/shares/ohi/git-annex/land-based/wastewater/data/raw/pour_points/global_plume_2007_2010.shp")
+plot(global_plume$geometry)
+mapview(global_plume)
+```
+
+```{r}
+## Nitrogen
+
+### N factors
+nitrogen_factors_raster_fn <- file.path(intermediate_dir, "nitrogen_factors_raster.tif") # Nitrogen removal factors for all
+nitrogen_factors_raster <- raster(nitrogen_factors_raster_fn)
+plot(nitrogen_factors_raster)
+
+nitrogen_factors_open_raster_fn <- file.path(intermediate_dir, "nitrogen_factors_open_raster.tif") # Nitrogen removal factors for open
+nitrogen_factors_open_raster <- raster(nitrogen_factors_open_raster_fn)
+plot(nitrogen_factors_open_raster)
+
+nitrogen_factors_septic_raster_fn <- file.path(intermediate_dir, "nitrogen_factors_septic_raster.tif") # Nitrogen removal factors for septic
+nitrogen_factors_septic_raster <- raster(nitrogen_factors_septic_raster_fn)
+plot(nitrogen_factors_septic_raster)
+
+nitrogen_factors_treated_raster_fn <- file.path(intermediate_dir, "nitrogen_factors_treated_raster.tif") # Nitrogen removal factors for treated
+nitrogen_factors_treated_raster <- raster(nitrogen_factors_treated_raster_fn)
+plot(nitrogen_factors_treated_raster)
+
+
+```
+
+It looks like zonal stats output for effluent is located here : /home/shares/ohi/git-annex/land-based/wastewater/data/processed. 
+
+
+
