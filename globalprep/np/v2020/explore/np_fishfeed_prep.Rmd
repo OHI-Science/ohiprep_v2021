@@ -148,7 +148,7 @@ missing <- setdiff(foragefish_list$forage_fish, watson_new_corr$TaxonName)
 foragefish_list <- foragefish_list %>%
   mutate(inWatson = ifelse(forage_fish %in% missing, NA, "yes")) ## 281 species
 
-write.csv(foragefish_list, here("globalprep/np/v2020/explore/output/master_taxa_list_v5.csv"), row.names=FALSE)
+write.csv(foragefish_list, here("globalprep/np/v2020/explore/int/master_taxa_list_v5.csv"), row.names=FALSE)
 
 ```
 
@@ -176,7 +176,7 @@ catch <- catch %>%
 ```{r}
 ## need to get TaxonKey's for each species to join with catch
 
-foragefish_list <- read_csv(file.path("globalprep/np/v2020/explore/output/master_taxa_list.csv"))
+foragefish_list <- read_csv(file.path("globalprep/np/v2020/explore/int/master_taxa_list.csv"))
 
 forage_fish_taxa_list <- foragefish_list %>%
   left_join(catch, by = c("forage_fish" = "species")) %>%
