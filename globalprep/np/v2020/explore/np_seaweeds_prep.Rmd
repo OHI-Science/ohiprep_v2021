@@ -1,14 +1,60 @@
 ---
-title: "Explore NP Changes"
-author: "Gage Clawson"
-date: "7/7/2020"
-output: html_document
+title: 'OHI 2020: Natural Products: Ornamentals data prep'
+author: "*Compiled on `r date()` by `r Sys.info()['user']`*"
+output: 
+  html_document:
+    toc: true
+    number_sections: true
+    theme: cerulean
+    highlight: haddock
+    includes: 
+      in_header: '../../../workflow/templates/ohi_hdr.html'
+  pdf_document:
+    toc: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+[REFERENCE RMD FILE: http://ohi-science.org/ohiprep_v2020/globalprep/np/v2020/np_dataprep.html]
 
+# Summary
+This analysis converts FAO mariculture data into one of the data layers used to calculate OHI 2020 global natural products (NP) scores. We will conduct the overall NP data prep on seaweeds, fish oil/fish meal (FOFM), and ornamentals, so that we can produce $ values for weighting later on, however, our final layer from this data prep will only consist of seaweeds.
+
+# Updates from previous assessment
+Instead of using all NP commodity categories (seaweed, FOFM, coral, sponge, and ornamentals), we are only prepping seaweeds in this data prep. Overall, we are excluding corals and sponges from our calculations for the NP goal. FOFM and seaweed production are calculated from FAO mariculture datasets, while ornamentals production is calculated from FAO commodities datasets. New year of FAO mariculture data (1950-2018). 
+
+***
+
+# Data Source 
+
+## Production data
+
+**Reference**:      
+http://www.fao.org/fishery/statistics/software/fishstatj/en#downlApp
+Release date: March 2019
+FAO Global Aquaculture Production Quantity 1950_2018
+FAO metadata found [here](http://www.fao.org/fishery/statistics/global-aquaculture-production/en)
+
+**Downloaded**: 5/11/2020
+
+**Description**:  Quantity (tonnes) of mariculture for each country, species, year.
+
+**Time range**: 1950-2018 
+
+## Sustainability data
+
+**Reference**:      
+Mariculture Sustainability Index (Trujillo 2008)
+
+Trujillo, Pablo. 2008. “Using a Mariculture Sustainability Index to Rank Countries’ Performance.” In Fisheries Centre Research Reports, edited by Jackie Alder and Daniel Pauly. University of British Columbia, Vancouver, Canada: Fisheries Centre Research Reports. https://circle.ubc.ca/handle/2429/40933. 
+
+Original data table is located in the Trujillo 2008 paper saved in the OHI Zotero database. Report starts on page 28 of the link provided in the reference. 
+
+**Description**:  
+
+Original MSI rescaled from 1-10 to 0-1 for mariculture taxa groups.
+
+***
+  
+# Methods
 ```{r setup, warning=FALSE, message=FALSE}
 
 knitr::opts_chunk$set(eval=FALSE)
@@ -25,7 +71,6 @@ library(tidyverse)
 library(plotly)
 library(readr)
 
-
 ## Load FAO-specific user-defined functions
 source(here('workflow/R/fao_fxn.R')) # function for cleaning FAO files
 source(here('workflow/R/common.R')) # directory locations
@@ -34,191 +79,7 @@ source(here('globalprep/mar/v2020/mar_fxs.R')) # functions specific to maricultu
 
 ```
 
-
-Simultaneously read and process FAO commodities value and quantity data.
-
-```{r}
-
-# ## NOTE: This can be run as a loop, but the "value" and "quant" datasets need to be run individually to make sure
-# ##  there are no problems (after this check, they can be looped for efficiency)
-# 
-# ## describe where the raw data are located:
-# dir_fao_data <- file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_commodities/d2020')
-# 
-# ## list files included in d2020 folder (value and quant datasets)
-# files <- list.files(dir_fao_data, pattern=glob2rx('*.csv'), full.names=TRUE)
-# 
-# ## To compare to old data:
-# # dir_fao_data <- file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_commodities/d2018')
-# # files <- list.files(dir_fao_data, pattern=glob2rx('*.csv'), full.names=T)
-# 
-# ## loop
-# for (f in files){ # f = files[2]
-#   cat(sprintf('\n\n\n====\nfile: %s\n', basename(f)))
-#   
-#   
-#   d <- read.csv(f, check.names=FALSE, strip.white=TRUE, stringsAsFactors = FALSE) # stringsAsFactors=T
-#   # checks names syntactically, strips leading and trailing whitespace, prevents conversion of characters to factors 
-#   
-#   ## Specifies that units are tonnes if we are reading in the Commodities Quantity data csv, and usd if we are reading in the Commodities Value data csv
-#   units <- c('tonnes','usd')[str_detect(f, c('quant','value'))] # detect unit name using lowercase American English
-# 
-#   ## gather into long format and clean up FAO-specific data foibles
-#   ## warning: attributes are not identical across measure variables; they will be dropped: this is fine
-#   m <- d %>% 
-#     rename(country   = `Country (Country)`,
-#            commodity = `Commodity (Commodity)`,
-#            trade     = `Trade flow (Trade flow)`) %>%
-#     gather(year, value, -country, -commodity, -trade, -Unit)
-#   
-#   ## Include only the "Exports" data:
-#   m <- m %>%
-#     filter(trade == "Exports")
-# 
-#   m <- m %>%
-#     fao_clean_data() %>%  # swaps out FAO-specific codes. NOTE: optional parameter 'sub_0_0' can be passed to control how a '0 0' code is interpreted.
-#     select(-trade, -Unit) %>% # eliminate 'trade' column
-#   arrange(country, commodity, is.na(value), year)
-# 
-#   
-#   ## Products join: attach product categories from com2prod, and
-#   ##   filter out all entries that do not match a product category.
-#   ## Note: commodity_lookup is user-defined function to compare 
-#   ##   commodities in data vs commodities in lookup table
-#   
-#   ## load lookup for converting commodities to products
-#   com2prod <- read.csv(here('globalprep/np/v2020/raw/commodities2products.csv'), na.strings='')
-#   
-#   ## version used in 2019:
-#   ##    read.csv(here('globalprep/np/v2019/raw/commodities2products.csv'), na.strings='')
-#   ## version used in 2018:
-#   ##    com2prod <- read.csv('raw/commodities2products.csv', na.strings='')
-#   ## version used in 2015: use when testing....
-#   ##    com2prod <- read.csv('../v2014_test/commodities2products.csv', na.strings='')
-#     
-#   ## Check the current commodity-to-product lookup table.  If necessary, make changes to     "raw/commodities2products.csv"
-#   np_commodity_lookup(m, com2prod)
-#     
-#   ## inner_join will attach product names to matching commodities according to
-#   ##    lookup table 'com2prod', and eliminate all commodities that do not appear in the lookup table.
-#   m <- m %>%
-#       inner_join(com2prod, by='commodity')
-#     
-#     
-#   ## Special case: user-defined function deals with 
-#   ##   breaking up Antilles into separate reported rgns
-#   m <- np_split_antilles(m)
-#     
-#   ## Some changes to region names that aren't working in name_2_rgn()
-#   m <- m %>%
-#     mutate(country = ifelse(country == "Côte d'Ivoire", "Ivory Coast", country)) %>%
-#     mutate(country = ifelse(country == "C<f4>te d'Ivoire	", "Ivory Coast", country)) %>%
-#     mutate(country = ifelse(country == "C\xf4te d'Ivoire", "Ivory Coast", country)) %>%
-#     mutate(country = ifelse(country == "Cura<e7>ao","Curacao", country)) %>%
-#     mutate(country = ifelse(country == "Curaçao","Curacao", country)) %>%
-#     mutate(country = ifelse(country == "Cura\xe7ao","Curacao", country)) %>%
-#     mutate(country = ifelse(country == "R\xe9union", "Reunion", country)) %>% 
-#     mutate(country = ifelse(country == "Réunion", "Reunion", country)) %>% 
-#     mutate(country = ifelse(country == "R<e9>union", "Reunion", country)) %>% 
-#     filter(country != "Azerbaijan") # landlocked, but not being removed by name_2_rgn?
-#                
-#     
-#   m_rgn <- name_2_rgn(df_in = m,
-#                       fld_name='country', 
-#                       flds_unique=c('commodity', 'product', 'year'))
-#     
-# # v2020 duplicates: China, Hong Kong SAR, Macao SAR, Guadeloupe, Serbia and Montenegro, etc - these are addressed below in the group_by/summarize pipe  
-#   
-#   ## combine composite regions
-#   ## When summarizing the dataset, this function provides a modified way to sum the value column while maintaining NA values when both variables are NA (rather than turning to zero values). The function will sum non-NA values normally.
-#   sum_function <- function(x) {
-#     if (sum(is.na(x)) == length(x)) 
-#       return(NA)
-#     return(sum(x, na.rm = T))}
-#   
-#   m_rgn <- m_rgn %>%
-#     group_by(rgn_id, rgn_name, commodity, product, year) %>%
-#     summarize(value = sum_function(value)) %>%
-#     ungroup()
-# 
-#   ## units: rename value field to units based on filename
-#   names(m_rgn)[names(m_rgn) == 'value'] <- units  
-#   
-#   ## output to .csv - should create two csvs (tonnes.csv and usd.csv)
-#   harvest_out <- sprintf(here('globalprep/np/v2020/int/%s.csv'), units)
-#   write.csv(m_rgn, harvest_out, row.names = FALSE, na = '')
-# }
-
-```
-
-Read in relevant csvs
-```{r}
-## Read in quant dataset from intermediate folder
-h_tonnes <- read.csv(here('globalprep/np/v2020/int/tonnes.csv'))
-
-## Read in value dataset from intermediate folder
-h_usd <- read.csv(here('globalprep/np/v2020/int/usd.csv'))
-
-## concatenates h_tonnes and h_usd data
-## h includes rgn_name, rgn_id, commodity, product, year, tonnes, usd.
-h <- h_usd %>%
-    full_join(h_tonnes, by=c('rgn_name', 'rgn_id', 'commodity', 'product', 'year')) %>%
-    mutate(commodity = as.character(commodity)) %>%
-    arrange(rgn_id, product, commodity, year)
-
-## clips out years prior to first reporting year, for each commodity per region
-h <- h %>% np_harvest_preclip()
-
-```
-
-```{r}
-## graph totals of each product
-
-graph_data_1 <- h %>%
-  group_by(product) %>%
-  summarise(sum_usd = sum(usd, na.rm = TRUE), sum_tonnes = sum(tonnes, na.rm = TRUE)) %>%
-  ungroup()
-  
-ggplot(graph_data_1, aes(x = product, y = sum_usd)) +
-  geom_col() + 
-  theme_bw()
-
-
-ggplot(graph_data_1, aes(x = product, y = sum_tonnes)) +
-  geom_col() + 
-  theme_bw()
-
-
-graph_data_2 <- h %>%
-  group_by(rgn_id, rgn_name, product) %>%
-  summarise(sum_usd = sum(usd, na.rm = TRUE), sum_tonnes = sum(tonnes, na.rm = TRUE)) %>%
-  arrange(-sum_usd)
-
-test <- graph_data_2 %>%
-  group_by(rgn_id, rgn_name) %>%
-  summarise(max = max(sum_usd)) %>%
-  ungroup() %>%
-  left_join(graph_data_2, by = c("rgn_id", "rgn_name")) %>%
-  filter(max == sum_usd) %>%
-  group_by(product) %>%
-  summarise(max_count_usd = n())
-  
-
-  ggplot(test, aes(x = product, y = max_count_usd, label = max_count_usd)) +
-  geom_col() + 
-  theme_bw() +
-  geom_label() + 
-  labs(title = "Count of regions with maximum usd per product ")
-```
-
-# Seaweeds
-
-**Steps**
-1. Explore using FAO aquaculture dataset for seaweed instead of FAO commodities dataset
-  - compare summed values
-2. New reference point: no net loss of seaweed production within a country
-
-## Import Raw Data: FAO Mariculture data
+# Import Raw Data: FAO Mariculture data
 
 Mariculture production in tonnes.
 
@@ -228,9 +89,9 @@ mar <- read.csv(file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_mariculture
 
 ```
 
-## Wrangle: 
+# Wrangle: 
 
-### Tidy mariculture data
+## Tidy mariculture data
 
 Filter freshwater mariculture, make long format, and clean FAO codes.
 
@@ -243,11 +104,11 @@ mar <- mar %>%
          environment = `Environment (Environment)`)
 table(mar$environment)  
 
-## include only marine environments
+## Include only marine environments
 mar <- mar %>%
 filter(environment %in% c("Brackishwater", "Marine"))  
 
-## convert to long format and clean FAO codes:
+## Convert to long format and clean FAO codes:
 mar <- mar %>%
   select(-Unit) 
 
@@ -775,53 +636,6 @@ tonnes_seaweed_rel <- smooth_tonnes_sust %>%
 
 write.csv(tonnes_seaweed_rel, 'output/np_seaweeds_scores.csv', row.names = FALSE, na = '')
 
-
-```
-
-
-
-
-## Exploring new seaweed reference point
-
-**Steps**
-1. Per country: divide tonnes production / area of suitability
-2. Use the value corresponding to the 95th quantile (across countries and a range of years) of these country data to rescale the data.
-
-```{r}
-
-# ## Filter out seaweeds from tonnes production data
-# seaweeds <- read.csv(here('globalprep/np/v2020/output/np_harvest_tonnes.csv')) %>% # using gapfilled layer from np_dataprep.Rmd
-#   filter(product == "seaweeds") %>% 
-#   left_join(rgns_eez, by = "rgn_id") %>% 
-#   dplyr::select(rgn_id, rgn_name, year, tonnes)
-# 
-# ## Read in list of seaweed suitable countries from Froehlich (2018)
-# urlfile = "https://raw.githubusercontent.com/CART-sci/seaweed/master/Data/sw_feasible_countries.csv"
-# sw_feas_countries <- read_csv(url(urlfile)) %>% 
-#   rename(rgn_name = country)
-# 
-# ## Divide tonnes production / area of suitability
-# seaweed_density <- seaweeds %>% 
-#   left_join(sw_feas_countries, by = "rgn_name") %>% 
-#   mutate(density = tonnes/feas_area) %>% # tonnes/area(km2)
-#   dplyr::select(-X1, -ID)
-# 
-# summary(seaweed_density)
-# 
-# ## Find 95th quantile density for each region, year
-# quant_95 <- seaweed_density %>% 
-#   group_by(rgn_name, year) %>% 
-#   summarize(quantDensity = quantile(density, c(0.95), na.rm=TRUE)) %>% 
-#   data.frame()
-# 
-# ## Rescale the density using 95th quantile value across countries and years
-# seaweed_rescale <- seaweed_density %>% 
-#   mutate(density_rescaled = density/quant_95$quantDensity) %>% 
-#   mutate(density_rescaled_capped = ifelse(density_rescaled > 1, 1, density_rescaled))
-# 
-# hist(seaweed_rescale$density_rescaled_capped)
-# 
-# # Scrapping this
 
 ```
 
