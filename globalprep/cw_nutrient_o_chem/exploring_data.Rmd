@@ -1,6 +1,8 @@
 ---
 title: "Landbased nutrient and chemical"
 output: html_document
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
@@ -19,6 +21,7 @@ cw_nutrient_int_dir <- "/home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem
 
 ```
 
+Read in watersheds files, transform the CRS to 4326, and bind together to make one file. 
 ```{r}
 ## Watersheds; read in, reproject to EPSG 4326, and combine into one file. 
 
@@ -90,7 +93,7 @@ plot(watersheds_all$geometry)
 st_write(watersheds_all, file.path(cw_nutrient_int_dir, "watersheds/watersheds_all_4326.shp"))
 
 ```
-
+Read in pourpoints file and transform crs to be 4326
 ```{r}
 ## Pourpoints
 
@@ -102,28 +105,36 @@ global_plume <- st_transform(global_plume, 4326)
 
 ```
 
+Read in PO4eq fertilizer data and disaggregate by 15 to make higher resolution. 
 ```{r}
 ## N/P fertilizer data
 
 n_p_rast <- raster(file.path("/home/shares/ohi/git-annex/globalprep/_raw_data/NCEAS_food_systems/d2020/crop_fert_PO4eq.tif"))
-plot(log(n_p_rast))
+plot(log(n_p_rast + 1))
 
 crs(n_p_rast) 
 
 n_p_rast
 plot(area(n_p_rast))
 
-n_p_dis_rast <- disaggregate(n_p_rast, fact = 15, progress = TRUE)
+n_p_dis_rast <- disaggregate(n_p_rast, fact = 15, method = '', progress = TRUE)
 n_p_dis_rast
-plot(log(n_p_dis_rast))
+plot(n_p_dis_rast)
 plot(area(n_p_dis_rast))
 
-#writeRaster(x = n_p_dis_rast, filename = file.path(cw_nutrient_int_dir, "rasters_test/crop_fert_PO4eq_disagg.tif"))
+#writeRaster(x = n_p_dis_rast, filename = file.path(cw_nutrient_int_dir, "rasters/crop_fert_PO4eq_disagg.tif"), overwrite = TRUE)
+
+n_p_dis_log_rast <- raster::calc(n_p_dis_rast, fun = function(x){log(x + 1)})
+#writeRaster(x = n_p_dis_log_rast, filename = file.path(cw_nutrient_int_dir, "rasters/crop_fert_PO4eq_disagg_log.tif"))
+
+plot(n_p_dis_log_rast)
+plot(watersheds_all$geometry, add = TRUE)
 ```
 
+Calculate zonal stats per watershed and save
 ```{r}
 ## Zonal stats per watershed 
-n_p_dis_rast <- raster::raster(file.path(cw_nutrient_int_dir, "rasters_test/crop_fert_PO4eq_disagg.tif")) ## read in disaggregated raster
+n_p_dis_rast <- raster::raster(file.path(cw_nutrient_int_dir, "rasters/crop_fert_PO4eq_disagg.tif")) ## read in disaggregated raster
 
 watersheds_all <- st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_all_4326.shp")) ## read in watersheds file
 
@@ -131,58 +142,55 @@ wat_length <- length(watersheds_all$basin_id)
 
 watersheds_all <- watersheds_all %>%
   arrange(id) %>%
-  mutate(id_new = 1:wat_length) # produce a new id for watersheds 
+  mutate(id_new = 1:wat_length) # produce a new id for watersheds so that we can fasterize correctly..
+
+
+plot(n_p_dis_log_rast)
+plot(watersheds_all$geometry, add = TRUE)
 
 # watershed_area <- st_area(watersheds_all)
 # sum(watershed_area) # 1.345027e+14 [m^2]
 
-raster_watersheds <- fasterize::fasterize(watersheds_all, n_p_dis_rast, field = "id_new")
+raster_watersheds <- fasterize::fasterize(watersheds_all, n_p_dis_rast, field = "id_new") ## make watershed raster
 plot(raster_watersheds)
-#writeRaster(x = raster_watersheds, filename = file.path(cw_nutrient_int_dir, "rasters_test/raster_watersheds.tif"))
+#writeRaster(x = raster_watersheds, filename = file.path(cw_nutrient_int_dir, "rasters/raster_watersheds.tif"), overwrite = TRUE)
 
-zs_n_p <- raster::zonal(n_p_dis_rast, raster_watersheds, fun = 'sum', progress = 'text', na.rm = FALSE)
+raster_watersheds <- raster::raster(file.path(cw_nutrient_int_dir, "rasters/raster_watersheds.tif"))
+
+zs_n_p <- raster::zonal(n_p_dis_rast, raster_watersheds, fun = 'sum', progress = 'text', na.rm = TRUE) ## calculate sum of PO4eq per watershed
 zs_n_p_df <- data.frame(zs_n_p)
 #write_csv(zs_n_p_df, "int/zonal_n_p_watersheds.csv")
-
+zs_n_p_df <- read_csv("int/zonal_n_p_watersheds.csv")
 
 #df <- data.frame(n_p = values(n_p_dis_rast))
 
-#df_watershed <- data.frame(id_new = values(raster_watersheds))
+# df_watershed <- data.frame(id_new = values(raster_watersheds)) %>%
+#   filter(id_new > 0 )
 
-sum(df$n_p_dis_rast) #36282.64
-sum(zs_n_p_df$sum) #36229.26 #8061438
+#sum(df$n_p) #36282.64; 2351606835
+#sum(zs_n_p_df$sum) #36229.26; 2343514672
 
-## the difference here is pretty negligible. This means zonal is catching MOST of the values... 
+## the difference here is 8092163. ~ 43 watersheds 
 
 watersheds_all_zs <- watersheds_all %>%
-  left_join(zs_n_p_df, by = c("id_new" = "zone")) %>% 
+  left_join(zs_n_p_df, by = c("id_new" = "zone")) %>%
   st_join(global_plume, by = "basin_id")
 
-plot(watersheds_all_zs$geometry)
+st_write(watersheds_all_zs, file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal.shp"))
 
-new <- fasterize::fasterize(watersheds_all_zs, raster_watersheds, field = "sum")
-plot(log(new))
-#writeRaster(new, filename = file.path(cw_nutrient_int_dir, "rasters_test/test_zs_raster.tif"))
+## 43 NAs of sum after joining... 
+plot(watersheds_all_zs$sum)
 
-```
+new <- fasterize::fasterize(watersheds_all_zs, n_p_dis_rast, field = "sum") ## fasterize again so that we can plot the "sum" variable.
+plot(new)
 
-```{r}
-# try it for the ids that are not being picked up in zonal... all sum to 0. doesn't help much.
+#writeRaster(new, filename = file.path(cw_nutrient_int_dir, "rasters/zs_raster.tif"))
 
-# `%notin%` <- Negate(`%in%`)
-# 
-# id_filt <- c(zs_n_p$zone)
-# 
-# watersheds_all_filter <- watersheds_all %>%
-#   filter(id_new %notin% id_filt)
-# 
-# raster_watersheds_filter <- fasterize::fasterize(watersheds_all_filter, n_p_rast, field = "id_new")
-# plot(raster_watersheds_filter)
-# 
-# zs_n_p_filter <- data.frame(raster::zonal(n_p_rast, raster_watersheds_filter, fun = 'sum', progress = 'text', na.rm = FALSE)) ## all 0s...
-# 
-# #df_watershed <- data.frame(id_new = values(raster_watersheds_filter))
+new_log <- raster::calc(new, fun = function(x){log(x + 1)}) ## take the ln(x+1) so we can plot this better
+plot(new_log)
+plot(watersheds_all$geometry, add = TRUE)
 
+#writeRaster(new_log, filename = file.path(cw_nutrient_int_dir, "rasters/zs_raster_logged.tif"))
 ```
 
 
