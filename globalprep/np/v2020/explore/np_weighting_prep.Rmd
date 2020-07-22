@@ -164,6 +164,8 @@ fofm_tonnes <- read_csv("int/mean_catch_FOFM.csv") %>%
   group_by(rgn_id, year, product) %>%
   summarise(tonnes = sum(catch)*0.3) ## Note: multiply by 0.3 to account for water loss when converting fish to fish oil.. about 30% of fish are water and 70% are fish oil
 
+
+## Read in ornamentals tonnes data
 np_tonnes <- read_csv("int/np_harvest_tonnes_usd.csv") %>% 
   filter(rgn_id != 213)
 
@@ -177,18 +179,19 @@ orn_tonnes <- np_tonnes %>%
          usd = ifelse(is.na(usd), 0, usd)) %>% ## gapfill the NAs to be 0
   select(rgn_id, year, product, tonnes)
   
-
-#### NOTE: seaweed will be filled in with mariculture tonnes data when that is finished... use the commodities exports data as a place holder for now. 
-
+## Read in seaweed tonnes data
 sw_fill_df <- region_product %>%
   filter(product == "seaweeds")
 
-sw_tonnes <- np_tonnes %>%
-  dplyr::filter(year == 2017, product == "seaweeds") %>%
-  full_join(sw_fill_df, by = c("rgn_id", "year", "product")) %>% ## full join to fill in the rest of the regions with 0
-  mutate(tonnes = ifelse(is.na(tonnes), 0, tonnes),
-         usd = ifelse(is.na(usd), 0, usd)) %>% ## gapfill the NAs to be 0
+sw_tonnes <- read_csv("int/np_seaweeds_tonnes_weighting.csv") %>%
+  mutate(product = "seaweeds") %>%
+  group_by(rgn_id, year, product) %>%
+  summarise(tonnes = sum(tonnes, na.rm = TRUE)) %>%
+  dplyr::filter(year == 2017) %>%
+  full_join(sw_fill_df, by = c("rgn_id", "year", "product")) %>%
+    mutate(tonnes = ifelse(is.na(tonnes), 0, tonnes)) %>% ## gapfill the NAs to be 0
   dplyr::select(rgn_id, year, product, tonnes)
+
 
 ```
 
