@@ -79,6 +79,17 @@ FAO metadata found [here](http://www.fao.org/fishery/statistics/global-commoditi
 
 * DOI: 10.5281/zenodo.2542919
 
+
+**Reference**: [FAO Mariculture data](http://www.fao.org/fishery/statistics/software/fishstatj/en#downlApp)
+Release date: March 2019
+FAO Global Aquaculture Production Quantity 1950_2018
+FAO metadata found [here](http://www.fao.org/fishery/statistics/global-aquaculture-production/en)
+
+**Downloaded**: 5/11/2020
+
+**Description**:  Quantity (tonnes) of mariculture for each country, species, year.
+
+**Time range**: 1950-2018 
 ***
 
 ## Setup
