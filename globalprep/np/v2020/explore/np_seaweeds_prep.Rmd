@@ -641,7 +641,7 @@ write.csv(smooth_tonnes_sust, 'int/np_seaweed_harvest_smoothed_data.csv', row.na
 smooth_tonnes_sust <- read_csv("int/np_seaweed_harvest_smoothed_data.csv")
 ## Save scores data for the seaweed layer 
 tonnes_seaweed_rel <- smooth_tonnes_sust %>%
-  dplyr::select(rgn_id, year, tonnes_rel)
+  dplyr::select(rgn_id, year, score = tonnes_rel)
 
 write.csv(tonnes_seaweed_rel, 'output/np_seaweed_scores.csv', row.names = FALSE, na = '')
 
