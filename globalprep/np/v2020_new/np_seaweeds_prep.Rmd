@@ -550,13 +550,26 @@ mar_sus_final = mar_sus_gf %>%
   mutate(gapfill = ifelse(is.na(Sust), "taxon_average", gapfill)) %>% # add in taxon gapfill record
   mutate(Sust = ifelse(is.na(Sust), Sust_gf_taxon, Sust)) %>% # gapfill with taxon level
   mutate(taxa_code = paste(species, species_code, sep="_")) %>%
-  select(rgn_id, species, species_code, taxa_code, taxa_group=Taxon_code, year, gapfill_sus = gapfill, gapfill_fao = gap_0_fill, tonnes, Sust)
+  select(rgn_id, species, species_code, taxa_code, taxa_group=Taxon_code, year, gapfill_sus = gapfill, gapfill_fao = gap_0_fill, tonnes, sust_coeff = Sust)
 
 ```
+
+
+
+
+
 
 # Save Data:
 
 ```{r}
+
+
+## save seaweed mariculture sustainability dataset
+seaweed_sust <- mar_sus_final %>%
+  dplyr::select(rgn_id, taxa_code, year, sust_coeff)
+
+write_csv(seaweed_sust, "output/np_seaweed_sust.csv")
+
 
 ## Save seaweed mariculture harvest tonnes data ("tonnes" column already incorporated include proportions)
 seaweed_harvest_tonnes <- mar_sus_final %>%
@@ -564,86 +577,88 @@ seaweed_harvest_tonnes <- mar_sus_final %>%
 
 anyDuplicated(seaweed_harvest_tonnes) # check for duplication
 
-write.csv(seaweed_harvest_tonnes, 'int/np_seaweed_harvest_tonnes.csv', row.names=F)
+write.csv(seaweed_harvest_tonnes, 'output/np_seaweed_harvest_tonnes.csv', row.names=F)
 
-## Multiply tonnes by sustainability coefficient to get sustainably harvested tonnes and save
-seaweed_harvest_tonnes_sust <- mar_sus_final %>% 
-  mutate(tonnes_sust = tonnes*Sust) %>% 
-  select(rgn_id, taxa_code, year, tonnes_sust)
-
-write.csv(seaweed_harvest_tonnes_sust, 'int/np_seaweed_harvest_tonnes_sust.csv', row.names=F)
+# ## Multiply tonnes by sustainability coefficient to get sustainably harvested tonnes and save
+# seaweed_harvest_tonnes_sust <- mar_sus_final %>% 
+#   mutate(tonnes_sust = tonnes*Sust) %>% 
+#   select(rgn_id, taxa_code, year, tonnes_sust)
+# 
+# write.csv(seaweed_harvest_tonnes_sust, 'int/np_seaweed_harvest_tonnes_sust.csv', row.names=F)
 
 ```
+
+EVERYTHING BELOW HERE WILL BE MOVED TO FUNCTIONS.R
 
 # Summarize values
 
 Summarize the sustainably harvested tonnes per region per year. And, do some error checking.
 
 ```{r}
-seaweed_harvest_tonnes_sust <- read_csv("int/np_seaweed_harvest_tonnes_sust.csv")
-
-seaweed_sust_sum <- seaweed_harvest_tonnes_sust %>%
-  group_by(rgn_id, year) %>%
-  summarise(tonnes_sust = sum(tonnes_sust, na.rm = TRUE))
-# no change from seaweed_harvest_tonnes_sust
-
-## Error-checking and table exports to see if there are duplicates
-stopifnot(sum(duplicated(seaweed_sust_sum[ , c('rgn_id', 'taxa_code', 'year')])) == 0)
-
-```
-
-# Calculate Rolling Averages
-Determine rolling averages for sustainably harvested tonnes in order to determine peak values.
-
-```{r}
-
-# Find max year in the summarized data table
-year_max <- max(seaweed_harvest_tonnes_sust$year)
-
-roll_tonnes_sust <- seaweed_harvest_tonnes_sust %>%
-  arrange(rgn_id, year) %>%
-  group_by(rgn_id,) %>%
-  mutate(tonnes_rollmean = rollapply(tonnes_sust, width=4, FUN=mean, align='right', partial=TRUE, na.rm=FALSE)) %>%
-  rename(tonnes_orig = tonnes_sust) %>% # prevent overwriting of reported and gapfilled values
-  mutate(tonnes = ifelse(!is.na(tonnes_rollmean), tonnes_rollmean, tonnes_orig)) %>%
-  select(rgn_id, year, tonnes, tonnes_orig)
-
-```
-
-# Score Harvest Relative to Peaks
-
-Score harvest (tonnes) relative to peaks. Output values as .csvs. Perform this using a for loop.
-
-```{r}
-
-#buffer  <-  0.35 # 35% buffer (from OHI Methods) ## commented out because we excluded this for v2020... 
-
-## Find peak harvest per region-product and apply conservative buffer (scale down)
-peak_tonnes_sust <- roll_tonnes_sust %>%
-    group_by(rgn_id) %>%
-    #mutate(tonnes_peak = max(tonnes, na.rm=T)  * (1 - buffer)) %>%
-    mutate(tonnes_peak = max(tonnes, na.rm = T)) %>%
-    ungroup() 
-
-## Determine relative status:
-smooth_tonnes_sust <- peak_tonnes_sust %>% 
-    mutate(tonnes_rel = ifelse(tonnes >= tonnes_peak, 1, tonnes / tonnes_peak))
-  
-```
-
-# Save data layer
-
-```{r}
-
-## Write entire data frame to .csv:
-write.csv(smooth_tonnes_sust, 'int/np_seaweed_harvest_smoothed_data.csv', row.names = FALSE, na = '')
-
-smooth_tonnes_sust <- read_csv("int/np_seaweed_harvest_smoothed_data.csv")
-## Save scores data for the seaweed layer 
-tonnes_seaweed_rel <- smooth_tonnes_sust %>%
-  dplyr::select(rgn_id, year, score = tonnes_rel)
-
-write.csv(tonnes_seaweed_rel, 'output/np_seaweed_scores.csv', row.names = FALSE, na = '')
+# seaweed_harvest_tonnes_sust <- read_csv("int/np_seaweed_harvest_tonnes_sust.csv")
+# 
+# seaweed_sust_sum <- seaweed_harvest_tonnes_sust %>%
+#   group_by(rgn_id, year) %>%
+#   summarise(tonnes_sust = sum(tonnes_sust, na.rm = TRUE))
+# # no change from seaweed_harvest_tonnes_sust
+# 
+# ## Error-checking and table exports to see if there are duplicates
+# stopifnot(sum(duplicated(seaweed_sust_sum[ , c('rgn_id', 'taxa_code', 'year')])) == 0)
+# 
+# ```
+# 
+# # Calculate Rolling Averages
+# Determine rolling averages for sustainably harvested tonnes in order to determine peak values.
+# 
+# ```{r}
+# 
+# # Find max year in the summarized data table
+# year_max <- max(seaweed_harvest_tonnes_sust$year)
+# 
+# roll_tonnes_sust <- seaweed_harvest_tonnes_sust %>%
+#   arrange(rgn_id, year) %>%
+#   group_by(rgn_id,) %>%
+#   mutate(tonnes_rollmean = rollapply(tonnes_sust, width=4, FUN=mean, align='right', partial=TRUE, na.rm=FALSE)) %>%
+#   rename(tonnes_orig = tonnes_sust) %>% # prevent overwriting of reported and gapfilled values
+#   mutate(tonnes = ifelse(!is.na(tonnes_rollmean), tonnes_rollmean, tonnes_orig)) %>%
+#   select(rgn_id, year, tonnes, tonnes_orig)
+# 
+# ```
+# 
+# # Score Harvest Relative to Peaks
+# 
+# Score harvest (tonnes) relative to peaks. Output values as .csvs. Perform this using a for loop.
+# 
+# ```{r}
+# 
+# #buffer  <-  0.35 # 35% buffer (from OHI Methods) ## commented out because we excluded this for v2020... 
+# 
+# ## Find peak harvest per region-product and apply conservative buffer (scale down)
+# peak_tonnes_sust <- roll_tonnes_sust %>%
+#     group_by(rgn_id) %>%
+#     #mutate(tonnes_peak = max(tonnes, na.rm=T)  * (1 - buffer)) %>%
+#     mutate(tonnes_peak = max(tonnes, na.rm = T)) %>%
+#     ungroup() 
+# 
+# ## Determine relative status:
+# smooth_tonnes_sust <- peak_tonnes_sust %>% 
+#     mutate(tonnes_rel = ifelse(tonnes >= tonnes_peak, 1, tonnes / tonnes_peak))
+#   
+# ```
+# 
+# # Save data layer
+# 
+# ```{r}
+# 
+# ## Write entire data frame to .csv:
+# write.csv(smooth_tonnes_sust, 'int/np_seaweed_harvest_smoothed_data.csv', row.names = FALSE, na = '')
+# 
+# smooth_tonnes_sust <- read_csv("int/np_seaweed_harvest_smoothed_data.csv")
+# ## Save scores data for the seaweed layer 
+# tonnes_seaweed_rel <- smooth_tonnes_sust %>%
+#   dplyr::select(rgn_id, year, score = tonnes_rel)
+# 
+# write.csv(tonnes_seaweed_rel, 'output/np_seaweed_scores.csv', row.names = FALSE, na = '')
 
 ```
 
