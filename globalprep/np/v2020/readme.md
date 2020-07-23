@@ -1,8 +1,6 @@
 ## Ocean Health Index: Natural products (NP)
 
 
-See full data prep details [here](http://ohi-science.org/ohiprep_v2020/globalprep/np/v2020/np_dataprep.html).
-
 If using these data, please see our [citation policy](http://ohi-science.org/citation-policy/).
 
 [alternatively, if you want a specific citation for this resource, you can add that here....]
@@ -11,13 +9,29 @@ If using these data, please see our [citation policy](http://ohi-science.org/cit
 ### Layers Created
 
 * Relative harvest value (np_harvest_product_weight)
-* Natural product harvest (np_harvest_tonnes)
-* Relative harvest tonnes (np_harvest_tonnes_relative)
+* Natural product scores for ornamentals (np_ornamentals_scores)
+* Ornamentals risk (np_risk_ornamentals)
+* Ornamentals exposure (np_exposure_ornamentals)
+* Natural product scores for fish oil and fish meal (np_fofm_scores)
+* Seaweed harvest in tonnes (np_seaweed_harvest_tonnes)
+* Seaweed sustainability data (np_seaweed_sust)
 
 
-### Files
-* np_dataprep.Rmd - script for preparing the Natural Products data
-* Gap_fill_product.R - summarizing the gap-fill commodity data to get an estimate of the proportion of data that was gap-filled for each; was not used in 2020 Global Assessment
+### Files: 
+* np_ornamentals_prep.Rmd - script for preparing the ornamentals data, as well as the intermediate data used in the weighting prep. Files of importance that are created (and associated gapfilling datasets): 
+    * int/np_harvest_tonnes_usd.csv
+    * output/np_ornamentals_harvest_tonnes_rel.csv
+    * output/np_risk_ornamentals.csv
+    * output/np_exposure_orenamentals.csv
+* np_seaweeds_prep.Rmd - script for preparing the seaweeds data. Files of importance that are created (and associated gapfilling datasets): 
+    * int/np_seaweeds_tonnes_weighting.csv
+    * output/np_seaweed_harvest_tonnes.csv 
+    * output/np_seaweed_sust.csv
+* np_fishfeed_pred.Rmd - script for preparing the FOFM data. Files of importance that are created (and associated gapfilling datasets): 
+    * int/mean_catch_FOFM.csv 
+    * output/np_fofm_scores.csv
+* np_weighting_prep - script for preparing weighting scheme for ohi global. Files of importance that are created (and associated gapfilling datasets): 
+    * output/np_product_weights.csv
 
 
 ### Additional information
@@ -38,3 +52,9 @@ The FAO fisheries and aquaculture web page (http://www.fao.org/fishery/topic/166
         `FAO_raw_commodities_value_[start-year]_[end-year].csv`
     * **Note:** in prior years, people have reported that this may not capture all the rows in the .csv file, so make sure to double-check.
 * Put the resulting files in an appropriate folder and have fun!
+
+FAO metadata for Mariculte data are found [here](http://www.fao.org/fishery/statistics/global-aquaculture-production/en)
+
+RAM data can be found here: [RAM Legacy Stock Assessment Database](http://ramlegacy.org) v4.491
+
+Fisheries data can be found here: [IMAS portal](http://data.imas.utas.edu.au/portal/search?uuid=ff1274e1-c0ab-411b-a8a2-5a12eb27f2c0)
