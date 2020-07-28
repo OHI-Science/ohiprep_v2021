@@ -93,6 +93,7 @@ plot(watersheds_all$geometry)
 st_write(watersheds_all, file.path(cw_nutrient_int_dir, "watersheds/watersheds_all_4326.shp"))
 
 ```
+
 Read in pourpoints file and transform crs to be 4326
 ```{r}
 ## Pourpoints
@@ -173,25 +174,142 @@ zs_n_p_df <- read_csv("int/zonal_n_p_watersheds.csv")
 ## the difference here is 8092163. ~ 43 watersheds 
 
 watersheds_all_zs <- watersheds_all %>%
-  left_join(zs_n_p_df, by = c("id_new" = "zone")) %>%
-  st_join(global_plume, by = "basin_id")
+  left_join(zs_n_p_df, by = c("id_new" = "zone"))
 
-st_write(watersheds_all_zs, file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal.shp"))
+st_write(watersheds_all_zs, file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_stats.shp"))
 
 ## 43 NAs of sum after joining... 
-plot(watersheds_all_zs$sum)
+```
 
-new <- fasterize::fasterize(watersheds_all_zs, n_p_dis_rast, field = "sum") ## fasterize again so that we can plot the "sum" variable.
+Fix the missing 43 watersheds and add to watersheds_zonal.shp
+
+```{r}
+watersheds_all <- st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_all_4326.shp")) ## read in watersheds file
+
+wat_length <- length(watersheds_all$basin_id)
+
+watersheds_all <- watersheds_all %>%
+  arrange(id) %>%
+  mutate(id_new = 1:wat_length) # produce a new id for watersheds so that we can fasterize correctly..
+
+watersheds_zonal <- st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_stats.shp"))
+
+watersheds_zonal_NA <- watersheds_zonal %>%
+  dplyr::filter(is.na(sum))
+
+watersheds_zonal_NA$centroid <- st_centroid(watersheds_zonal_NA) %>%
+  st_geometry()
+
+## take a look to compare and see if it worked correctly
+plot(st_geometry(watersheds_zonal_NA))
+plot(st_set_geometry(watersheds_zonal_NA, 'centroid')[, 0], add = T, col = 'red', pch = 19) ## it worked..
+
+## now lets extract from our PO4eq raster disaggregated
+watersheds_zonal_NA_centroid <- watersheds_zonal_NA %>%
+  dplyr::select(-centroid) %>%
+  st_centroid() %>%
+  dplyr::select(-sum)
+
+## extract fron PO4eq
+zonal_NA_sum <- extract(n_p_dis_rast, watersheds_zonal_NA_centroid, method = 'simple')
+
+# join extracted values with NA df
+watersheds_zonal_NA_fixed <- data.frame(watersheds_zonal_NA, sum_new = zonal_NA_sum) %>%
+  mutate(sum = ifelse(is.na(sum), sum_new, sum)) %>%
+  dplyr::select(-centroid, -sum_new) %>%
+  st_as_sf()
+ 
+
+##  bind back together with overall zonal sf
+watersheds_zonal_all_fixed <- watersheds_zonal %>%
+  dplyr::filter(!is.na(sum)) %>%
+  rbind(watersheds_zonal_NA_fixed)  %>%
+  dplyr::select(basin_id, PO4eq_total = sum)
+
+st_write(watersheds_zonal_all_fixed, file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_FIXED.shp"))
+
+```
+
+Code for rasterizing and plotting fixed watershed zonal stats
+```{r}
+watersheds_zonal_all_fixed <- st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_FIXED.shp"))
+
+plot(watersheds_zonal_all_fixed$sum)
+
+new <- fasterize::fasterize(watersheds_zonal_all_fixed, n_p_dis_rast, field = "PO4eq_tt") ## fasterize again so that we can plot the "sum" variable.
 plot(new)
 
-#writeRaster(new, filename = file.path(cw_nutrient_int_dir, "rasters/zs_raster.tif"))
+writeRaster(new, filename = file.path(cw_nutrient_int_dir, "rasters/watersheds_zs_raster.tif"))
 
 new_log <- raster::calc(new, fun = function(x){log(x + 1)}) ## take the ln(x+1) so we can plot this better
 plot(new_log)
 plot(watersheds_all$geometry, add = TRUE)
 
-#writeRaster(new_log, filename = file.path(cw_nutrient_int_dir, "rasters/zs_raster_logged.tif"))
+writeRaster(new_log, filename = file.path(cw_nutrient_int_dir, "rasters/watersheds_zs_logged_raster.tif"))
 ```
+
+Explore and combine watersheds zonal stats with pourpoints data
+```{r}
+watersheds_zonal_all_fixed <- as.data.frame(st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_FIXED.shp"))) %>%
+  dplyr::select(-geometry, basin_id = basin_d, PO4eq_total = PO4q_tt)
+  
+
+length(unique(global_plume$basin_id)) # 142642
+length(unique(watersheds_zonal_all_fixed$basin_id)) # 142641
+
+## there is one more watershed present in the pourpoint data than in the watershed data
+
+## join these datasets together 
+ws_pp_zonal_all <- left_join(watersheds_zonal_all_fixed, global_plume, by = "basin_id") %>%
+  dplyr::select(-3, -4, -5)
+
+unique(ws_pp_zonal_all$basin_id)
+
+n_occur <- data.frame(table(ws_pp_zonal_all$basin_id)) %>% ## check the duplicates (or triplicates)
+      filter(Freq >1)
+## filter for the duplicates 
+
+dups <- ws_pp_zonal_all %>%
+  filter(basin_id %in% n_occur$Var1) %>% ## duplicates... multiple geometries for some basin_ids
+st_as_sf()
+  
+mapview(dups)
+
+dups_orig <- watersheds_zonal_all_fixed %>%
+  filter(basin_id %in% n_occur$Var1)
+
+dups_pourpoints <- global_plume %>%
+  filter(basin_id %in% n_occur$Var1) 
+
+## I've convinced myself this is nothing to worry about. Just select one of the multiple geometries and use that. They are all very close together. 
+
+dups_fix <- dups %>%
+  group_by(basin_id) %>%
+  filter(row_number() == 1) %>%
+  ungroup() %>%
+  as.data.frame()
+
+`%notin%` <- Negate(`%in%`)
+
+## remove the dups from joined data 
+ws_pp_zonal_all_no_dups <- ws_pp_zonal_all %>%
+  filter(basin_id %notin% dups$basin_id)
+
+## add the dups back into the no dups file
+ws_pp_zonal_all_fix <- ws_pp_zonal_all_no_dups %>%
+  rbind(dups_fix) %>%
+  st_as_sf()
+  
+str(ws_pp_zonal_all_fix)
+
+summary(ws_pp_zonal_all_fix)
+
+st_write(ws_pp_zonal_all_fix, file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_pourpoints.shp"))
+
+mapview(ws_pp_zonal_all_fix)
+```
+
+
 
 
 
