@@ -1,11 +1,41 @@
 ---
-title: "Landbased nutrient and chemical"
-output: html_document
+title: 'OHI 2020 - Land based nutrient and chemical '
+author: "*Compiled on `r date()` by `r Sys.info()['user']`*"
+output: 
+  html_document:
+    code_folding: show
+    toc: true
+    toc_depth: 1
+    toc_float: yes
+    number_sections: true
+    theme: cerulean
+    highlight: haddock
+    includes: 
+      in_header: '../../workflow/templates/ohi_hdr.html' 
+  pdf_document:
+    toc: true
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
-```{r setup, include=FALSE}
+
+[REFERENCE RMD FILE](http://ohi-science.org/ohiprep_v2020/globalprep/cw_nutrient_o_chem/v2020/watershed_PO4eq_prep.html)
+
+
+# Summary
+This document describes the steps for obtaining prepping data used for the land based nutrient and chemical data layer for clean waters. 
+
+## The following data are used:
+
+* 
+
+
+# Updates from previous assessment
+This is a new layer for the 2020 assessment year.
+
+## Initial set-up code
+
+```{r setup, eval = FALSE}
 library(tidyverse)
 library(raster)
 library(sf)
@@ -21,20 +51,22 @@ cw_nutrient_int_dir <- "/home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem
 
 ```
 
-Read in watersheds files, transform the CRS to 4326, and bind together to make one file. 
-```{r}
-## Watersheds; read in, reproject to EPSG 4326, and combine into one file. 
+# Methods 
 
+**Read in watersheds files, transform the CRS to 4326, and bind together to make one file.**
+These watershed files are taken from the wastewater project at NCEAS. 
+```{r, eval = FALSE}
+## Watersheds; read in, reproject to EPSG 4326, and combine into one file. 
 
 watersheds_af <- st_read(file.path(ww_raw_dir, "basins_laea/af_bas.shp")) %>%
   clean_names() %>%
-  dplyr::select(id, gridcode, area, basin_id)
-crs(watersheds_af)
+  dplyr::select(id, gridcode, area, basin_id) ## select columns of interest
+crs(watersheds_af) ## check CRS
 plot(watersheds_af$geometry)
-watersheds_af <- st_transform(watersheds_af, 4326)
+watersheds_af <- st_transform(watersheds_af, 4326) ## change CRS to 4326
 plot(watersheds_af$geometry)
 crs(watersheds_af)
-st_write(watersheds_af, file.path(cw_nutrient_int_dir, "watersheds/watersheds_af_4326.shp"))
+st_write(watersheds_af, file.path(cw_nutrient_int_dir, "watersheds/watersheds_af_4326.shp")) ## write transformed file to mazu. 
 
 watersheds_au <- st_read(file.path(ww_raw_dir, "basins_laea/au_bas.shp")) %>%
     clean_names() %>%
@@ -87,15 +119,15 @@ watersheds_as <- st_transform(watersheds_as, 4326)
 crs(watersheds_as)
 st_write(watersheds_as, file.path(cw_nutrient_int_dir, "watersheds/watersheds_as_4326.shp"))
 
-watersheds_all <- rbind(watersheds_eu, watersheds_au, watersheds_na, watersheds_pa, watersheds_af, watersheds_sa, watersheds_as)
+watersheds_all <- rbind(watersheds_eu, watersheds_au, watersheds_na, watersheds_pa, watersheds_af, watersheds_sa, watersheds_as) ## bind all of these files together to make the global watershed files with CRS 4326. 
 plot(watersheds_all$geometry)
 
 st_write(watersheds_all, file.path(cw_nutrient_int_dir, "watersheds/watersheds_all_4326.shp"))
 
 ```
 
-Read in pourpoints file and transform crs to be 4326
-```{r}
+**Read in pourpoints file and transform crs to be 4326**
+```{r, eval = FALSE}
 ## Pourpoints
 
 global_plume <- st_read("/home/shares/ohi/git-annex/land-based/wastewater/data/raw/pour_points/global_plume_2007_2010.shp")
@@ -106,8 +138,8 @@ global_plume <- st_transform(global_plume, 4326)
 
 ```
 
-Read in PO4eq fertilizer data and disaggregate by 15 to make higher resolution. 
-```{r}
+**Read in PO4eq fertilizer data and disaggregate by 15 to make higher resolution.**
+```{r, eval = FALSE}
 ## N/P fertilizer data
 
 n_p_rast <- raster(file.path("/home/shares/ohi/git-annex/globalprep/_raw_data/NCEAS_food_systems/d2020/crop_fert_PO4eq.tif"))
@@ -118,22 +150,24 @@ crs(n_p_rast)
 n_p_rast
 plot(area(n_p_rast))
 
-n_p_dis_rast <- disaggregate(n_p_rast, fact = 15, method = '', progress = TRUE)
+n_p_dis_rast <- disaggregate(n_p_rast, fact = 15, method = '', progress = TRUE) # this takes awhile
 n_p_dis_rast
 plot(n_p_dis_rast)
 plot(area(n_p_dis_rast))
 
 #writeRaster(x = n_p_dis_rast, filename = file.path(cw_nutrient_int_dir, "rasters/crop_fert_PO4eq_disagg.tif"), overwrite = TRUE)
 
-n_p_dis_log_rast <- raster::calc(n_p_dis_rast, fun = function(x){log(x + 1)})
+n_p_dis_log_rast <- raster::calc(n_p_dis_rast, fun = function(x){log(x + 1)}) ## take the log of this and save so that we can better visualize the disaggregated raster. 
+
 #writeRaster(x = n_p_dis_log_rast, filename = file.path(cw_nutrient_int_dir, "rasters/crop_fert_PO4eq_disagg_log.tif"))
 
 plot(n_p_dis_log_rast)
 plot(watersheds_all$geometry, add = TRUE)
 ```
 
-Calculate zonal stats per watershed and save
-```{r}
+**Calculate zonal stats per watershed and save.**
+Take the watersheds shapefile and rasterize it so that we can run zonal stats on it. We will calculate the zonal stats per each watershed to obtain an estimate of the PO4eq concentration per each watershed. 
+```{r, eval = FALSE}
 ## Zonal stats per watershed 
 n_p_dis_rast <- raster::raster(file.path(cw_nutrient_int_dir, "rasters/crop_fert_PO4eq_disagg.tif")) ## read in disaggregated raster
 
@@ -143,14 +177,12 @@ wat_length <- length(watersheds_all$basin_id)
 
 watersheds_all <- watersheds_all %>%
   arrange(id) %>%
-  mutate(id_new = 1:wat_length) # produce a new id for watersheds so that we can fasterize correctly..
+  mutate(id_new = 1:wat_length) # produce a new id for watersheds so that we can fasterize correctly... I don't believe fasterize would work with basin_id since it is a character variable. 
 
 
 plot(n_p_dis_log_rast)
 plot(watersheds_all$geometry, add = TRUE)
 
-# watershed_area <- st_area(watersheds_all)
-# sum(watershed_area) # 1.345027e+14 [m^2]
 
 raster_watersheds <- fasterize::fasterize(watersheds_all, n_p_dis_rast, field = "id_new") ## make watershed raster
 plot(raster_watersheds)
@@ -163,42 +195,27 @@ zs_n_p_df <- data.frame(zs_n_p)
 #write_csv(zs_n_p_df, "int/zonal_n_p_watersheds.csv")
 zs_n_p_df <- read_csv("int/zonal_n_p_watersheds.csv")
 
-#df <- data.frame(n_p = values(n_p_dis_rast))
-
-# df_watershed <- data.frame(id_new = values(raster_watersheds)) %>%
-#   filter(id_new > 0 )
-
-#sum(df$n_p) #36282.64; 2351606835
-#sum(zs_n_p_df$sum) #36229.26; 2343514672
-
-## the difference here is 8092163. ~ 43 watersheds 
 
 watersheds_all_zs <- watersheds_all %>%
   left_join(zs_n_p_df, by = c("id_new" = "zone"))
 
 st_write(watersheds_all_zs, file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_stats.shp"))
 
-## 43 NAs of sum after joining... 
+## 43 NAs of sum after joining... This means that 43 watersheds are being left out for some reason... likely because they are too small for fasterizing/zonal statistics. 
 ```
 
-Fix the missing 43 watersheds and add to watersheds_zonal.shp
-
-```{r}
-watersheds_all <- st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_all_4326.shp")) ## read in watersheds file
-
-wat_length <- length(watersheds_all$basin_id)
-
-watersheds_all <- watersheds_all %>%
-  arrange(id) %>%
-  mutate(id_new = 1:wat_length) # produce a new id for watersheds so that we can fasterize correctly..
+**Fix the missing 43 watersheds that zonal stats missed and add back into the data**
+```{r, eval = FALSE}
+watersheds_all <- st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_all_4326.shp")) %>%
+  arrange(id)  ## read in watersheds file
 
 watersheds_zonal <- st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_stats.shp"))
 
 watersheds_zonal_NA <- watersheds_zonal %>%
-  dplyr::filter(is.na(sum))
+  dplyr::filter(is.na(sum)) ## filter for NAs
 
 watersheds_zonal_NA$centroid <- st_centroid(watersheds_zonal_NA) %>%
-  st_geometry()
+  st_geometry() ## check the centroids
 
 ## take a look to compare and see if it worked correctly
 plot(st_geometry(watersheds_zonal_NA))
@@ -211,7 +228,7 @@ watersheds_zonal_NA_centroid <- watersheds_zonal_NA %>%
   dplyr::select(-sum)
 
 ## extract fron PO4eq
-zonal_NA_sum <- extract(n_p_dis_rast, watersheds_zonal_NA_centroid, method = 'simple')
+zonal_NA_sum <- extract(n_p_dis_rast, watersheds_zonal_NA_centroid, method = 'simple') ## extract zonal stats based on centroid point data 
 
 # join extracted values with NA df
 watersheds_zonal_NA_fixed <- data.frame(watersheds_zonal_NA, sum_new = zonal_NA_sum) %>%
@@ -224,34 +241,35 @@ watersheds_zonal_NA_fixed <- data.frame(watersheds_zonal_NA, sum_new = zonal_NA_
 watersheds_zonal_all_fixed <- watersheds_zonal %>%
   dplyr::filter(!is.na(sum)) %>%
   rbind(watersheds_zonal_NA_fixed)  %>%
-  dplyr::select(basin_id, PO4eq_total = sum)
+  dplyr::select(basin_id, PO4eq_total = sum) ## now we have a dataset with the columns we want
 
 st_write(watersheds_zonal_all_fixed, file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_FIXED.shp"))
 
 ```
 
-Code for rasterizing and plotting fixed watershed zonal stats
-```{r}
-watersheds_zonal_all_fixed <- st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_FIXED.shp"))
-
-plot(watersheds_zonal_all_fixed$sum)
-
-new <- fasterize::fasterize(watersheds_zonal_all_fixed, n_p_dis_rast, field = "PO4eq_tt") ## fasterize again so that we can plot the "sum" variable.
-plot(new)
-
-writeRaster(new, filename = file.path(cw_nutrient_int_dir, "rasters/watersheds_zs_raster.tif"))
-
-new_log <- raster::calc(new, fun = function(x){log(x + 1)}) ## take the ln(x+1) so we can plot this better
-plot(new_log)
-plot(watersheds_all$geometry, add = TRUE)
-
-writeRaster(new_log, filename = file.path(cw_nutrient_int_dir, "rasters/watersheds_zs_logged_raster.tif"))
+**Code for rasterizing and plotting fixed watershed zonal stats**
+This is just code to visualize the new watershed PO4eq data, since I couldn't plot it effectively otherwise. 
+```{r, eval = FALSE}
+# watersheds_zonal_all_fixed <- st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_FIXED.shp"))
+# 
+# plot(watersheds_zonal_all_fixed$sum)
+# 
+# new <- fasterize::fasterize(watersheds_zonal_all_fixed, n_p_dis_rast, field = "PO4eq_tt") ## fasterize again so that we can plot the "sum" variable.
+# plot(new)
+# 
+# writeRaster(new, filename = file.path(cw_nutrient_int_dir, "rasters/watersheds_zs_raster.tif"))
+# 
+# new_log <- raster::calc(new, fun = function(x){log(x + 1)}) ## take the ln(x+1) so we can plot this better
+# plot(new_log)
+# plot(watersheds_all$geometry, add = TRUE)
+# 
+# writeRaster(new_log, filename = file.path(cw_nutrient_int_dir, "rasters/watersheds_zs_logged_raster.tif"))
 ```
 
-Explore and combine watersheds zonal stats with pourpoints data
-```{r}
+**Combine watersheds zonal stats with pourpoints data**
+```{r, eval = FALSE}
 watersheds_zonal_all_fixed <- as.data.frame(st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_FIXED.shp"))) %>%
-  dplyr::select(-geometry, basin_id = basin_d, PO4eq_total = PO4q_tt)
+  dplyr::select(-geometry, basin_id = basin_d, PO4eq_total = PO4q_tt) ## fix the column names, for some reason they were mispelled in the writing process
   
 
 length(unique(global_plume$basin_id)) # 142642
@@ -266,26 +284,25 @@ ws_pp_zonal_all <- left_join(watersheds_zonal_all_fixed, global_plume, by = "bas
 unique(ws_pp_zonal_all$basin_id)
 
 n_occur <- data.frame(table(ws_pp_zonal_all$basin_id)) %>% ## check the duplicates (or triplicates)
-      filter(Freq >1)
-## filter for the duplicates 
+      filter(Freq >1) ## filter for the duplicates in the data
 
 dups <- ws_pp_zonal_all %>%
-  filter(basin_id %in% n_occur$Var1) %>% ## duplicates... multiple geometries for some basin_ids
+  filter(basin_id %in% n_occur$Var1) %>% ## duplicates... there appear to be multiple geometries for some basin_ids
 st_as_sf()
   
 mapview(dups)
 
 dups_orig <- watersheds_zonal_all_fixed %>%
-  filter(basin_id %in% n_occur$Var1)
+  filter(basin_id %in% n_occur$Var1) ## compare to original data
 
 dups_pourpoints <- global_plume %>%
-  filter(basin_id %in% n_occur$Var1) 
+  filter(basin_id %in% n_occur$Var1) ## compare to pourpoints data 
 
 ## I've convinced myself this is nothing to worry about. Just select one of the multiple geometries and use that. They are all very close together. 
 
 dups_fix <- dups %>%
   group_by(basin_id) %>%
-  filter(row_number() == 1) %>%
+  filter(row_number() == 1) %>% ## filter for the first row in each basin id group.
   ungroup() %>%
   as.data.frame()
 
