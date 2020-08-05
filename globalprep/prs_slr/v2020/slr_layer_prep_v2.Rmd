@@ -160,14 +160,16 @@ nc_files <- c(list.files(file.path(dir_anx_aviso, "d2019"),
                        full.names = TRUE, pattern = ".nc"),
               list.files(file.path(dir_anx_aviso, "d2016/msla_monthly_mean"),
                       full.names = TRUE, pattern = ".nc"))
+
+nc_files <- nc_files[-1:-2] # double check this, but it since the first two files are zip files I am confident in removing them. However, I did grab it directly from the most recent version of global so I so still want to make sure it's correct
 ```
 
 The raw monthly data looks like this:
 
 ```{r test_plot_raw, eval=FALSE}
 
-plot(raster(nc_files[1]), col = cols, axes = F, 
-     main = paste("Year", substr(nc_files[1], 90, 93), "Month", substr(nc_files[1], 96, 97))) # didn't work
+plot(raster(nc_files[3]), col = cols, axes = F, 
+     main = paste("Year", substr(nc_files[3], 90, 93), "Month", substr(nc_files[3], 96, 97))) # didn't work
 
 ```
 
