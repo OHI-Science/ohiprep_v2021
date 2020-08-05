@@ -235,7 +235,7 @@ Since we are only interested in the increase in sea level near the coasts, we ap
 
 ## 3nm offshore raster to select only nearshore cells
 #ocean_mask_prev <- sprintf("%s/int/ocean_mask.tif", dir_prs_slr, scen_year-1) 
-ocean_mask_prev <- file.path(dir_M, "git-annex/globalprep/prs_slr/v2018/int/ocean_mask.tif")
+ocean_mask_prev <- file.path(dir_M, "git-annex/globalprep/prs_slr/v2019/int/ocean_mask.tif")
 
 if(file.exists(ocean_mask_prev)){
   file.copy(ocean_mask_prev, file.path(dir_prs_slr, "int"))
