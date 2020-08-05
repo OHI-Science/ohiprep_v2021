@@ -54,22 +54,30 @@ The source data are monthly mean sea level anomalies, in meters. These anomalies
 ## Setup
 
 ```{r setup, message = FALSE, warning = FALSE, eval=FALSE}
+
 knitr::opts_chunk$set(fig.width = 6, fig.height = 4, fig.path = 'figs/',message = FALSE, warning = FALSE)
 
-#setwd("~/github/ohiprep_v2020/globalprep/prs_slr/v2020") # change year to reflect current assessment year
+## load packages
+library(httr)
+library(R.utils)
+library(raster)
+library(tidyverse)
+library(sf)
+library(RColorBrewer)
+library(ggplot2)
+library(googleVis)
+library(maps)
+library(parallel)
+library(foreach)
+library(doParallel)
+library(fasterize)
+library(rasterVis)
 
-
-## setting up provenance
-# devtools::install_github('oharac/provRmd')
-# library(provRmd)
-# prov_setup()
-
-## load and install packages
-pkg <- c( "httr", "R.utils", "raster", "tidyverse", "sf", "RColorBrewer", "ggplot2", "googleVis",
-          "maps", "parallel", "foreach", "doParallel", "fasterize", "rasterVis")
-new.pkg <- pkg[!(pkg %in% installed.packages())]
-if (length(new.pkg)){install.packages(new.pkg)}
-lapply(pkg, require, character.only = TRUE)
+# pkg <- c( "httr", "R.utils", "raster", "tidyverse", "sf", "RColorBrewer", "ggplot2", "googleVis",
+#           "maps", "parallel", "foreach", "doParallel", "fasterize", "rasterVis")
+# new.pkg <- pkg[!(pkg %in% installed.packages())]
+# if (length(new.pkg)){install.packages(new.pkg)}
+# lapply(pkg, require, character.only = TRUE)
 
 source('../../../workflow/R/common.R')
 library(here)
@@ -86,20 +94,26 @@ mollCRS <- CRS("+proj=moll") # mollweide projection
 
 ## read in ocean raster with cells at 1km -- template for resampling (held on an NCEAS server)
 ocean <- raster(file.path(dir_M, "git-annex/globalprep/spatial/v2017/ocean.tif"))
+
 ```
 
 
 ## Download the New Data
 
 ```{r login_info, eval=FALSE}
+
+# didn't download new data for v2020 since data has only been updated until September 2019, and we need up until Dec 2019. Therefore, we're using v2019 (data up to Dec 2018)
+
 ## need AVISO username and password, define in console when prompted, don't save here!!
 ## if either password or username contain the @ symbol, replace with '%40' (percent-encoding for reserved characters)
-userpasswd <- readline("Type AVISO username and password, separated by colon no space:")
+userpasswd <- readline("Type AVISO username and password, separated by colon no space:") 
+
 ```
 
 
 ```{r download_data, eval=FALSE}
-## the is a 'download_data.R' script in the Mazu raw data folder but that routine was not working for me...
+
+## there is a 'download_data.R' script in the Mazu raw data folder but that routine was not working for me...
 
 year <- 2019 # data year to download
 months <- str_pad(1:12, 2, pad = "0") #if they upload the rest just change the numbers here to reflect rest of months
@@ -135,6 +149,7 @@ for(zipfile in zipfiles){
 All NetCDF files for each month are rasterized.
 
 ```{r clip, eval=FALSE}
+
 ## d2016/msla_monthly_mean has data for 1993-2015
 ## then include list.files for d2017 through the data folder for current scenario year
 nc_files <- c(list.files(file.path(dir_anx_aviso, "d2019"),
@@ -150,8 +165,10 @@ nc_files <- c(list.files(file.path(dir_anx_aviso, "d2019"),
 The raw monthly data looks like this:
 
 ```{r test_plot_raw, eval=FALSE}
+
 plot(raster(nc_files[1]), col = cols, axes = F, 
-     main = paste("Year", substr(nc_files[1], 90, 93), "Month", substr(nc_files[1], 96, 97)))
+     main = paste("Year", substr(nc_files[1], 90, 93), "Month", substr(nc_files[1], 96, 97))) # didn't work
+
 ```
 
 The following code is used to:
