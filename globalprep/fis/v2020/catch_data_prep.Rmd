@@ -31,8 +31,7 @@ An example of our aggregation process: New Zealand is located entirely in FAO re
 3. Average catch over time for each region for food provision weighting.
 
 ## Updates from previous assessment
-
-2018 Watson (v3) data didn't have Taxon Key information. Previously we added it in from Watson 2017 data after aggregating catch to work with a relatively smaller dataframe. The 2019 Watson data (v4) does have Taxon Key information, located in Codes.xlsx in mazu. We use this instead of the 2017 taxon key information data, therefore there is no need to run the catch_taxon_key.Rmd. Saving total catch as **only IUU and Reported**. Last year we used IUU, Reported, and Discards. 
+Data has been updated through 2017 (previously 2015). 
 
 ***
 

@@ -264,6 +264,10 @@ This is just code to visualize the new watershed PO4eq data, since I couldn't pl
 # plot(watersheds_all$geometry, add = TRUE)
 # 
 # writeRaster(new_log, filename = file.path(cw_nutrient_int_dir, "rasters/watersheds_zs_logged_raster.tif"))
+
+# test <- raster::raster(file.path(cw_nutrient_int_dir, "rasters/watersheds_zs_logged_raster.tif"))
+# plot(test)
+# crs(test)
 ```
 
 **Combine watersheds zonal stats with pourpoints data**
@@ -315,17 +319,69 @@ ws_pp_zonal_all_no_dups <- ws_pp_zonal_all %>%
 ## add the dups back into the no dups file
 ws_pp_zonal_all_fix <- ws_pp_zonal_all_no_dups %>%
   rbind(dups_fix) %>%
-  st_as_sf()
+  st_as_sf() %>%
+  rename("effluent" = "PO4eq_total")
   
 str(ws_pp_zonal_all_fix)
 
 summary(ws_pp_zonal_all_fix)
 
-st_write(ws_pp_zonal_all_fix, file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_pourpoints.shp"))
+st_write(ws_pp_zonal_all_fix, file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_pourpoints.shp"), overwrite=TRUE, delete_dsn = TRUE)
 
 mapview(ws_pp_zonal_all_fix)
 ```
 
+
+```{r}
+## Write out an Australia shapefile to use for testing... 
+
+ws_pp_zonal_all_fix <- st_read(file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_pourpoints.shp")) 
+crs(ws_pp_zonal_all_fix)
+
+au_pp_all <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(str_detect(basin_id, "au")) %>%
+  arrange(effluent) %>%
+  top_n(10, effluent)
+
+mapview(au_pp_all)
+
+st_write(au_pp_all, file.path(cw_nutrient_int_dir, "pourpoints/AU_PO4eq_test.shp"), overwrite = TRUE, delete_dsn = TRUE)
+```
+
+```{r}
+## look at ocean rasters: 
+
+ocean <- raster::raster(file.path("~/grass_test/ocean.tif"))
+plot(ocean)
+crs(ocean)
+
+
+## Lets use ocean mask, since it has same CRS as our shapefiles
+ocean_mask <- raster::raster(file.path("~/grass_test/ocean_mask_landnull.tif"))
+plot(ocean_mask)
+crs(ocean_mask)
+
+pp_test <- st_read(file.path("/home/shares/ohi/git-annex/land-based/wastewater/data/interim/pourpointstest/test5000.shp"))
+```
+
+```{r}
+## Take a look at output rasters from plume model:
+rast_test_1 <- raster::raster(file.path("/home/sgclawson/wastewater-master/code/plumes/output/plume_effluent_au_08464.tif"))
+plot(rast_test)
+
+rast_test_2 <- raster::raster(file.path("/home/sgclawson/wastewater-master/code/plumes/output/plume_effluent_au_06284.tif"))
+plot(rast_test)
+
+rast_test_3 <- raster::raster(file.path("/home/sgclawson/wastewater-master/code/plumes/output/plume_effluent_au_06215.tif"))
+plot(rast_test)
+crs(rast_test_3)
+
+
+rast_test_all <- raster::raster(file.path("/home/sgclawson/wastewater-master/code/plumes/output/subsets/global_PO4_au_new.tif"))
+plot(log(rast_test_all+1))
+mapview(log(rast_test_all+1))
+
+```
 
 
 
