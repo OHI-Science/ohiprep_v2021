@@ -247,29 +247,6 @@ st_write(watersheds_zonal_all_fixed, file.path(cw_nutrient_int_dir, "watersheds/
 
 ```
 
-**Code for rasterizing and plotting fixed watershed zonal stats**
-This is just code to visualize the new watershed PO4eq data, since I couldn't plot it effectively otherwise. 
-```{r, eval = FALSE}
-# watersheds_zonal_all_fixed <- st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_FIXED.shp"))
-# 
-# plot(watersheds_zonal_all_fixed$sum)
-# 
-# new <- fasterize::fasterize(watersheds_zonal_all_fixed, n_p_dis_rast, field = "PO4eq_tt") ## fasterize again so that we can plot the "sum" variable.
-# plot(new)
-# 
-# writeRaster(new, filename = file.path(cw_nutrient_int_dir, "rasters/watersheds_zs_raster.tif"))
-# 
-# new_log <- raster::calc(new, fun = function(x){log(x + 1)}) ## take the ln(x+1) so we can plot this better
-# plot(new_log)
-# plot(watersheds_all$geometry, add = TRUE)
-# 
-# writeRaster(new_log, filename = file.path(cw_nutrient_int_dir, "rasters/watersheds_zs_logged_raster.tif"))
-
-# test <- raster::raster(file.path(cw_nutrient_int_dir, "rasters/watersheds_zs_logged_raster.tif"))
-# plot(test)
-# crs(test)
-```
-
 **Combine watersheds zonal stats with pourpoints data**
 ```{r, eval = FALSE}
 watersheds_zonal_all_fixed <- as.data.frame(st_read(file.path(cw_nutrient_int_dir, "watersheds/watersheds_zonal_FIXED.shp"))) %>%
@@ -326,16 +303,17 @@ str(ws_pp_zonal_all_fix)
 
 summary(ws_pp_zonal_all_fix)
 
-st_write(ws_pp_zonal_all_fix, file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_pourpoints.shp"), overwrite=TRUE, delete_dsn = TRUE)
+st_write(ws_pp_zonal_all_fix, file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_pourpoints.shp"), overwrite=TRUE, delete_dsn = TRUE) ## this is our final pourpoint data set we will plug into the plume model 
 
 mapview(ws_pp_zonal_all_fix)
 ```
 
-
+**Create a shapefile to test the plume model on first**
 ```{r}
 ## Write out an Australia shapefile to use for testing... 
 
-ws_pp_zonal_all_fix <- st_read(file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_pourpoints.shp")) 
+ws_pp_zonal_all_fix <- st_read(file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_pourpoints.shp")) %>%
+  mutate(basin_id = as.character(basin_id))
 crs(ws_pp_zonal_all_fix)
 
 au_pp_all <- ws_pp_zonal_all_fix %>%
@@ -348,22 +326,8 @@ mapview(au_pp_all)
 st_write(au_pp_all, file.path(cw_nutrient_int_dir, "pourpoints/AU_PO4eq_test.shp"), overwrite = TRUE, delete_dsn = TRUE)
 ```
 
-```{r}
-## look at ocean rasters: 
 
-ocean <- raster::raster(file.path("~/grass_test/ocean.tif"))
-plot(ocean)
-crs(ocean)
-
-
-## Lets use ocean mask, since it has same CRS as our shapefiles
-ocean_mask <- raster::raster(file.path("~/grass_test/ocean_mask_landnull.tif"))
-plot(ocean_mask)
-crs(ocean_mask)
-
-pp_test <- st_read(file.path("/home/shares/ohi/git-annex/land-based/wastewater/data/interim/pourpointstest/test5000.shp"))
-```
-
+**Take a look at the test output from the plume model**
 ```{r}
 ## Take a look at output rasters from plume model:
 rast_test_1 <- raster::raster(file.path("/home/sgclawson/wastewater-master/code/plumes/output/plume_effluent_au_08464.tif"))
@@ -384,7 +348,199 @@ mapview(log(rast_test_all+1))
 ```
 
 
+**Take a look at the output from the full plume model**
+ - We need to check this to see if the model ran on all of the basin_id
+ - It looks like the model did not write rasters for 10131 basin_ids. 
+ - To rectify this I will write a shapefile with all of the missing basin_ids and rerun the plume model..
+```{r}
+## Count how many rasters the plume model created and compare to the number of pourpoints with >0 PO4eq effluent
+library(tidyverse)
 
+fils <- list.files("/home/sgclawson/wastewater-master/code/plumes/output/", pattern="tif$", full.names = FALSE, recursive = TRUE)
+
+files_count <- data_frame(
+  dir = dirname(fils)
+) %>% 
+  count(dir) #%>% 
+  #mutate(dir = map_chr(dir, digest::digest))
+
+files <- data_frame(fils)
+ 
+
+pourpoint_names_files <- data.frame(fils = sub('.*plume_effluent_', '', files$fils))
+
+pourpoint_names <- data.frame(basin_id = sub('.tif', '', pourpoint_names_files$fils)) %>%
+  mutate(basin_id = as.character(basin_id))
+
+test_ws <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(effluent >0)
+
+excluded <- c(setdiff(ws_pp_zonal_all_fix$basin_id, pourpoint_names$basin_id))
+
+included <- c(pourpoint_names$basin_id)
+
+check <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(basin_id %in% excluded)
+
+check_0 <- check %>%
+  dplyr::filter(effluent >0)
+
+## lets split this up by continent and check this way... 
+
+# africa
+af_ws <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(str_detect(basin_id, "af" ))
+
+af_ws_model <- pourpoint_names %>%
+  dplyr::filter(str_detect(basin_id, "af" ))
+
+setdiff(af_ws$basin_id, af_ws_model$basin_id) ## 975 basins missing
+
+# asia 
+ai_ws <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(str_detect(basin_id, "ai" ))
+
+ai_ws_model <- pourpoint_names %>%
+  dplyr::filter(str_detect(basin_id, "ai" ))
+
+setdiff(ai_ws$basin_id, ai_ws_model$basin_id) ## 379 basins missing
+
+
+
+# australia
+au_ws <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(str_detect(basin_id, "au" ))
+
+au_ws_model <- pourpoint_names %>%
+  dplyr::filter(str_detect(basin_id, "au" ))
+
+setdiff(au_ws$basin_id, au_ws_model$basin_id) ## 267 basins missing
+
+# europe 
+eu_ws <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(str_detect(basin_id, "eu" ))
+
+eu_ws_model <- pourpoint_names %>%
+  dplyr::filter(str_detect(basin_id, "eu" ))
+
+setdiff(eu_ws$basin_id, eu_ws_model$basin_id) ## 807 basins missing
+
+
+# north america 
+na_ws <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(str_detect(basin_id, "na" ))
+
+na_ws_model <- pourpoint_names %>%
+  dplyr::filter(str_detect(basin_id, "na" ))
+
+setdiff(na_ws$basin_id, na_ws_model$basin_id)
+51893 - 46987 ## 4906 basins missing
+
+
+# south america 
+sa_ws <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(str_detect(basin_id, "sa" ))
+
+sa_ws_model <- pourpoint_names %>%
+  dplyr::filter(str_detect(basin_id, "sa" ))
+
+setdiff(sa_ws$basin_id, sa_ws_model$basin_id) ## 909 basins missing
+
+
+# pacific
+pa_ws <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(str_detect(basin_id, "pa" ))
+
+pa_ws_model <- pourpoint_names %>%
+  dplyr::filter(str_detect(basin_id, "pa" ))
+
+setdiff(pa_ws$basin_id, pa_ws_model$basin_id)
+## 38 basins missing 
+
+al_ws <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(str_detect(basin_id, "al" ))
+
+al_ws_model <- pourpoint_names %>%
+  dplyr::filter(str_detect(basin_id, "al" ))
+
+mapview(al_ws)
+mapview(ai_ws)
+mapview(eu_ws)
+mapview(na_ws)
+mapview(af_ws)
+mapview(pa_ws)
+mapview(sa_ws)
+
+## Since the model missed so many basin_ids, lets write a shapefile with the missing ones, and rerun the model on those. Since it is only 10k basins, I suspect it will only take about 2.5 hours to run the plume model. 
+check <- ws_pp_zonal_all_fix %>%
+  dplyr::filter(basin_id %in% excluded)
+
+st_write(check, file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_plume_retry.shp"), overwrite = TRUE, delete_dsn = TRUE)
+```
+
+
+
+```{r}
+fils <- list.files("/home/jkibele/wastewater/code/plumes/output/pour_points_1", pattern="tif$", full.names = FALSE, recursive = TRUE)
+
+files_count <- data_frame(
+  dir = dirname(fils)
+) %>% 
+  count(dir) #%>% 
+  #mutate(dir = map_chr(dir, digest::digest))
+
+files <- data_frame(fils) ## 24499
+
+fils <- list.files("/home/jkibele/wastewater/code/plumes/output/pour_points_2", pattern="tif$", full.names = FALSE, recursive = TRUE)
+
+files_count <- data_frame(
+  dir = dirname(fils)
+) %>% 
+  count(dir) #%>% 
+  #mutate(dir = map_chr(dir, digest::digest))
+
+files <- data_frame(fils) ## 22929
+
+fils <- list.files("/home/jkibele/wastewater/code/plumes/output/pour_points_3", pattern="tif$", full.names = FALSE, recursive = TRUE)
+
+files_count <- data_frame(
+  dir = dirname(fils)
+) %>% 
+  count(dir) #%>% 
+  #mutate(dir = map_chr(dir, digest::digest))
+
+files <- data_frame(fils) ## 24618
+
+fils <- list.files("/home/jkibele/wastewater/code/plumes/output/pour_points_4", pattern="tif$", full.names = FALSE, recursive = TRUE)
+
+files_count <- data_frame(
+  dir = dirname(fils)
+) %>% 
+  count(dir) #%>% 
+  #mutate(dir = map_chr(dir, digest::digest))
+
+files <- data_frame(fils) ## 21821 
+
+21821 + 24618 + 22929 + 24499 ## 93867 
+
+
+test_rast <- raster::raster(file.path("/home/jkibele/wastewater/code/plumes/output/pour_points_4/plume_effluent_af_01069.tif"))
+
+mapview(test_rast)
+```
+
+Look at mosaiced PO4eq tif files
+```{r}
+PO4eq_sub1 <- raster::raster(file.path("/home/sgclawson/wastewater-master/code/plumes/output/subsets/global_effluent_PO4eq_sub1.tif"))
+
+mapview(PO4eq_sub1)
+plot(log(PO4eq_sub1+1))
+
+PO4eq_sub2 <- raster::raster(file.path("/home/sgclawson/wastewater-master/code/plumes/output/subsets/global_effluent_PO4eq_sub2.tif"))
+
+mapview(PO4eq_sub2)
+plot(log(PO4eq_sub2+1))
+```
 
 
 
