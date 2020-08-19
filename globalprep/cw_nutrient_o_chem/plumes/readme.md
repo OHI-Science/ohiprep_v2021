@@ -9,7 +9,6 @@ Here I will document how to run the plume model.
  - Type `conda activate py2` in your terminal. This will activate this py2 environment and act as your python environment. 
  - Install gdal by typing `conda install -c conda-forge gdal` to install gdal in your python environment. 
  - Create a folder in your mazu home drive entitled "grassdata" or something of the like.
- - Put an ocean raster into the grass data folder, where places in the ocean are values of 1, and land are values of NA. We use "ocean_mask_landnull.tif".  
  - Follow the steps outlined below, updating file paths as needed: 
  
  ```
@@ -17,6 +16,8 @@ Here I will document how to run the plume model.
 
 ## After creating a new python env, I.e. py2: 
 conda activate py2
+
+cp /home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem/raw/ocean_mask_landnull.tif /home/sgclawson/grassdata/ ## copy the ocean mask to your grassdata folder
 
 rm -r /home/sgclawson/grassdata/location # replace sgclawson with your home directory name
 
@@ -79,6 +80,6 @@ sh run_plumes.sh ## test it on a subset of pourpoints before you run the entire 
 
 # printf "\n Final Tif Done"
 # # move final tif
-# cp global_effluent_2015_tot_N.tif home/sgclawson/wastewater-master/data/processed/N_effluent_output/
+# cp global_effluent_2015_tot_N.tif home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem/output/N_effluent_output/ # ALWAYS UPDATE tif NAME
 ```
 
