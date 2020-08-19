@@ -352,6 +352,7 @@ mapview(log(rast_test_all+1))
  - We need to check this to see if the model ran on all of the basin_id
  - It looks like the model did not write rasters for 10131 basin_ids. 
  - To rectify this I will write a shapefile with all of the missing basin_ids and rerun the plume model..
+ - Update: This didn't work... recieved the same result. 
 ```{r}
 ## Count how many rasters the plume model created and compare to the number of pourpoints with >0 PO4eq effluent
 library(tidyverse)
@@ -478,68 +479,55 @@ check <- ws_pp_zonal_all_fix %>%
 st_write(check, file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_plume_retry.shp"), overwrite = TRUE, delete_dsn = TRUE)
 ```
 
-
+Look at the wastewater project tif files to determine if they had the same problem (it looks like they did... so maybe it is ok?)
 
 ```{r}
-fils <- list.files("/home/jkibele/wastewater/code/plumes/output/pour_points_1", pattern="tif$", full.names = FALSE, recursive = TRUE)
+fils <- list.files("/home/tuholske/plumes/output/", pattern="tif$", full.names = FALSE, recursive = TRUE)
 
-files_count <- data_frame(
-  dir = dirname(fils)
-) %>% 
-  count(dir) #%>% 
-  #mutate(dir = map_chr(dir, digest::digest))
+files <- data_frame(fils) ## 134846
 
-files <- data_frame(fils) ## 24499
-
-fils <- list.files("/home/jkibele/wastewater/code/plumes/output/pour_points_2", pattern="tif$", full.names = FALSE, recursive = TRUE)
-
-files_count <- data_frame(
-  dir = dirname(fils)
-) %>% 
-  count(dir) #%>% 
-  #mutate(dir = map_chr(dir, digest::digest))
-
-files <- data_frame(fils) ## 22929
-
-fils <- list.files("/home/jkibele/wastewater/code/plumes/output/pour_points_3", pattern="tif$", full.names = FALSE, recursive = TRUE)
-
-files_count <- data_frame(
-  dir = dirname(fils)
-) %>% 
-  count(dir) #%>% 
-  #mutate(dir = map_chr(dir, digest::digest))
-
-files <- data_frame(fils) ## 24618
-
-fils <- list.files("/home/jkibele/wastewater/code/plumes/output/pour_points_4", pattern="tif$", full.names = FALSE, recursive = TRUE)
-
-files_count <- data_frame(
-  dir = dirname(fils)
-) %>% 
-  count(dir) #%>% 
-  #mutate(dir = map_chr(dir, digest::digest))
-
-files <- data_frame(fils) ## 21821 
-
-21821 + 24618 + 22929 + 24499 ## 93867 
-
-
-test_rast <- raster::raster(file.path("/home/jkibele/wastewater/code/plumes/output/pour_points_4/plume_effluent_af_01069.tif"))
-
-mapview(test_rast)
 ```
 
-Look at mosaiced PO4eq tif files
+Explore mosaiced PO4eq tif files
 ```{r}
-PO4eq_sub1 <- raster::raster(file.path("/home/sgclawson/wastewater-master/code/plumes/output/subsets/global_effluent_PO4eq_sub1.tif"))
+## Our PO4eq file
+PO4eq_sub_tot <- raster::raster(file.path("/home/sgclawson/wastewater-master/code/plumes/output/subsets/global_effluent_PO4eq.tif"))
 
-mapview(PO4eq_sub1)
-plot(log(PO4eq_sub1+1))
+mapview(PO4eq_sub_tot)
+plot(log(PO4eq_sub_tot+1))
 
-PO4eq_sub2 <- raster::raster(file.path("/home/sgclawson/wastewater-master/code/plumes/output/subsets/global_effluent_PO4eq_sub2.tif"))
+po4eq_effluent_log <- raster::calc(PO4eq_sub_tot, fun = function(x){log(x + 1)})
+mapview(po4eq_effluent_log)
 
-mapview(PO4eq_sub2)
-plot(log(PO4eq_sub2+1))
+## Wastewater N effluent tif
+wastewater_tif <- raster::raster(file.path("/home/shares/ohi/git-annex/land-based/wastewater/data/processed/N_effluent_output/global_effluent_2015_tot_N.tif"))
+wasterwater_tif_log <- raster::calc(wastewater_tif, fun = function(x){log(x + 1)})
+mapview(wasterwater_tif_log)
+
+## they look similar... so far so good. 
+
+## Now lets extract the actual values from the raster and take a look: 
+ws_pp_zonal_all_fix <- st_read(file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_pourpoints.shp"))
+
+po4eq_effluent_values <- extract(PO4eq_sub_tot, ws_pp_zonal_all_fix, method = "simple", df = TRUE)
+sum(po4eq_effluent_values$global_effluent_PO4eq) #12621550
+
+sum(ws_pp_zonal_all_fix$effluent) #2343514672
+12621550/2343514672 ## 0.00538
+
+## should those be the same? 
+
+
+## check wastewater project values
+n_effluent_shp <- st_read(file.path("/home/tuholske/wastewater/data/processed/N_effluent_output/effluent_N_pourpoints_plumes_septic_N.shp"))
+mapview(n_effluent_shp)
+sum(n_effluent_shp$effluent) #316040362908
+
+wastewater_effluent_values <- extract(wastewater_tif, n_effluent_shp, method = "simple", df = TRUE)
+sum(wastewater_effluent_values$global_effluent_2015_tot_N) #22692476440
+22692476440/316040362908 #0.0718
+# they aren't the same either..
+
 ```
 
 
