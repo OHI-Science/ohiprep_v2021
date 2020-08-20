@@ -477,6 +477,12 @@ check <- ws_pp_zonal_all_fix %>%
   dplyr::filter(basin_id %in% excluded)
 
 st_write(check, file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_plume_retry.shp"), overwrite = TRUE, delete_dsn = TRUE)
+
+missing_pp <- st_read(file.path(cw_nutrient_int_dir, "pourpoints/PO4eq_plume_retry.shp"))
+mapview(missing_pp)
+
+ocean <- raster::raster(file.path("/home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem/raw/ocean_mask_landnull.tif"))
+mapview(ocean)
 ```
 
 Look at the wastewater project tif files to determine if they had the same problem (it looks like they did... so maybe it is ok?)
