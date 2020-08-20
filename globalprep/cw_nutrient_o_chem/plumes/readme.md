@@ -1,14 +1,15 @@
 ## Ocean Health Index: Plume model 
 
 Here I will document how to run the plume model. 
-
+ 
  - You will need to download this folder (cw_nutrient_o_chem/plumes, or the plumes folder from the wastewater repo) to your local mazu drive. I.e. /home/username/
  - Go ahead and install the anaconda installer for 68 bit linux from https://www.anaconda.com/products/individual and throw the file into your home directory on mazu (or Aurora if that is what you use). You will end up with a folder akin to /home/username/anaconda3
  - In your terminal, ssh into mazu.. i.e. `ssh username@mazu.nceas.ucsb.edu` and enter your password
- - Create a folder in your "anaconda3/envs" folder named "py2", this will be your python environment
+ - Create a folder in your "anaconda3/envs" folder named "py2", this will be your python environment. This can be done with this line `conda create --name py2 python=2`
  - Type `conda activate py2` in your terminal. This will activate this py2 environment and act as your python environment. 
  - Install gdal by typing `conda install -c conda-forge gdal` to install gdal in your python environment. 
  - Create a folder in your mazu home drive entitled "grassdata" or something of the like.
+ - I recommend using [screens](http://www.kinnetica.com/2011/05/29/using-screen-on-mac-os-x/) in the terminal, so you can turn on the plumes model and leave it running.
  - Follow the steps outlined below, updating file paths as needed: 
  
  ```
@@ -17,7 +18,8 @@ Here I will document how to run the plume model.
 ## After creating a new python env, I.e. py2: 
 conda activate py2
 
-cp /home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem/raw/ocean_mask_landnull.tif /home/username/grassdata/ ## copy the ocean mask to your grassdata folder
+cp /home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem/raw/ocean_mask_landnull.tif /home/username/grassdata/ 
+## copy the ocean mask to your grassdata folder. The ocean mask is a raster where the land values are set to nan and the ocean values to 1. You can find it here: /home/tuholske/wastewater/data/interim/ocean_masks/ocean_mask_landnull.tif, or here: /home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem/raw/ocean_mask_landnull.tif. Or you could just create it yourself!
 
 rm -r /home/username/grassdata/location # replace username with your home directory name
 
