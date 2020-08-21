@@ -1103,15 +1103,6 @@ sw_sus_no_rgn <- filter(sw_sus, is.na(country))
 
 ```{r sw-sus_convert-region}
 
-# mar <- mar %>%
-#   mutate(country = ifelse(country=="Réunion", "Reunion", country)) %>%  # This one is hard to get right; v2020: last year it was "R\xe9union", but this year it was "Réunion"
-#   mar_split()  # function in mar_fxs.R
-# 
-# mar_rgn <- name_2_rgn(df_in = mar, 
-#                        fld_name='country', 
-#                        flds_unique=c('species', 'fao', 'environment', 'Taxon_code', 'year')) 
-
-
 sw_sus <- sw_sus %>% 
   mutate(country = ifelse(country=="Korea, the Republic of", "South Korea", country)) %>% # Data removed for not having a match; change name to match
   mutate(country = ifelse(country=="United Kingdom of Great Britain and Northern Ireland (the)", "United Kingdom", country)) # Data removed for not having a match; change name to match
@@ -1159,11 +1150,8 @@ sw_sus_rgn$species <- gsub("Hard clam (unspecified)", "Northern quahog(=Hard cla
 
 # FAO mariculture and Seafood Watch sustainability scores
 
-Append Seafood Watch sustainability scores to the FAO mariculture data.
 
-The following joins the Seafood Watch sustainability scores to regions/species that have Seafood Watch data.
-
-```{r add-sw-sus-fao-data}
+```{r gapfill-sw-sus-data}
 
 # add column "match_type" and assign based on region/country first
   # then if there's a global value, fill in that for each region that has that species
@@ -1172,76 +1160,77 @@ The following joins the Seafood Watch sustainability scores to regions/species t
   # look at genus/family level globally vs subregions
 
 sw_sus_rgn <- sw_sus_rgn %>% 
-  mutate(match_type = case_when(!is.na(country) ~ "sw_sp_c", # Add match type specific to species/country
-                                str_detect(report_title, regex("Global")) ~ "sw_sp_g" # Add match type specific to species/global
+  dplyr::mutate(match_type = dplyr::case_when(!is.na(country) ~ "sw_sp_c", # Add match type specific to species/country
+                                str_detect(report_title, regex("Global")) ~ "sw_sp_g", # Add match type specific to species/global Seafood Watch data
+                                is.na(match_type) ~ "sw_sp_w" # Add match type specific to species/water body
                                 ))
+
+sw_sus_rgn <- sw_sus_rgn %>% 
+  mutate(gapfill = case_when())
                                 
-
-
-
 table(sw_sus_rgn$match_type)
 
-## Join taxa specific to country/species/environment
-c_sp_env_sw = sw_sus_rgn %>% 
-  filter(match_type == 'c_sp_env_sw') %>% 
-  select(rgn_id, species=species_fao, environment, Sust_c_sp_env = Maric_sustainability)
 
-mar_sus <- maric %>%
-  left_join(c_sp_env, by= c("species", "environment", "rgn_id"))
-
-## Join taxa specific to country/species/fao region
-c_sp_fao = sus_rgn %>% 
-  filter(match_type == 'c_sp_fao') %>% 
-  select(rgn_id, species=species_fao, fao, Sust_c_sp_fao = Maric_sustainability)
-
-mar_sus <- mar_sus %>%
-  left_join(c_sp_fao, by= c("species", "fao", "rgn_id"))
 
 ```
 
-**Take a look at the data thus far**
+Append Seafood Watch sustainability scores to the FAO mariculture data.
 
-```{r view-truj-sus-data}
+The following joins the Seafood Watch sustainability scores to regions/species that have Seafood Watch data.
 
-head(data.frame(filter(mar_sus, rgn_id==218 & species == "Atlantic salmon")))
-head(data.frame(filter(mar_sus, !is.na(Sust_c_sp_fao))))
+```{r add-sw-sus-fao-data}
+
+## Join taxa specific to species/country
+sw_sp_c = sw_sus_rgn %>% 
+  filter(match_type == 'sw_sp_c') %>% 
+  select(rgn_id, species, Sust_sw_sp_c = score)
+
+mar_sw_sus <- maric %>%
+  left_join(sw_sp_c, by= c("species", "rgn_id"))
+
+
+## Join taxa specific to species/global Seafood Watch data
+sw_sp_g = sw_sus_rgn %>% 
+  filter(match_type == 'sw_sp_g') %>% 
+  select(rgn_id, species, Sust_sw_sp_g = score)
+
+mar_sw_sus <- mar_sw_sus %>%
+  left_join(sw_sp_g, by= c("species", "rgn_id"))
+
+
+## Join taxa specific to species/water body
+sw_sp_w = sw_sus_rgn %>% 
+  filter(match_type == 'sw_sp_w') %>% 
+  select(rgn_id, species, Sust_sw_sp_w = score)
+
+mar_sw_sus <- mar_sw_sus %>%
+  left_join(sw_sp_w, by= c("species", "rgn_id"))
 
 ```
 
-```{r sus_join-country-species}
+**Now look at a summary after appending all the Seafood Watch data**
 
-## Join taxa specific to country/species
-c_sp = sus_rgn %>% 
-  filter(match_type == 'c_sp') %>% 
-  select(rgn_id, species=species_fao, Sust_c_sp = Maric_sustainability)
+```{r sw-sus-summary}
 
-mar_sus <- mar_sus %>%
-  left_join(c_sp, by= c("species", "rgn_id"))
+summary(mar_sw_sus)
+# Sust_sw_sp_g and Sust_sw_sp_w didn't have any matches
 
 ```
 
-**Now look at a summary after appending all the Trujillo data**
+Merge the three Seafood Watch type categories into a single sustainability score column in the following order:
 
-```{r truj-sus-summary}
+1. Sust_sw_sp_w: specific to species/water body
+2. Sust_sw_sp_g: specific to species/global Seafood Watch data
+3. Sust_sw_sp_c: specific to species/country
 
-summary(mar_sus)
+For example, if Sust_sw_sp_w is missing, use Sust_sw_sp_g and so on. 
 
-```
+```{r sw-sus-merge}
 
-Merge the three Trujillo type categories into a single sustainability score column in the following order:
-
-1. Sust_c_sp_env: taxa specific to country/species/environment (smallest taxonomic level)
-2. Sust_c_sp_fao:  taxa specific to country/species/fao region
-3. Sust_c_sp: taxa specific to country/species (highest taxonomic level)
-
-For example, if Sust_c_sp_env is missing, use Sust_c_sp_fao and so on. 
-
-```{r truj-sus-merge}
-
-mar_sus = mar_sus %>% 
-  mutate(Sust = ifelse(!is.na(Sust_c_sp_env), Sust_c_sp_env, Sust_c_sp_fao)) %>%
-  mutate(Sust = ifelse(is.na(Sust), Sust_c_sp, Sust)) %>%
-  select(-Sust_c_sp_env, -Sust_c_sp_fao, -Sust_c_sp)
+mar_sw_sus = mar_sw_sus %>% 
+  mutate(Sust = ifelse(!is.na(Sust_sw_sp_w), Sust_sw_sp_w, Sust_sw_sp_g)) %>%
+  mutate(Sust = ifelse(is.na(Sust), Sust_sw_sp_c, Sust)) %>%
+  select(-Sust_sw_sp_w, -Sust_sw_sp_g, -Sust_sw_sp_c)
 
 ```
 
@@ -1250,9 +1239,9 @@ This joins the sustainability data that is gapfilled either at the species level
 ```{r truj-sus-join-gapfilled}
 
 ## Select observations gapfilled at the species/genera level:
-gf_sp_sus <- sus_rgn %>% 
+gf_sp_sw_sus <- sw_sus_rgn %>% 
   filter(gapfill != "actuals" & match_type == "species") %>%
-  select(species = species_fao, gapfill, Sust_gf_sp = Maric_sustainability)
+  select(species, gapfill, Sust_gf_sp = Maric_sustainability)
 
 ## Check that there are no duplicated species_fao
 gf_sp_sus[duplicated(gf_sp_sus$species), ]
