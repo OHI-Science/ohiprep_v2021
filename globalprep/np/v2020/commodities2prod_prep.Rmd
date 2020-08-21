@@ -20,7 +20,7 @@ fishoil <- read_csv("globalprep/np/v2020/raw/msleckman.61.1-CatchMSY_Nis_FAOArea
   mutate(product = "fish_oil")
 
 ## now read in old commodities2products.csv 
-coms <- read_csv("globalprep/np/v2019/raw/commodities2products.csv")
+coms <- read_csv("../v2019/raw/commodities2products.csv")
 
 ##filter out old fishoil products, sponges, seaweeds, corals, and shells
 coms_filt <- coms %>%
@@ -36,6 +36,15 @@ sw_spp <- read_csv("globalprep/np/v2020/raw/species_list_np_seaweeds_edited.csv"
 ## now rbind all three datasets to get our new commodities2produts.csv
 coms2prod <- rbind(coms_filt, fishoil, sw_spp)
 
-write.csv(coms2prod, "globalprep/np/v2020/raw/commodities2products.csv", row.names = FALSE)
+write.csv(coms2prod, "globalprep/np/v2020/raw/commodities2products_new.csv", row.names = FALSE)
 ```
+
+```{r}
+## prep commodities weighting table for 3 natural products
+coms_weighting <- coms %>%
+  dplyr::filter(product %in% c("seaweeds", "fish_oil", "ornamentals"))
+
+write.csv(coms_weighting, "raw/commodities2products_weighting.csv")
+```
+
 
