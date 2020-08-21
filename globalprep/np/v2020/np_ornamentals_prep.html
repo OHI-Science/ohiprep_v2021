@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Thu Jul 23 09:55:38 2020 by sgclawson" />
+<meta name="author" content="Compiled on Fri Aug 21 14:40:46 2020 by sgclawson" />
 
 
 <title>OHI 2020: Natural Products: Ornamentals data prep</title>
@@ -420,7 +420,7 @@ summary {
 
 
 <h1 class="title toc-ignore">OHI 2020: Natural Products: Ornamentals data prep</h1>
-<h4 class="author"><em>Compiled on Thu Jul 23 09:55:38 2020 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Fri Aug 21 14:40:46 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -447,11 +447,11 @@ summary {
 <p>[REFERENCE RMD FILE: <a href="http://ohi-science.org/ohiprep_v2020/globalprep/np/v2020/np_dataprep.html" class="uri">http://ohi-science.org/ohiprep_v2020/globalprep/np/v2020/np_dataprep.html</a>]</p>
 <div id="summary" class="section level1">
 <h1><span class="header-section-number">1</span> Summary</h1>
-<p>This analysis converts FAO commodities data into data layers used to calculate OHI 2020 global natural products scores. We will conduct this data prep on the commodities seaweed, fish oil, and ornamentals, so that we can produce $ values for weighting later on, however, our final layer from this data prep will only consist of ornamentals. This will also calculate a sustainability layer based off of risk and exposure for ornamental fishing.</p>
+<p>This analysis converts FAO commodities data into data layers used to calculate OHI 2020 global natural products scores. We will conduct this data prep on the commodities seaweed, fish oil, and ornamentals, so that we can produce $ values for weighting later on, however, our final layer from this data prep will only consist of ornamental fish. This will also calculate a sustainability layer based off of risk and exposure for ornamental fishing.</p>
 </div>
 <div id="updates-from-previous-assessment" class="section level1">
 <h1><span class="header-section-number">2</span> Updates from previous assessment</h1>
-<p>New year of FAO data (1976-2017). Instead of using all commodity categories (seaweed, FOFM, coral, sponge, and ornamentals), we are only prepping ornamentals in this prep. Overall, we are excluding corals, and sponges from our calculations, while FOFM and seaweed production are calculated from different datasets.</p>
+<p>New year of FAO data (1976-2017). Instead of using all commodity categories (seaweed, FOFM, coral, sponge, and ornamentals), we are only prepping ornamentals. Overall, we are excluding corals, shells, and sponges from our calculations, while FOFM and seaweed production are calculated from different datasets.</p>
 <hr />
 </div>
 <div id="data-source" class="section level1">
@@ -630,7 +630,6 @@ summary {
 </div>
 <div id="gapfilling" class="section level1">
 <h1><span class="header-section-number">7</span> Gapfilling</h1>
-<p>See issue #397 for details and debate and pretty graphs.</p>
 <p>Summary of gapfilling that is performed:</p>
 <ul>
 <li>Zero-fill: for observations with NAs for both values (tonnes &amp; usd), fill both as zero. Also cross-fills zeros where one value is zero, other is NA.</li>
@@ -907,31 +906,7 @@ summary {
 <span id="cb12-116"><a href="#cb12-116"></a>    <span class="kw">write.csv</span>(np_risk_gf, <span class="st">&quot;output/np_risk_ornamentals_gf.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
 <span id="cb12-117"><a href="#cb12-117"></a>    </span>
 <span id="cb12-118"><a href="#cb12-118"></a><span class="co">## write this as a risk layer </span></span>
-<span id="cb12-119"><a href="#cb12-119"></a>    <span class="kw">write.csv</span>(np_risk_orn, <span class="st">&quot;output/np_risk_ornamentals.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb12-120"><a href="#cb12-120"></a></span>
-<span id="cb12-121"><a href="#cb12-121"></a><span class="co">#     </span><span class="al">###</span><span class="co"> calculates NP sustainability coefficient for each natural product, based</span></span>
-<span id="cb12-122"><a href="#cb12-122"></a><span class="co">#     </span><span class="al">###</span><span class="co"> on (1 - mean(c(exposure, risk))).  Returns first input dataframe with</span></span>
-<span id="cb12-123"><a href="#cb12-123"></a><span class="co">#     </span><span class="al">###</span><span class="co"> new columns for sustainability coefficient, and sustainability-adjusted</span></span>
-<span id="cb12-124"><a href="#cb12-124"></a><span class="co">#     </span><span class="al">###</span><span class="co"> NP product_status:</span></span>
-<span id="cb12-125"><a href="#cb12-125"></a><span class="co">#     </span><span class="al">###</span><span class="co"> [rgn_id  rgn_name  product  year  prod_weight  sustainability  product_status]</span></span>
-<span id="cb12-126"><a href="#cb12-126"></a><span class="co">#     #########################################.</span></span>
-<span id="cb12-127"><a href="#cb12-127"></a><span class="co">#     </span></span>
-<span id="cb12-128"><a href="#cb12-128"></a><span class="co">#     </span><span class="al">###</span><span class="co"> FIS status for fish oil sustainability</span></span>
-<span id="cb12-129"><a href="#cb12-129"></a><span class="co"># </span></span>
-<span id="cb12-130"><a href="#cb12-130"></a><span class="co">#     </span><span class="al">###</span><span class="co"> join Exposure (with harvest) and Risk</span></span>
-<span id="cb12-131"><a href="#cb12-131"></a><span class="co">#     np_sust_orn &lt;- np_exp_orn %&gt;%</span></span>
-<span id="cb12-132"><a href="#cb12-132"></a><span class="co">#       left_join(np_risk_orn, by = c(&#39;rgn_id&#39;, &#39;year&#39;, &#39;product&#39;)) %&gt;%</span></span>
-<span id="cb12-133"><a href="#cb12-133"></a><span class="co">#       rowwise() %&gt;%</span></span>
-<span id="cb12-134"><a href="#cb12-134"></a><span class="co">#       mutate(sustainability = 1 - mean(c(exposure, risk), na.rm = TRUE))</span></span>
-<span id="cb12-135"><a href="#cb12-135"></a><span class="co">#     </span></span>
-<span id="cb12-136"><a href="#cb12-136"></a><span class="co">#     </span><span class="al">###</span><span class="co"> calculate rgn-product-year status</span></span>
-<span id="cb12-137"><a href="#cb12-137"></a><span class="co">#     np_sust_orn &lt;- np_sust_orn %&gt;%</span></span>
-<span id="cb12-138"><a href="#cb12-138"></a><span class="co">#       mutate(score = tonnes_rel * sustainability) %&gt;%</span></span>
-<span id="cb12-139"><a href="#cb12-139"></a><span class="co">#       filter(rgn_id &lt;= 250) %&gt;%  # disputed regions</span></span>
-<span id="cb12-140"><a href="#cb12-140"></a><span class="co">#       select(-product ,-sustainability,-tonnes,-tonnes_rel,-risk,-exposure) %&gt;%</span></span>
-<span id="cb12-141"><a href="#cb12-141"></a><span class="co">#       ungroup()</span></span>
-<span id="cb12-142"><a href="#cb12-142"></a><span class="co">#     </span></span>
-<span id="cb12-143"><a href="#cb12-143"></a><span class="co"># write_csv(np_sust_orn, &quot;output/np_ornamentals_scores.csv&quot;)</span></span></code></pre></div>
+<span id="cb12-119"><a href="#cb12-119"></a>    <span class="kw">write.csv</span>(np_risk_orn, <span class="st">&quot;output/np_risk_ornamentals.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
 </div>
 </div>
 

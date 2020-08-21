@@ -1,10 +1,11 @@
 ---
-title: "fish_oil_species"
+title: "NP Methods tables"
 author: "Gage Clawson"
 date: "8/18/2020"
 output: html_document
 ---
 
+This only needs to be done for the 2020 assessment year. 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)

@@ -24,7 +24,7 @@ This script takes the Watson 2020 catch data, a list of fish oil/fish meal (FOFM
 
 ## Updates from previous assessment
 
-This is brand new to the 2020 assessment. Previously we used FAO commodities export dataset, but we refined our approach with actual catch tonnes, instead of export tonnes. 
+This is brand new to the 2020 assessment. Previously we used FAO commodities export data set, but we refined our approach with actual catch tonnes, instead of export tonnes. 
 
 ***
 
@@ -152,7 +152,7 @@ write.csv(foragefish_list, here("globalprep/np/v2020_new/int/master_taxa_list_v5
 
 ```
 
-## read in v2020 catch data 
+## Read in v2020 catch data 
 ```{r}
 file <- file.path(dir_M,'git-annex/globalprep/fis/v2020/int/stock_catch_by_rgn_taxa.csv')
 
@@ -171,7 +171,7 @@ catch <- catch %>%
 
 ```
 
-## subset the v2020 catch data for our forage fish species 
+## Subset the v2020 catch data for our forage fish species 
 
 ```{r}
 ## need to get TaxonKey's for each species to join with catch

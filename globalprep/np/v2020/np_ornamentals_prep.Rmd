@@ -16,10 +16,10 @@ output:
 [REFERENCE RMD FILE: http://ohi-science.org/ohiprep_v2020/globalprep/np/v2020/np_dataprep.html]
 
 # Summary
-This analysis converts FAO commodities data into data layers used to calculate OHI 2020 global natural products scores. We will conduct this data prep on the commodities seaweed, fish oil, and ornamentals, so that we can produce $ values for weighting later on, however, our final layer from this data prep will only consist of ornamentals. This will also calculate a sustainability layer based off of risk and exposure for ornamental fishing. 
+This analysis converts FAO commodities data into data layers used to calculate OHI 2020 global natural products scores. We will conduct this data prep on the commodities seaweed, fish oil, and ornamentals, so that we can produce $ values for weighting later on, however, our final layer from this data prep will only consist of ornamental fish. This will also calculate a sustainability layer based off of risk and exposure for ornamental fishing. 
 
 # Updates from previous assessment
-New year of FAO data (1976-2017). Instead of using all commodity categories (seaweed, FOFM, coral, sponge, and ornamentals), we are only prepping ornamentals in this prep. Overall, we are excluding corals, and sponges from our calculations, while FOFM and seaweed production are calculated from different datasets. 
+New year of FAO data (1976-2017). Instead of using all commodity categories (seaweed, FOFM, coral, sponge, and ornamentals), we are only prepping ornamentals. Overall, we are excluding corals, shells, and sponges from our calculations, while FOFM and seaweed production are calculated from different datasets. 
 
 ***
 
@@ -206,8 +206,6 @@ h <- h %>% np_harvest_preclip()
 ```
 
 # Gapfilling 
-
-See issue #397 for details and debate and pretty graphs.
 
 Summary of gapfilling that is performed:
 
@@ -515,30 +513,6 @@ np_harvest_orn <- read_csv("int/np_harvest_tonnes_usd.csv") %>%
     
 ## write this as a risk layer 
     write.csv(np_risk_orn, "output/np_risk_ornamentals.csv", row.names = FALSE)
-
-#     ### calculates NP sustainability coefficient for each natural product, based
-#     ### on (1 - mean(c(exposure, risk))).  Returns first input dataframe with
-#     ### new columns for sustainability coefficient, and sustainability-adjusted
-#     ### NP product_status:
-#     ### [rgn_id  rgn_name  product  year  prod_weight  sustainability  product_status]
-#     #########################################.
-#     
-#     ### FIS status for fish oil sustainability
-# 
-#     ### join Exposure (with harvest) and Risk
-#     np_sust_orn <- np_exp_orn %>%
-#       left_join(np_risk_orn, by = c('rgn_id', 'year', 'product')) %>%
-#       rowwise() %>%
-#       mutate(sustainability = 1 - mean(c(exposure, risk), na.rm = TRUE))
-#     
-#     ### calculate rgn-product-year status
-#     np_sust_orn <- np_sust_orn %>%
-#       mutate(score = tonnes_rel * sustainability) %>%
-#       filter(rgn_id <= 250) %>%  # disputed regions
-#       select(-product ,-sustainability,-tonnes,-tonnes_rel,-risk,-exposure) %>%
-#       ungroup()
-#     
-# write_csv(np_sust_orn, "output/np_ornamentals_scores.csv")
 
 ```
 
