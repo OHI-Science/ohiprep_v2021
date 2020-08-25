@@ -1076,14 +1076,23 @@ Rename columns to match with MAR data and fill in species column
 
 ## Rename columns
 sw_sus <- sw_sus %>%
-  rename(country = 'Country',
-         water_body = 'Body of Water',
-         fao_species = 'FAO Common name',
-         sw_species = 'Common name',
+  rename(report_title = 'Report Title',
          start_year = 'Start year',
-         score = 'Overall Score',
+         sw_species = 'Common name',
+         genus = 'Genus',
          spp = 'Species',
-         report_title = 'Report Title')
+         fao_species = 'FAO Common name',
+         region = 'Region',
+         country = 'Country',
+         state_territory = 'State/Territory',
+         sub_region = 'Sub-Region',
+         water_body = 'Body of Water',
+         parent_method = 'Parent Method',
+         method = 'Method',
+         score = 'Overall Score',
+         rec = 'Overall Recommendation'
+         ) %>% 
+  dplyr::select(report_title, start_year, sw_species, genus, spp, fao_species, region, country, state_territory, sub_region, water_body, parent_method, method, score, rec)
 
 ## Change species names using FAO species name (fao_species); if NA, use common name (sw_species)
 sw_sus$species <- ifelse(!is.na(sw_sus$fao_species), sw_sus$fao_species, sw_sus$sw_species)
@@ -1162,17 +1171,115 @@ sw_sus_rgn$species <- gsub("Hard clam (unspecified)", "Northern quahog(=Hard cla
 sw_sus_rgn <- sw_sus_rgn %>% 
   dplyr::mutate(match_type = dplyr::case_when(!is.na(country) ~ "sw_sp_c", # Add match type specific to species/country
                                 str_detect(report_title, regex("Global")) ~ "sw_sp_g", # Add match type specific to species/global Seafood Watch data
-                                is.na(match_type) ~ "sw_sp_w" # Add match type specific to species/water body
-                                ))
+                                TRUE ~ "sw_sp_w" # Add match type specific to species/water body
+  ))
 
-sw_sus_rgn <- sw_sus_rgn %>% 
-  mutate(gapfill = case_when())
-                                
 table(sw_sus_rgn$match_type)
 
 
+sw_sus_rgn <- sw_sus_rgn %>% 
+  dplyr::mutate(gapfill = dplyr::case_when(match_type == "sw_sp_c" ~ "actuals",
+                                           match_type == "sw_sp_g" ~ "sp_global",
+                                           match_type == "sw_sp_w" ~ "sp_waterbody"))
 
 ```
+
+```{r gapfill-sw-sus-match-rgn-id}
+
+## Research species according to method and create new rows matching up species score with regions that are found to produce that type of aquaculture
+gf_sw_sp_g <- sw_sus_rgn %>% 
+  filter(match_type == 'sw_sp_g') %>% 
+  # Atlantic cod - Indoor recirculating tank (without wastewater treatment)
+  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
+  add_row(rgn_id = 143, rgn_name = 'Iceland', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
+  add_row(rgn_id = 223, rgn_name = 'Norway', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
+  add_row(rgn_id = 180, rgn_name = 'United Kingdom', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
+  # Mussels - Bottom culture
+  add_row(rgn_id = 177, rgn_name = 'Netherlands', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
+  add_row(rgn_id = 176, rgn_name = 'Germany', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
+  add_row(rgn_id = 180, rgn_name = 'United Kingdom', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
+  add_row(rgn_id = 181, rgn_name = 'Ireland', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
+  # Basket Cockle - Off-bottom culture
+  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 11) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
+  add_row(rgn_id = 209, rgn_name = 'China', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 11) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
+  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 11) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
+  add_row(rgn_id = 207, rgn_name = 'Vietnam', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 11) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
+  add_row(rgn_id = 20, rgn_name = 'South Korea', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 11) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
+  add_row(rgn_id = 210, rgn_name = 'Japan', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 11) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
+  # Abalones nei - Open bottom culture
+  add_row(rgn_id = 210, rgn_name = 'Japan', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 209, rgn_name = 'China', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 16, rgn_name = 'Australia', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 135, rgn_name = 'Mexico', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 224, rgn_name = 'Chile', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 162, rgn_name = 'New Zealand', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 102, rgn_name = 'South Africa', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  # European seabass - Indoor recirculating tank (without wastewater treatment)	
+  add_row(rgn_id = 179, rgn_name = 'France', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 176, rgn_name = 'Germany', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 183, rgn_name = 'Portugal', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 27) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
+  # Sand gaper - Bottom culture
+  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Sand gaper', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 45) %>% # Source: https://www.seafoodwatch.org/-/m/b564a45ea2cb4034b73cdb4b106b4b86.pdf
+  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Sand gaper', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 45) %>% # Source: https://www.seafoodwatch.org/-/m/7e33b7917e0940d6b5d1e27f0711ae01.pdf
+  # Blood cockle - Off-bottom culture
+  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Blood cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 48) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
+  add_row(rgn_id = 209, rgn_name = 'China', species = 'Blood cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 48) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
+  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Blood cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 48) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
+  add_row(rgn_id = 207, rgn_name = 'Vietnam', species = 'Blood cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 48) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
+  # Rex sole - Indoor recirculating tank (with wastewater)
+  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Rex sole', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 53) %>% # Source: https://www.seafoodwatch.org/seafood-recommendations/groups/sole?q=Rex%20Sole&t=Rex%20Sole&type=rex&method=farmed&o=284100531
+  # Black sea bass - Indoor recirculating tank (with wastewater)
+  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Black sea bass', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 55) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Centropristis+striata
+  # Abalones nei - Indoor flowthrough tank
+  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 57) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 16, rgn_name = 'Australia', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 57) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 209, rgn_name = 'China', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 57) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 135, rgn_name = 'Mexico', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 57) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 224, rgn_name = 'Chile', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 57) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 210, rgn_name = 'Japan', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 57) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 162, rgn_name = 'New Zealand', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 57) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  add_row(rgn_id = 102, rgn_name = 'South Africa', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 57) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
+  # Arctic char - Indoor recirculating tank (with wastewater)
+  add_row(rgn_id = 175, rgn_name = 'Denmark', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 66) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
+  add_row(rgn_id = 179, rgn_name = 'France', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 66) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
+  add_row(rgn_id = 143, rgn_name = 'Iceland', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 66) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
+  add_row(rgn_id = 181, rgn_name = 'Ireland', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 66) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
+  add_row(rgn_id = 180, rgn_name = 'United Kingdom', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 66) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
+  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 66) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
+  # Chilean mussel - Off-bottom culture
+  add_row(rgn_id = 224, rgn_name = 'Chile', species = 'Chilean mussel', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 73) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
+  # Lined scallop - Bottom culture
+  add_row(rgn_id = 209, rgn_name = 'China', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 75) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
+  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 75) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
+  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 75) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
+  add_row(rgn_id = 171, rgn_name = 'Brazil', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 75) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
+  add_row(rgn_id = 137, rgn_name = 'Ecuador', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 75) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
+  add_row(rgn_id = 223, rgn_name = 'Norway', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 75) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
+  # Razor clam - Bottom culture
+  add_row(rgn_id = , rgn_name = '', species = 'Razor clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 82) %>% # Source:
+  
+
+
+  
+  #select(rgn_id, species, score, report_title, genus, spp, parent_method, method)
+
+```
+
 
 Append Seafood Watch sustainability scores to the FAO mariculture data.
 
@@ -1190,8 +1297,7 @@ mar_sw_sus <- maric %>%
 
 
 ## Join taxa specific to species/global Seafood Watch data
-sw_sp_g = sw_sus_rgn %>% 
-  filter(match_type == 'sw_sp_g') %>% 
+sw_sp_g = gf_sw_sp_g %>% 
   select(rgn_id, species, Sust_sw_sp_g = score)
 
 mar_sw_sus <- mar_sw_sus %>%
@@ -1213,7 +1319,7 @@ mar_sw_sus <- mar_sw_sus %>%
 ```{r sw-sus-summary}
 
 summary(mar_sw_sus)
-# Sust_sw_sp_g and Sust_sw_sp_w didn't have any matches
+# Sust_sw_sp_g and Sust_sw_sp_w didn't have any matches because they have no rgn_ids associated with them
 
 ```
 
