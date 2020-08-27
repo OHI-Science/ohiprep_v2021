@@ -1353,7 +1353,14 @@ gf_sw_sp_g <- sw_sus_rgn %>%
   add_row(rgn_id = 137, rgn_name = 'Ecuador', species = 'Iceland scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 134) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
   add_row(rgn_id = 223, rgn_name = 'Norway', species = 'Iceland scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 134) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
   
+  # Meagre - Indoor recirculating tank (with wastewater)
+  add_row(rgn_id = 183, rgn_name = 'Portugal', species = 'Meagre', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 141) %>% # Source: https://www.seafoodwatch.org/seafood-recommendations/groups/meagre?o=1301679247 (NO: Egypt, Turkey, Croatia, Cyprus, France, Greece, Italy and Spain)
   
+  # Japanese amberjack - Indoor recirculating tank (with wastewater)
+  add_row(rgn_id = 20, rgn_name = 'South Korea', species = 'Japanese amberjack', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 143) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Seriola+quinqueradiata, https://www.seafoodwatch.org/seafood-recommendations/groups/amberjack?type=yellowtail&q=Amberjack,%20Yellowtail&o=262057062 (NO: Japan (farmed in marine net pens; but no way to differentiate))
+  
+  #
+  add_row(rgn_id = , rgn_name = '', species = '', score = , match_type = 'sw_sp_g', gapfill = 'sp_global', .after = ) %>% # Source:
   
   
   ## Species that need a name change to match 'maric':
