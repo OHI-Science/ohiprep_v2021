@@ -149,10 +149,14 @@ new.spp # Check: if dim has 0 rows it means all match
 ## Lets clean the species names first to prep for taxize. Remove []s
 mar_sp_clean <- data.frame(mar_sp, spp_clean =gsub("\\[|\\]", "", mar_sp$FAO_name), stringsAsFactors=FALSE)
 
+mar_sp_clean_names <- str_replace(mar_sp_clean$spp_clean, " nei", "") ## remove nei
+
+mar_sp_clean_names_final <- data.frame(mar_sp_clean, spp_clean_final = gsub("\\(.*)", "", mar_sp_clean_names), stringsAsFactors = FALSE) ## remove weird (=) strings
+
 ## Now lets use taxize to get family names for each of these species. This code will be run through a for loop and output will be written to the "temp" folder, because if tax_name breaks anywhere, you lose all of the progress. 
 
-spp_all <- mar_sp_clean %>%
-    .$spp_clean ## get a list of the species names to feed into the loop
+spp_all <- mar_sp_clean_names_final %>%
+    .$spp_clean_final ## get a list of the species names to feed into the loop
 
 for(i in spp_all){
   #i = "Boleophthalmus pectinirostris"
