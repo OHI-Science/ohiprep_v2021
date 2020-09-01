@@ -77,6 +77,7 @@ library(dplyr)
 library(stringr)
 library(tidyr)
 library(tidyverse)
+library(taxize)
 
 ## Load FAO-specific user-defined functions
 source('mar_fxs.R') # functions specific to mariculture dealing with compound countries
@@ -131,7 +132,7 @@ Update species name in the `raw/species_list.csv` file with names in the `mar` d
 
 ```{r update-species}
 
-## Commented out 'read.csv' lines are different versions of the dataset, representing the three different seaweed exclusion methods (exclude some seaweed, all seaweed, all seaweed nei). Use at the end for data checking. The first one is the one which is saved to the "output" folder. 
+## Commented out 'read.csv' lines are different versions of the dataset, representing the three different seaweed exclusion methods (exclude some seaweed, all seaweed, all seaweed nei). Use at the end for data checking. The first one is the one which is saved to the "output" folder, and the main analysis to run. 
 mar_sp <- read.csv('raw/species_list.csv', stringsAsFactors=FALSE) %>%
   select(FAO_name, exclude, alias, Taxon_code)
 #mar_sp <- read.csv('raw/species_list.csv', stringsAsFactors=FALSE) %>%
@@ -143,6 +144,52 @@ new.spp <- setdiff(mar$FAO_name, mar_sp$FAO_name)
 new.spp # Check: if dim has 0 rows it means all match
 ## If there is a list of species, hand check species_list.csv to see whether to keep (exclude seaweeds and species harvested for ornamental/medicinal), check if synonyms match Trujillo names. 
 ## This is outlined in issue #8 and issue #81 for reference. You need to add the species output from this to species_list.csv and fill out the corresponding information. I.e. add FAO_name, exclude (whether to include in assessment or not. If they are only harvested for medicinal purposes, do not include), alias, and Taxon_code to species_list.csv.
+
+
+## Lets clean the species names first to prep for taxize. Remove []s
+mar_sp_clean <- data.frame(mar_sp, spp_clean =gsub("\\[|\\]", "", mar_sp$FAO_name), stringsAsFactors=FALSE)
+
+## Now lets use taxize to get family names for each of these species. This code will be run through a for loop and output will be written to the "temp" folder, because if tax_name breaks anywhere, you lose all of the progress. 
+
+spp_all <- mar_sp_clean %>%
+    .$spp_clean ## get a list of the species names to feed into the loop
+
+for(i in spp_all){
+  #i = "Boleophthalmus pectinirostris"
+  chunk_file <- file.path('temp', 
+                    sprintf('spp_family_chunk_%s.csv', 
+                            i))
+  
+  if(!file.exists(chunk_file)) {
+    
+     cat_msg('Getting family info for species ', i, ' to ', max(spp_all))
+    
+spp_fam_tmp <- tax_name(i, get = "family") ## get the family names
+  
+cat_msg('... found ', nrow(spp_fam_tmp), ' family rows for these species')
+
+write_csv(spp_fam_tmp, chunk_file) ## write to a temp folder
+  
+}else {
+   cat_msg('Chunk file ', chunk_file, ' already exists; skipping these spp')
+      
+}
+}
+
+  spp_family_chunk_files <- list.files(file.path('temp'), 
+                                    pattern = 'spp_family_chunk', 
+                                    full.names = TRUE)
+  
+  spp_family_df <- lapply(spp_countries_chunk_files, FUN = function(x) {
+    read.csv(x)}) %>%
+    bind_rows()
+  
+  #split into NAs and re run through loop again with updated names... i.e. remove "nei" from spp names
+  
+  write.csv(spp_family_df, "int/taxize_run_1.csv", row.names = FALSE)
+#test <- tax_name('Boleophthalmus pectinirostris', get = "family") #test to see if it will work
+  
+  
 
 ## REMOVE SPECIES not relevant to mariculture goal (i.e., non-food species)
 mar <- mar %>% left_join(mar_sp, by="FAO_name") 
@@ -1136,6 +1183,7 @@ sw_sus_rgn <- bind_rows(sw_sus_rgn, sw_sus_no_rgn) %>%
 **Check that the non-matches between Seafood Watch sustainability data species (sw_sus_rgn) and the FAO mariculture species in the wrangled FAO Aquaculture Production data table (maric) are not due to spelling errors or slightly different names. We want to include as many species that have sustainability scores as possible**
 
 ```{r sw-sus_check-non-matches}
+maric <- read_csv("output/MAR_FP_data.csv")
 
 ## Make sure same species are spelled the same in the two data tables (e.g. check that there are no extra spaces)
 sort(setdiff(sw_sus_rgn$species, maric$species)) # Seafood Watch species with no FAO data
@@ -1185,12 +1233,12 @@ sw_sus_rgn <- sw_sus_rgn %>%
 ```
 
 ```{r gf_sw_sp_w}
+  
 
 ## Add a line for each country that borders each water body
   # The only water body is the Mediterranean; add all countries that border it (source: https://www.medqsr.org/mediterranean-marine-and-coastal-environment#:~:text=Today%2021%20countries%2C%20with%20surface,Syria%2C%20Tunisia%2C%20and%20Turkey.)
 gf_sw_sp_w <- sw_sus_rgn %>% 
   filter(match_type == 'sw_sp_w') %>% 
-  
   # Atlantic bluefin tuna - Marine net pen
   add_row(rgn_id = 82, rgn_name = 'Albania', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>% 
   add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
@@ -1296,6 +1344,7 @@ gf_sw_sp_g <- sw_sus_rgn %>%
   add_row(rgn_id = 143, rgn_name = 'Iceland', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
   add_row(rgn_id = 223, rgn_name = 'Norway', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
   add_row(rgn_id = 180, rgn_name = 'United Kingdom', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
+    add_row(rgn_id = 73, rgn_name = 'Russia', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
   
   # Mussels - Bottom culture (regions only include those listed in 'maric' for 'Sea mussels nei')
   add_row(rgn_id = 25, rgn_name = 'Thailand', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
@@ -1479,10 +1528,38 @@ Append Seafood Watch sustainability scores data to the FAO mariculture data.
 
 The following joins the Seafood Watch sustainability scores to regions/species that have FAO mariculture data.
 
+```{r}
+## Join data specific to species/country
+sw_sp_c <- sw_sus_rgn %>%
+  filter(match_type == 'sw_sp_c') %>%
+  select(rgn_id, species, Sust_sw_sp_c = score)
+
+mar_sw_sus <- maric %>%
+  left_join(sw_sp_c, by = c("species", "rgn_id"))
+
+## Join data specific to species/water body
+sw_sp_w <- gf_sw_sp_w %>%
+  select(rgn_id, species, Sust_sw_sp_w = score)
+
+mar_sw_sus <- mar_sw_sus %>%
+  left_join(sw_sp_w, by= c("species", "rgn_id"))
+
+
+## Join data specific to species/global Seafood Watch data
+sw_sp_g <- sw_sus_rgn %>% 
+  filter(match_type == 'sw_sp_g') %>%
+  select(species, Sust_sw_sp_g = score)
+
+mar_sw_sus <- mar_sw_sus %>%
+  left_join(sw_sp_g, by= c("species"))
+
+```
+
+
 ```{r add-sw-sus-fao-data}
 
 ## Join data specific to species/country
-sw_sp_c = sw_sus_rgn %>% 
+sw_sp_c <- sw_sus_rgn %>% 
   filter(match_type == 'sw_sp_c') %>% 
   select(rgn_id, species, Sust_sw_sp_c = score)
 
@@ -1494,7 +1571,7 @@ mar_sw_sus <- maric %>%
 sw_sp_w = gf_sw_sp_w %>% 
   select(rgn_id, species, Sust_sw_sp_w = score)
 
-mar_sw_sus <- mar_sw_sus %>%
+mar_sw_sus <-mar_sw_sus %>%
   left_join(sw_sp_w, by= c("species", "rgn_id"))
 
 
@@ -1519,12 +1596,22 @@ mar_sw_sus <- mar_sw_sus %>%
 
 Merge the three Seafood Watch type categories into a single sustainability score column in the following order:
 
-1. Sust_mean: average of the three "Sust_" columns
+
 2. Sust_sw_sp_c: specific to species/country
 3. Sust_sw_sp_w: specific to species/water body
 4. Sust_sw_sp_g: specific to species/global Seafood Watch data
 
 For example, if Sust_mean is missing, use Sust_sw_sp_c and so on. 
+
+```{r}
+mar_sw_sus_test = mar_sw_sus %>% 
+  dplyr::mutate(Sust = ifelse(!is.na(Sust_sw_sp_c), Sust_sw_sp_c, Sust_sw_sp_w)) %>%
+  dplyr::mutate(Sust = ifelse(is.na(Sust), Sust_sw_sp_g, Sust)) %>%
+  dplyr::select(-Sust_sw_sp_c, -Sust_sw_sp_w, -Sust_sw_sp_g)
+
+summary(mar_sw_sus_test)
+```
+
 
 ```{r sw-sus-merge}
 
