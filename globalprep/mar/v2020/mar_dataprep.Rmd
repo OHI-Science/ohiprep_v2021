@@ -90,7 +90,7 @@ source('../../../workflow/R/common.R') # directory locations
 
 Mariculture production in tonnes.
 
-```{r import-data}
+```{r import-data, eval = FALSE}
 
 mar <- read.csv(file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_mariculture/d2020/FAO_GlobalAquacultureProduction_Quantity_1950_2018.csv'), check.names=FALSE, stringsAsFactors=FALSE) ; head(mar) 
 
@@ -102,7 +102,7 @@ mar <- read.csv(file.path(dir_M, 'git-annex/globalprep/_raw_data/FAO_mariculture
 
 Filter freshwater mariculture, make long format, and clean FAO codes.
 
-```{r tidy-data}
+```{r tidy-data, eval = FALSE}
 
 mar <- mar %>%
   rename(country = `Country (Country)`,
@@ -130,23 +130,22 @@ mar <- mar %>%
 
 Update species name in the `raw/species_list.csv` file with names in the `mar` dataset (exclude non-food species). I simplified the species_list.  I cut the "species" name columns because it wasn't clear what this was trying to accomplish and created potential error.  
 
-```{r update-species}
+```{r update-species, eval = FALSE}
 
 ## Commented out 'read.csv' lines are different versions of the dataset, representing the three different seaweed exclusion methods (exclude some seaweed, all seaweed, all seaweed nei). Use at the end for data checking. The first one is the one which is saved to the "output" folder, and the main analysis to run. 
 mar_sp <- read.csv('raw/species_list.csv', stringsAsFactors=FALSE) %>%
-  select(FAO_name, exclude, alias, Taxon_code)
-#mar_sp <- read.csv('raw/species_list.csv', stringsAsFactors=FALSE) %>%
-#  select(FAO_name, exclude_no_seaweed, alias, Taxon_code)
-#mar_sp <- read.csv('raw/species_list.csv', stringsAsFactors=FALSE) %>%
-#  select(FAO_name, exclude_no_nei, alias, Taxon_code)
+  select(FAO_name, exclude, alias, Taxon_code, family)
 
 new.spp <- setdiff(mar$FAO_name, mar_sp$FAO_name)
 new.spp # Check: if dim has 0 rows it means all match
 ## If there is a list of species, hand check species_list.csv to see whether to keep (exclude seaweeds and species harvested for ornamental/medicinal), check if synonyms match Trujillo names. 
-## This is outlined in issue #8 and issue #81 for reference. You need to add the species output from this to species_list.csv and fill out the corresponding information. I.e. add FAO_name, exclude (whether to include in assessment or not. If they are only harvested for medicinal purposes, do not include), alias, and Taxon_code to species_list.csv.
+## This is outlined in issue #8 and issue #81 for reference. You need to add the species output from this to species_list.csv and fill out the corresponding information. I.e. add FAO_name, exclude (whether to include in assessment or not. If they are only harvested for medicinal purposes, do not include), alias, Taxon_code, and family to species_list.csv.
 
+#### Begin 2020 only ####
+## Lets clean the species names first to prep for taxize. Remove []s. 
 
-## Lets clean the species names first to prep for taxize. Remove []s
+######### NOTE ######### The taxize loop in this code will likely only be necessary for 2020. Due to the large number of species we needed to find family information for, we wanted to automate it as much as possible. In the future there will likely only be a few species that you will need to find family information on, and googling that information is fine. 
+
 mar_sp_clean <- data.frame(mar_sp, spp_clean =gsub("\\[|\\]", "", mar_sp$FAO_name), stringsAsFactors=FALSE)
 
 mar_sp_clean_names <- str_replace(mar_sp_clean$spp_clean, " nei", "") ## remove nei
@@ -158,7 +157,10 @@ mar_sp_clean_names_final <- data.frame(mar_sp_clean, spp_clean_final = gsub("\\(
 spp_all <- mar_sp_clean_names_final %>%
     .$spp_clean_final ## get a list of the species names to feed into the loop
 
-for(i in spp_all){
+spp_all_NA <- spp_family_df_NA %>%
+  .$query ## this is after the initial run... run the NAs through again to see if it will pick up a family. 
+
+for(i in spp_all_NA){
   #i = "Boleophthalmus pectinirostris"
   chunk_file <- file.path('temp', 
                     sprintf('spp_family_chunk_%s.csv', 
@@ -180,21 +182,44 @@ write_csv(spp_fam_tmp, chunk_file) ## write to a temp folder
 }
 }
 
+## get all the file names and read them into one dataframe
   spp_family_chunk_files <- list.files(file.path('temp'), 
                                     pattern = 'spp_family_chunk', 
                                     full.names = TRUE)
   
-  spp_family_df <- lapply(spp_countries_chunk_files, FUN = function(x) {
-    read.csv(x)}) %>%
+  spp_family_df <- lapply(spp_family_chunk_files, FUN = function(x) {
+    read.csv(x, stringsAsFactors = FALSE)}) %>%
     bind_rows()
   
-  #split into NAs and re run through loop again with updated names... i.e. remove "nei" from spp names
+  #split into NAs and Non NAs, save non NAs, and manually look up family names for the NA ones. 
+  spp_family_df_NA <- spp_family_df %>%
+    dplyr::filter(is.na(family))
   
-  write.csv(spp_family_df, "int/taxize_run_1.csv", row.names = FALSE)
-#test <- tax_name('Boleophthalmus pectinirostris', get = "family") #test to see if it will work
+  spp_family_df_non_NA <- spp_family_df %>%
+    dplyr::filter(!is.na(family))
   
+  write.csv(spp_family_df_non_NA, "int/taxize_non_NA.csv", row.names = FALSE)
   
+  #Save the NA families so that we can manually assign. We will reupload after.. although not entirely correct, I'm going to classify all seaweeds as algae
+    write.csv(spp_family_df_NA, "int/taxize_manual_additions_NA_raw.csv", row.names = FALSE) 
 
+    ## Now read in the manual google additions just made
+  spp_family_df_additions <- read_csv("int/taxize_manual_additions_NA_fixed.csv")
+  
+  ## join together with the non NA taxize families
+  
+  spp_taxize_families <- rbind(spp_family_df_non_NA, spp_family_df_additions)
+  
+  ## join back onto mar_sp_clean_names_final to add the family information
+  mar_sp <- left_join(mar_sp_clean_names_final, spp_taxize_families, by = c("spp_clean_final" = "query")) %>%
+    dplyr::select(FAO_name, exclude, alias, Taxon_code, family) ## now we have a dataset with the family information we will need for gapfilling later on
+  
+# Now lets rewrite this as our species_list.csv
+  
+#write.csv(mar_sp, "raw/species_list.csv", row.names = FALSE)
+
+#### END 2020 only  
+  
 ## REMOVE SPECIES not relevant to mariculture goal (i.e., non-food species)
 mar <- mar %>% left_join(mar_sp, by="FAO_name") 
 
@@ -219,7 +244,7 @@ mar$species <- ifelse(!is.na(mar$alias), mar$alias, mar$FAO_name)
 ## Sum production values for each group to account for duplicate rows after name change (remove NA values)
 mar <- mar %>%
   filter(!is.na(value)) %>%
-  group_by(country, fao, environment, species, year, Taxon_code) %>% 
+  group_by(country, fao, environment, species, year, Taxon_code, family) %>% 
     summarize(value = sum(value)) %>% 
   ungroup()
 
@@ -235,7 +260,7 @@ mar <- mar %>%
 
 ## Convert country names to OHI regions
 
-```{r convert-regions}
+```{r convert-regions, eval = FALSE}
 
 ## Divide mariculture from countries that we report as separate regions (assume equal production in all regions)
   # Netherlands Antilles: Conch restoration among Aruba, Bonaire, Curacao
@@ -254,7 +279,7 @@ mar_rgn <- name_2_rgn(df_in = mar,
 
 ## Sum values of regions with multiple subregions
 mar_rgn <- mar_rgn %>%
-  group_by(fao, environment, species, year, Taxon_code, rgn_id) %>% 
+  group_by(fao, environment, species, year, Taxon_code, rgn_id, family) %>% 
   summarize(value = sum(value)) %>%
   ungroup()
 
@@ -262,68 +287,11 @@ mar_rgn <- mar_rgn %>%
 
 **Take a look at the tidied data for a single year and region**
 
-```{r see-tidy-data}
+```{r see-tidy-data, eval = FALSE}
 
 data.frame(filter(mar_rgn, rgn_id==130) %>%
   filter(year==2013) %>%
   arrange(species))
-
-```
-
-For some regions, a specific species can be altered so that it matches more general Trujillo sustainability data.  In this case, I don't want the name changes to be global because some regions may have more specific species data. 
-
-(Will explore this in the future, but will not implement this year).
-
-```{r explore-Trujillo-changes}
-
-# ## based on looking at the list, make a few name changes to match the regions Trujillo data
-# # Chile name modification
-# mar_rgn$species[mar_rgn$rgn_id==224 & mar_rgn$species == "Red abalone"] <- "Abalones nei"
-# mar_rgn$species[mar_rgn$rgn_id==224 & mar_rgn$species == "Japanese abalone"] <- "Abalones nei"
-# 
-# # China
-# mar_rgn$species[mar_rgn$rgn_id==209 & mar_rgn$species == "Areolate grouper"] <- "Groupers nei"
-# mar_rgn$species[mar_rgn$rgn_id==209 & mar_rgn$species == "Greasy grouper"] <- "Groupers nei"
-# mar_rgn$species[mar_rgn$rgn_id==209 & mar_rgn$species == "Hong Kong grouper"] <- "Groupers nei"
-# mar_rgn$species[mar_rgn$rgn_id==209 & mar_rgn$species == "Orange-spotted grouper"] <- "Groupers nei"
-# 
-# # Honduras
-# mar_rgn$species[mar_rgn$rgn_id==133 & mar_rgn$species == "Whiteleg shrimp"] <- "Penaeus shrimps nei"
-# 
-# # Italy
-# mar_rgn$species[mar_rgn$rgn_id==84 & mar_rgn$species == "Pacific cupped oyster"] <- "Cupped oysters nei"
-# 
-# # New Zealand
-# mar_rgn$species[mar_rgn$rgn_id==162 & mar_rgn$species == "Rainbow abalone"] <- "Abalones nei"
-# 
-# # Pakistan
-# mar_rgn$species[mar_rgn$rgn_id==53 & mar_rgn$species == "Penaeus shrimps nei"] <- "Marine crustaceans nei"
-# 
-# # Philippines
-# mar_rgn$species[mar_rgn$rgn_id==15 & mar_rgn$species == "Whiteleg shrimp"] <- "Penaeus shrimps nei"
-# 
-# # Portugal
-# mar_rgn$species[mar_rgn$rgn_id==183 & mar_rgn$species == "Golden carpet shell"] <- "Marine molluscs nei"
-# mar_rgn$species[mar_rgn$rgn_id==183 & mar_rgn$species == "Peppery furrow"] <- "Marine molluscs nei"
-# mar_rgn$species[mar_rgn$rgn_id==183 & mar_rgn$species == "Solen razor clams nei"] <- "Razor clams nei"
-# mar_rgn$species[mar_rgn$rgn_id==183 & mar_rgn$species == "Atlantic bluefin tuna"] <- "Marine fishes nei"
-# mar_rgn$species[mar_rgn$rgn_id==183 & mar_rgn$species == "Meagre"] <- "Marine fishes nei"
-# mar_rgn$species[mar_rgn$rgn_id==183 & mar_rgn$species == "Seabasses nei"] <- "Marine fishes nei"
-# mar_rgn$species[mar_rgn$rgn_id==183 & mar_rgn$species == "Soles nei"] <- "Marine fishes nei"
-# mar_rgn$species[mar_rgn$rgn_id==183 & mar_rgn$species == "White seabream"] <- "Marine fishes nei"
-# 
-# # Spain
-# mar_rgn$species[mar_rgn$rgn_id==182 & mar_rgn$species == "Atlantic bluefin tuna"] <- "Tuna-like fishes nei"
-# 
-# # Turkey
-# mar_rgn$species[mar_rgn$rgn_id==76 & mar_rgn$species == "Atlantic bluefin tuna"] <- "Tuna-like fishes nei"
-# mar_rgn$species[mar_rgn$rgn_id==76 & mar_rgn$species == "European seabass"] <- "Seabasses nei"
-# 
-# ### sum values of regions with multiple subregions
-# mar_rgn <- mar_rgn %>%
-#   group_by(fao, environment, species, year, Taxon_code, rgn_id) %>%
-#   summarize(value = sum(value)) %>%
-#   ungroup()
 
 ```
 
@@ -335,7 +303,7 @@ For example: Production of blue shrimp in Maine starts in 1983 -- don't include 
 
 Checked to make sure that there weren't instances in which it made more sense to carry the previous year's data forward as a method of gapfilling. This didn't seem to be the case.
 
-```{r gapfill-missing-0}
+```{r gapfill-missing-0, eval = FALSE}
 
 ## Spread mar_rgn to create a value for every year-species-region (if missing it will be given a NA)
 mar_rgn_spread <- spread(mar_rgn, year, value)
@@ -343,13 +311,13 @@ dim(mar_rgn_spread)
 
 ## Turn data frame back into long format
 mar_rgn_gf <- gather(mar_rgn_spread, "year", "value", num_range("",1950:2018)) %>%
-  arrange(rgn_id, species, year, Taxon_code, fao, environment) 
+  arrange(rgn_id, species, year, Taxon_code, family, fao, environment) 
 
 ## NA values are converted to zero.
 mar_rgn_gf <- mar_rgn_gf %>%
   mutate(year = as.numeric(as.character(year))) %>%
   mutate(value_w_0 = ifelse(is.na(value), 0, value)) %>%
-  group_by(fao, environment, species, Taxon_code, rgn_id) %>% 
+  group_by(fao, environment, species, Taxon_code, family, rgn_id) %>% 
   mutate(cum_value = cumsum(value_w_0)) %>%
   ungroup() %>%
   filter(cum_value > 0) %>% # Eliminates years before mariculture began
@@ -361,31 +329,31 @@ mar_rgn_gf <- mar_rgn_gf %>%
 
 See how may NA values were converted to 0
 
-```{r table-NA-0}
+```{r table-NA-0, eval = FALSE}
 
 table(mar_rgn_gf$gap_0_fill)
 ## 3790 of these out of 27810+3790 cases had NA values converted to 0 - 2018 assessment
 ## 3763 of these out of 28694+4291 cases had NA values converted to 0 - 2019 assessment
-## 5656 of these out of 28137+5656 cases had NA values converted to 0 - 2020 assessment
+## 5666 of these out of 28149+5662 cases had NA values converted to 0 - 2020 assessment
 
 ```
 
 Remove species-region-environment time series with less than four years of mariculture production > 0 tonnes (assume these are not established mariculture programs).
 
-```{r remove-less-four-years}
+```{r remove-less-four-years, eval = FALSE}
 
 mar_rgn_gf = mar_rgn_gf %>% 
   group_by(rgn_id, species, fao, environment) %>%
   mutate (not_0 = length(value[value>0])) %>% # Length of vector of years greater than 0
   filter (not_0>3) %>% # Filter for groups that have at least four years of mariculture production 
   ungroup() %>% 
-  select(rgn_id, species, fao, environment, year, value, Taxon_code, gap_0_fill) 
+  select(rgn_id, species, fao, environment, year, value, Taxon_code, family, gap_0_fill) 
 
 ```
 
 Add a unique identifier per cultivated stock that describes each species, fao region, and environment grouping.
 
-```{r add-identifier}
+```{r add-identifier, eval = FALSE}
 
 ## Add a unique identifier per cultivated stock
 identifier = mar_rgn_gf %>% 
@@ -402,713 +370,23 @@ maric <- mar_rgn_gf
 
 Used to estimate total mariculture yield per country.
 
-Saves the appropriate Mariculture-FP file depending on whether we are excluding species based on best judgment (exclude), all seaweeds (exclude_no_seaweed), or just seaweeds nei (exclude_no_nei). See method changes above.
+Saves the Mariculture-FP file 
 
-```{r save-mariculture-yield}
+```{r save-mariculture-yield, eval = FALSE}
 
-if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
+
  write.csv(maric, 'output/MAR_FP_data.csv', row.names=FALSE)
- } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-   write.csv(maric, 'test/MAR_FP_data_no_seaweed.csv', row.names=FALSE)
-   } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-     write.csv(maric, 'test/MAR_FP_data_no_nei.csv', row.names=FALSE)
-     }
 
 ```
 
-# Import data: Trujillo sustainability scores
 
-These data describe the sustainability and genetic escapes for country/species combinations (and, in a couple cases, environment and FAO region combinations). In cases where these data were not available for a specific county/species, we averaged the data across taxonomic groups to gapfill the missing data.
-
-```{r trujillo-scores}
-
-## Trujillo sustainability data:
-sus = read.csv('raw/Truj_label_sust.csv', stringsAsFactors = FALSE, na.strings = NA)
-
-```
-
-# Wrangle
-
-```{r re-add-scores}
-
-## These need to be re-added (get cut when associated with region ids)
-sus_no_rgn <- filter(sus, is.na(country))
-
-```
-
-## Convert country names to OHI region names.
-
-```{r sus_convert-region}
-
-sus_rgn <- name_2_rgn(df_in = sus, 
-                       fld_name='country', 
-                       flds_unique=c('species_fao', 'fao', 'environment', 'species_Truj'))
-
-sus_rgn <- bind_rows(sus_rgn, sus_no_rgn) %>%
-  unique()
-
-```
-
-**Check that the non-matches between Trujillo sustainability FAO spp (sus_rgn) and the FAO mariculture species in the wrangled FAO Aquaculture Production data table (maric) are not due to spelling errors or slightly different names. We want to include as many species that have sustainability scores as possible**
-
-```{r sus_check-non-matches}
-
-## Make sure same species are spelled the same in the two data tables (e.g. check that there are no extra spaces)
-sort(setdiff(sus_rgn$species_fao, maric$species)) # Species that are no longer have mariculture industry or are not included due to being freshwater or non-food
-
-sort(setdiff(maric$species, sus_rgn$species_fao)) # FAO species with no Trujillo data - there will probably be a long list
-
-## Hand check each of the species output here. I mainly check to make sure there aren't obvious cases when the species is the same, but the names are presented slightly differently in the lists. For example, some species might have an extra space in the name somewhere. If any of these obvious differences exist, we need to go in and change the names to match. 
-## Its not too surprising (unfortunately) that the FAO list has far more species than the sustainability list. But, I like to go over them to make sure that we are getting sustainability scores for as many species as we can.
-
-```
-
-# FAO mariculture and sustainability scores
-
-Append sustainability score to the FAO mariculture data.
-
-The following joins the sustainability scores to regions/species that have Trujillo data.
-
-```{r add-sus-fao-data}
-
-table(sus_rgn$match_type)
-
-## Join taxa specific to country/species/environment
-c_sp_env = sus_rgn %>% 
-  filter(match_type == 'c_sp_env') %>% 
-  select(rgn_id, species=species_fao, environment, Sust_c_sp_env = Maric_sustainability)
-
-mar_sus <- maric %>%
-  left_join(c_sp_env, by= c("species", "environment", "rgn_id"))
-
-## Join taxa specific to country/species/fao region
-c_sp_fao = sus_rgn %>% 
-  filter(match_type == 'c_sp_fao') %>% 
-  select(rgn_id, species=species_fao, fao, Sust_c_sp_fao = Maric_sustainability)
-
-mar_sus <- mar_sus %>%
-  left_join(c_sp_fao, by= c("species", "fao", "rgn_id"))
-
-```
-
-**Take a look at the data thus far**
-
-```{r view-truj-sus-data}
-
-head(data.frame(filter(mar_sus, rgn_id==218 & species == "Atlantic salmon")))
-head(data.frame(filter(mar_sus, !is.na(Sust_c_sp_fao))))
-
-```
-
-```{r sus_join-country-species}
-
-## Join taxa specific to country/species
-c_sp = sus_rgn %>% 
-  filter(match_type == 'c_sp') %>% 
-  select(rgn_id, species=species_fao, Sust_c_sp = Maric_sustainability)
-
-mar_sus <- mar_sus %>%
-  left_join(c_sp, by= c("species", "rgn_id"))
-
-```
-
-**Now look at a summary after appending all the Trujillo data**
-
-```{r truj-sus-summary}
-
-summary(mar_sus)
-
-```
-
-Merge the three Trujillo type categories into a single sustainability score column in the following order:
-
-1. Sust_c_sp_env: taxa specific to country/species/environment (smallest taxonomic level)
-2. Sust_c_sp_fao:  taxa specific to country/species/fao region
-3. Sust_c_sp: taxa specific to country/species (highest taxonomic level)
-
-For example, if Sust_c_sp_env is missing, use Sust_c_sp_fao and so on. 
-
-```{r truj-sus-merge}
-
-mar_sus = mar_sus %>% 
-  mutate(Sust = ifelse(!is.na(Sust_c_sp_env), Sust_c_sp_env, Sust_c_sp_fao)) %>%
-  mutate(Sust = ifelse(is.na(Sust), Sust_c_sp, Sust)) %>%
-  select(-Sust_c_sp_env, -Sust_c_sp_fao, -Sust_c_sp)
-
-```
-
-This joins the sustainability data that is gapfilled either at the species level (average of specific species/genera across regions) or at a higher course taxonomic levels and documents which data are gapfilled and how.
-
-```{r truj-sus-join-gapfilled}
-
-## Select observations gapfilled at the species/genera level:
-gf_sp_sus <- sus_rgn %>% 
-  filter(gapfill != "actuals" & match_type == "species") %>%
-  select(species = species_fao, gapfill, Sust_gf_sp = Maric_sustainability)
-
-## Check that there are no duplicated species_fao
-gf_sp_sus[duplicated(gf_sp_sus$species), ]
-
-## Match gapfilling values by species
-mar_sus_gf = mar_sus %>%
-  left_join(gf_sp_sus, by = 'species')
-
-## Select observations gapfilled at the coarse taxon level:
-gf_taxon_sus <- sus_rgn %>% 
-  filter(gapfill != "actuals" & match_type == "taxon") %>%
-  select(Taxon_code=taxon, Sust_gf_taxon = Maric_sustainability)
-
-## Match gapfilling values by species
-mar_sus_gf = mar_sus_gf %>%
-  left_join(gf_taxon_sus, by = c('Taxon_code'))
-
-```
-
-**Take a look at the wrangled data**
-
-```{r view-truj-sus-gapfilled}
-
-summary(mar_sus_gf) # Should be no NAs in Sust_gf_taxon column
-table(mar_sus_gf$gapfill)
-
-```
-
-Obtain a sustainability score for each record, and a book-keeping column of whether it's actual or gapfilled
-
-For missing sustainability scores:
-
-1. Use species-level Sustainability score
-2. If no species-level scores, gapfill with taxon-level sustainability average
-
-```{r truj-sus-gapfill-missing}
-
-mar_sus_final = mar_sus_gf %>% 
-  mutate(gapfill = ifelse(!is.na(Sust), "none", gapfill)) %>%
-  mutate(Sust = ifelse(is.na(Sust), Sust_gf_sp, Sust)) %>% # Gapfill with species level
-  mutate(gapfill = ifelse(is.na(Sust), "taxon_average", gapfill)) %>% # Add in taxon gapfill record
-  mutate(Sust = ifelse(is.na(Sust), Sust_gf_taxon, Sust)) %>% # Gapfill with taxon level
-  mutate(taxa_code = paste(species, species_code, sep="_")) %>%
-  select(rgn_id, species, species_code, taxa_code, taxa_group=Taxon_code, year, gapfill_sus = gapfill, gapfill_fao = gap_0_fill, tonnes=value, Sust)
-
-```
-
-# Save Data:
-
-```{r save-mar-harvest-data}
-
-## Save mariculture harvest data
-mar_harvest_tonnes = mar_sus_final %>%
-  select(rgn_id, taxa_code, taxa_group, year, tonnes)
-
-anyDuplicated(mar_harvest_tonnes) # Check for duplication
-
-## Saves the appropriate Mariculture Harvest Tonnes file depending on whether we are excluding species based on best judgment (exclude), all seaweeds (exclude_no_seaweed), or just seaweeds nei (exclude_no_nei). See method changes above.
-if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
- write.csv(mar_harvest_tonnes, 'output/mar_harvest_tonnes.csv', row.names=F)
- } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-   write.csv(mar_harvest_tonnes, 'test/mar_harvest_tonnes_no_seaweed.csv', row.names=F)
-   } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-     write.csv(mar_harvest_tonnes, 'test/mar_harvest_tonnes_no_nei.csv', row.names=F)
-     }
-
-## Save gapfill data for mariculture harvest
-mar_harvest_tonnes_gf = mar_sus_final %>%
-  select(rgn_id, taxa_code, taxa_group, year, tonnes=gapfill_fao)
-
-
-## Saves the appropriate Mariculture Harvest Gapfill file depending on whether we are excluding species based on best judgment (exclude), all seaweeds (exclude_no_seaweed), or just seaweeds nei (exclude_no_nei). See method changes above
-if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
- write.csv(mar_harvest_tonnes_gf, 'output/mar_harvest_tonnes_gf.csv', row.names=F)
- } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-   write.csv(mar_harvest_tonnes_gf, 'test/mar_harvest_tonnes_gf_no_seaweed.csv', row.names=F)
-   } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-     write.csv(mar_harvest_tonnes_gf, 'test/mar_harvest_tonnes_gf_no_nei.csv', row.names=F)
-     }
-
-
-## Save sustainability scores data for 2012
-mar_sustainability_score = mar_sus_final %>% 
-  mutate(year = 2012) %>% # Only 2012 sustainability scores exist (Trujillo)
-  select(rgn_id, year, taxa_code, sust_coeff = Sust) %>% 
-  unique()
-
-anyDuplicated(mar_sustainability_score)
-
-
-## Saves the appropriate Sustainability Score file depending on whether we are excluding species based on best judgment (exclude), all seaweeds (exclude_no_seaweed), or just seaweeds nei (exclude_no_nei). See method changes above
-if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
- write.csv(mar_sustainability_score, 'output/mar_sustainability.csv', row.names=F)
- } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-   write.csv(mar_sustainability_score, 'test/mar_sustainability_no_seaweed.csv', row.names=F)
-   } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-     write.csv(mar_sustainability_score, 'test/mar_sustainability_no_nei.csv', row.names=F)
-     }
-
-
-## Save gapfill data for sustainability scores
-mar_sustainability_score_gf = mar_sus_final %>% 
-  select(rgn_id, taxa_code, sust_coeff = gapfill_sus) %>% 
-  unique()
-
-
-## Saves the appropriate Sustainability Score Gapfill file depending on whether we are excluding species based on best judgment (exclude), all seaweeds (exclude_no_seaweed), or just seaweeds nei (exclude_no_nei). See method changes above
-if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
- write.csv(mar_sustainability_score_gf, 'output/mar_sustainability_gf.csv', row.names=F)
- } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-   write.csv(mar_sustainability_score_gf, 'test/mar_sustainability_gf_no_seaweed.csv', row.names=F)
-   } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-     write.csv(mar_sustainability_score_gf, 'test/mar_sustainability_gf_no_nei.csv', row.names=F)
-     }
-
-```
-
-# Wrangle: Genetic Escapes Data
-
-Combine genetic escapes data to mariculture data. 
-
-* Data from Trujillo data table. 
-* These data are used as a pressure layer to describe the risk of genetic escapees due to mariculture.
-* First merge with the species data (no gapfilling) for each country/species/fao region combination.
-
-```{r wrangle-genetic-escapes-data}
-
-## Can eliminate the environment category because these have the same scores
-esc = sus_rgn %>% 
-  filter(!is.na(Genetic.escapees)) %>%
-  mutate(match_type = ifelse(match_type == "c_sp_env", "c_sp", match_type)) %>%
-  group_by(rgn_id, species=species_fao, fao, match_type, taxon, gapfill) %>%
-  summarize(Genetic.escapees = mean(Genetic.escapees)) %>%
-  ungroup()
-  
-## Join taxa specific to country/species/fao
-c_sp_fao = esc %>% 
-  filter(match_type == 'c_sp_fao') %>% 
-  select(rgn_id, species, fao, Esc_c_sp_fao = Genetic.escapees) 
-
-mar_esc <- maric %>%
-  left_join(c_sp_fao, by= c("species", "fao", "rgn_id"))
-
-head(data.frame(filter(mar_esc, !is.na(Esc_c_sp_fao))))
-
-## Join taxa specific to country/species
-c_sp = esc %>% 
-  filter(match_type == 'c_sp') %>% 
-  select(rgn_id, species, Esc_c_sp = Genetic.escapees) # fao is blank
-
-mar_esc <- mar_esc %>%
-  left_join(c_sp, by= c("species", "rgn_id"))
-
-```
-
-**Look at a summary of the wrangled data table**
-
-```{r summary-genetic-escapes}
-
-summary(mar_esc)
-
-```
-
-Merge the different match types (esc_c_sp_fao, esc_c_sp) into a single sustainability score
-
-1. First use Esc_c_sp_fao
-2. If no Esc_c_sp_fao value, use Esc_c_sp
-
-```{r merge-genetic-escapes-scores}
-
-mar_esc = mar_esc %>% 
-  mutate(Escapees = ifelse(!is.na(Esc_c_sp_fao), Esc_c_sp_fao, Esc_c_sp)) %>%
-  select(-Esc_c_sp_fao, -Esc_c_sp)
-
-```
-
-# Gapfill 
-
-Join the sustainability data that is gapfilled either at the species level (average of specific species/genera across regions) or at a higher course taxonomic levels and documents which data are gapfilled and how.
-```{r gapfill-genetic-escapes}
-
-## Select observations gapfilled at the species/genera level:
-gf_species_esc <- esc %>% 
-  filter(gapfill != "actuals" & match_type == "species") %>%
-  select(species, gapfill, Esc_gf_sp = Genetic.escapees)
-
-## Check that there are no duplicated species_fao
-gf_species_esc[duplicated(gf_species_esc$species), ]
-
-## Match gapfilling values by species
-mar_esc_gf = mar_esc %>%
-  left_join(gf_species_esc, by = 'species')
-
-## Select observations gapfilled at the coarse taxon level:
-gf_taxon_sus <- esc %>% 
-  filter(gapfill != "actuals" & match_type == "taxon") %>%
-  select(Taxon_code=taxon, Esc_gf_taxon = Genetic.escapees)
-
-## Match gapfilling values by species
-mar_esc_gf = mar_esc_gf %>%
-  left_join(gf_taxon_sus, by = c('Taxon_code'))
-
-```
-
-**Take a look at wrangled data**
-
-```{r summary-genetic-escapes-gapfilled}
-
-summary(mar_esc_gf)
-
-table(mar_esc_gf$gapfill)
-
-```
-
-## Record Gapfilling Methods
-
-Obtain a sustainability score for each record, and a book-keeping column of whether it's actual or gap-filled.
-
-For gapfill column
-
-1. If no missing escapee data, record "none"
-2. If NA, then gapfill with `Esc_gf_sp` (gapfill for species-level already recorded)
-3. If no `Esc_gf_sp` value, then record "taxon_average" as the gapfill method
-4. Fill in missing value with `Esc_gf_taxon` value
-
-```{r record-gen-esc-gapfill}
-
-tonnes_esc = mar_esc_gf %>% 
-  mutate(gapfill = ifelse(!is.na(Escapees), "none", gapfill)) %>% 
-  mutate(Escapees = ifelse(is.na(Escapees), Esc_gf_sp, Escapees)) %>%
-  mutate(gapfill = ifelse(is.na(Escapees), "taxon_average", gapfill)) %>%
-  mutate(Escapees = ifelse(is.na(Escapees), Esc_gf_taxon, Escapees)) %>%
-  select(rgn_id, species, species_code, year, gapfill_escapees = gapfill, tonnes=value, Escapees)
-
-```
-
-**Take a look at the summary**
-
-```{r summary_gapfilled-gen-esc}
-
-summary(tonnes_esc)
-
-anyDuplicated(tonnes_esc) # Check for duplicates
-
-```
-
-Final formatting of the escapee data. This is used as a pressure layer.
-
-For each region/year: take a weighted average of the genetic escape probability for each taxa based on tonnes mariculture
-```{r gen-esc-formatting}
-
-genEscapes <- tonnes_esc %>%
-  group_by(rgn_id, year) %>%
-  summarize(genEscapes = weighted.mean(Escapees, tonnes, na.rm=TRUE))
-
-```
-
-Obtain gapfill information from `genEscapes`
-
-Gapfill values in output file are the proportion of data that is gapfilled.
-
-```{r obtain-gapfill-info-genEscapes}
-
-## Obtain corresponding gapfilling information for each region (average of gapfilled data, weighted by tonnes of mariculture).
-genEscapes_gf <- tonnes_esc %>%
-  mutate(gapfill = ifelse(gapfill_escapees=="none", 0, 1)) %>%
-  group_by(rgn_id, year) %>%
-  summarize(genEscapes = weighted.mean(gapfill, tonnes, na.rm=TRUE)) %>%
-  ungroup() %>%
-  filter(year==2018) %>%
-  select(rgn_id, pressures.score=genEscapes) %>%
-  mutate(pressures.score=ifelse(pressures.score=="NaN", NA, pressures.score)) %>%
-  data.frame()
-
-```
-
-## Save gapfill data
-
-```{r save-gen-esc-gapfilled}
-
-## Saves the appropriate Genetic Escapes Gapfill file depending on whether we are excluding species based on best judgment (exclude), all seaweeds (exclude_no_seaweed), or just seaweeds nei (exclude_no_nei). See method changes above
-if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
- write.csv(genEscapes_gf, 'output/GenEsc_gf.csv', row.names=FALSE)
- } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-   write.csv(genEscapes_gf, 'test/GenEsc_gf_no_seaweed.csv', row.names=FALSE)
-   } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-     write.csv(genEscapes_gf, 'test/GenEsc_gf_no_nei.csv', row.names=FALSE)
-     }
-
-```
-
-Obtain escapee data layers from `genEscapes`
-
-```{r create-gen-esc-layers}
-
-# Create the escapee data layers:
-data <- genEscapes %>%
-    select(rgn_id, year, pressure_score = genEscapes)
-
-```
-
-## Save escapee pressure layer 
-
-```{r save-gen-esc-pressure-layer}
-
-## Saves the appropriate Genetic Escapes data file depending on whether we are excluding species based on best judgment (exclude), all seaweeds (exclude_no_seaweed), or just seaweeds nei (exclude_no_nei). See method changes above
-if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
- write.csv(data, 'output/GenEsc.csv', row.names=FALSE)  
- } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-   write.csv(data, 'test/GenEsc_no_seaweed.csv', row.names=FALSE) 
-   } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-    write.csv(data, 'test/GenEsc_no_nei.csv', row.names=FALSE)  
-     }
-
-```
-
-## Data check
-
-Comparing this year's data to previous year's data. Expect small variation from year to year. Plot to view differences.
-
-```{r data-check}
-
-## Compare genetic escapes pressure scores for Russia; saw large changes between 2018 and 2017 assessment years. No big changes between 2019 and 2018 assessment years. No changes between 2020 and 2019 assessment years.
-old <- read.csv("../v2019/output/GenEsc.csv") %>%
-  filter(rgn_id == 73) %>% 
-  select(rgn_id, year, prs_score_old=pressure_score)
-
-new <- read.csv("../v2020/output/GenEsc.csv") %>%
-  filter(rgn_id == 73) %>% 
-  select(rgn_id, year, pressure_score)
-
-compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
-
-plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
-
-
-
-## Compare yield data for Russia
-mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 73, year == 2017) %>% 
-  select(rgn_id, species, fao, old_value = value)
-mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 73, year == 2018) %>% 
-  select(rgn_id, species, fao, value)
-
-yield <- mar_old %>% 
-  full_join(mar_new, by = c("rgn_id","species","fao")); View(yield)
-
-
-
-## Compare genetic escapes pressure scores for Vietnam; no change in pressures between 2020 and 2019 assessment years.
-old <- read.csv("../v2019/output/GenEsc.csv") %>%
-  filter(rgn_id == 207) %>% 
-  select(rgn_id, year, prs_score_old=pressure_score)
-
-new <- read.csv("../v2020/output/GenEsc.csv") %>%
-  filter(rgn_id == 207) %>% 
-  select(rgn_id, year, pressure_score)
-
-compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
-
-plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
-
-
-
-## Compare yield data for Vietnam
-mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 207, year == 2017) %>% 
-  select(rgn_id, species, fao, environment, old_value = value)
-mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 207, year == 2018) %>% 
-  select(rgn_id, species, fao, environment, value)
-
-yield <- mar_old %>% 
-  full_join(mar_new, by = c("rgn_id","species","fao", "environment")); View(yield)
-
-
-
-## Compare genetic escapes pressure scores for Iceland; saw large changes between 2018 and 2017 assessment years, we do not see a big difference between 2019 and 2018 assessment years or 2020 and 2019 assessment years. 
-old <- read.csv("../v2019/output/GenEsc.csv") %>%
-  filter(rgn_id == 143) %>% 
-  select(rgn_id, year, prs_score_old=pressure_score)
-
-new <- read.csv("../v2020/output/GenEsc.csv") %>%
-  filter(rgn_id == 143) %>% 
-  select(rgn_id, year, pressure_score)
-
-compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
-
-plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
-
-
-
-## Compare yield data for Iceland. Atlantic Salmon increased by a lot between 2018 and 2019 assessment years. Atlantic Salmon stayed relatively stable between 2020 and 2019 assessment years. However, Senegalese sole has an NA value in 2019 assessment; maybe a gapfilling error from last year?
-mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 143, year == 2017) %>% 
-  select(rgn_id, species, fao, environment, old_value = value)
-mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 143, year == 2018) %>% 
-  select(rgn_id, species, fao, environment, value)
-
-yield <- mar_old %>% 
-  full_join(mar_new, by = c("rgn_id","species","fao", "environment")); View(yield)
-
-
-
-## Compare genetic escapes pressure scores for Belize; saw large changes between 2018 and 2017 assessment years, we do not see big differences between 2019 and 2018 assessment years or 2020 and 2019 assessment years. 
-old <- read.csv("../v2019/output/GenEsc.csv") %>%
-  filter(rgn_id == 164) %>% 
-  select(rgn_id, year, prs_score_old=pressure_score)
-
-new <- read.csv("../v2020/output/GenEsc.csv") %>%
-  filter(rgn_id == 164) %>% 
-  select(rgn_id, year, pressure_score)
-
-compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
-
-plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
-
-## Compare yield data for Belize; yield of Whiteleg shrimp was halved between 2019 and 2020 assessment years.
-mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 164, year == 2017) %>% 
-  select(rgn_id, species, fao, old_value = value)
-mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 164, year == 2018) %>% 
-  select(rgn_id, species, fao, value)
-
-yield <- mar_old %>% 
-  full_join(mar_new, by = c("rgn_id","species","fao")); View(yield)
-
-
-## Compare genetic escapes pressure scores for France; saw large changes between 2018 and 2017 assessment years, we do not see big differences between 2019 and 2018 assessment years or 2020 and 2019 assessment years. 
-old <- read.csv("../v2019/output/GenEsc.csv") %>%
-  filter(rgn_id == 179) %>% 
-  select(rgn_id, year, prs_score_old=pressure_score)
-
-new <- read.csv("../v2020/output/GenEsc.csv") %>%
-  filter(rgn_id == 179) %>% 
-  select(rgn_id, year, pressure_score)
-
-compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
-
-plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
-
-
-## Compare yield data for France
-mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 179, year == 2017) %>% 
-  select(rgn_id, species, fao, old_value = value)
-mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 179, year == 2018) %>% 
-  select(rgn_id, species, fao, value)
-
-yield <- mar_old %>% 
-  full_join(mar_new, by = c("rgn_id","species","fao")); View(yield)
-
-plot(yield$old_value, yield$value);abline(0,1,col="red")
-
-
-## Compare genetic escapes pressure scores for Malta; saw large changes between 2019 and 2020 assessment years. 
-old <- read.csv("../v2019/output/GenEsc.csv") %>%
-  filter(rgn_id == 68) %>% 
-  select(rgn_id, year, prs_score_old=pressure_score)
-
-new <- read.csv("../v2020/output/GenEsc.csv") %>%
-  filter(rgn_id == 68) %>% 
-  select(rgn_id, year, pressure_score)
-
-compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
-
-plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
-
-
-## Compare yield data for Malta
-mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 68, year == 2017) %>% 
-  select(rgn_id, species, fao, old_value = value)
-mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
-  filter(rgn_id == 68, year == 2018) %>% 
-  select(rgn_id, species, fao, value)
-
-yield <- mar_old %>% 
-  full_join(mar_new, by = c("rgn_id","species","fao")); View(yield)
-
-plot(yield$old_value, yield$value);abline(0,1,col="red")
-
-
-## Compare new/old Mariculture sustainability scores
-tmp_old <- read.csv("../v2019/raw/Truj_label_sust.csv") %>% 
-  filter(country == "Russian Federation") %>% 
-  select(country, species_Truj, sust_old = Maric_sustainability, gen_old = Genetic.escapees)
-  
-tmp_new <- read.csv("../v2020/raw/Truj_label_sust.csv") %>% 
-  filter(country == "Russian Federation") %>% 
-  select(country, species_Truj, Maric_sustainability, Genetic.escapees)
-
-test <- tmp_new %>% 
-  full_join(tmp_old, by=c("country", "species_Truj"))
-View(test)
-
-plot(test$sust_old, test$Maric_sustainability);abline(0,1,col="red")
-
-
-## Compare new/old genetic escapees scores
-plot(test$gen_old, test$Genetic.escapees);abline(0,1,col="red")
-
-```
-
-
-## Data Check
-
-Compare the three exclusion methods for seaweed species.
-
-*Method 1:Exclude some seaweed species (`exclude`)
-*Method 2 (original): Exclude all seaweed species (`exclude_no_sw`)
-*Method 3: Exclude all seaweed nei species (`exclude_no_nei`)
-
-```{r data-check-seaweed}
-
-## Read in the three different versions of wrangled data
-## Best Professional Judgement (BPJ)
-exclude <- read.csv("../v2020/output/GenEsc.csv") %>%
-  filter(year == 2018) %>% # compare the most recent shared year between old and new
-  select(rgn_id, prs_score_BPJ=pressure_score)
-
-## Exclude all seaweeds (no seaweed)
-exclude_no_sw <- read.csv("../v2020/test/GenEsc_no_seaweed.csv") %>%
-  filter(year == 2018) %>% # compare the most recent shared year between old and new
-  select(rgn_id, prs_score_no_sw=pressure_score)
-
-## Exclude only nei seaweeds (no nei)
-exclude_no_nei <- read.csv("../v2020/test/GenEsc_no_nei.csv") %>%
-  filter(year == 2018) %>% # compare the most recent shared year between old and new
-  select(rgn_id, prs_score_no_nei=pressure_score)
-
-
-## Compare No Seaweed to Best Professional Judgement
-compare <- full_join(exclude, exclude_no_sw, by="rgn_id")
-compare <- na.omit(compare)
-## Compare genetic escapes pressure scores
-plot(compare$prs_score_BPJ, compare$prs_score_no_sw); abline(0,1,col="red")
-
-## Compare No Nei to No Seaweed (not much difference)
-compare <- full_join(exclude_no_nei, exclude_no_sw, by="rgn_id")
-compare <- na.omit(compare)
-## Compare genetic escapes pressure scores
-plot(compare$prs_score_no_nei, compare$prs_score_no_sw); abline(0,1,col="red")
-
-## Compare No Nei to BPJ
-compare <- full_join(exclude_no_nei, exclude, by="rgn_id")
-compare <- na.omit(compare)
-## Compare genetic escapes pressure scores
-plot(compare$prs_score_BPJ, compare$prs_score_no_nei); abline(0,1,col="red")
-
-
-```
-
-# New Sustainability Scores from Seafood Watch Data
+# Sustainability Scores from Seafood Watch Data
 
 ## Import data: Seafood Watch sustainability scores
 
-These data describe the sustainability country/species combinations. In cases where these data were not available for a specific county/species, we averaged the data across taxonomic groups to gapfill the missing data.
+These data describe the sustainability country/species combinations. In cases where these data were not available for a specific county/species, we averaged the data across taxonomic groups to gapfill the missing data. We also calculate the genetic escapes pressure layer from this, based on the column `AqCriteria6`. 
 
-```{r sw-scores}
+```{r sw-scores, eval = FALSE}
 
 ## Load in Seafood Watch sustainability scores data from mazu:
 sw_sus <- read.csv(file.path(dir_M, 'git-annex/globalprep/_raw_data/seafood_watch_mar_sustainability/d2020/Seafood-Watch_aquaculture-recs_July-2020.csv'), check.names = FALSE, stringsAsFactors = FALSE, na.strings = c("NA", ""))
@@ -1123,7 +401,7 @@ head(sw_sus)
 
 Rename columns to match with MAR data and fill in species column
 
-```{r tidy_sw-sus}
+```{r tidy_sw-sus, eval = FALSE}
 
 ## Rename columns
 sw_sus <- sw_sus %>%
@@ -1141,9 +419,10 @@ sw_sus <- sw_sus %>%
          parent_method = 'Parent Method',
          method = 'Method',
          score = 'Overall Score',
+         escapes_score = 'AqCriteria6',
          rec = 'Overall Recommendation'
          ) %>% 
-  dplyr::select(report_title, start_year, sw_species, genus, spp, fao_species, region, country, state_territory, sub_region, water_body, parent_method, method, score, rec)
+  dplyr::select(report_title, start_year, sw_species, genus, spp, fao_species, region, country, state_territory, sub_region, water_body, parent_method, method, escapes_score, score, rec)
 
 ## Change species names using FAO species name (fao_species); if NA, use common name (sw_species)
 sw_sus$species <- ifelse(!is.na(sw_sus$fao_species), sw_sus$fao_species, sw_sus$sw_species)
@@ -1152,7 +431,7 @@ sw_sus$species <- ifelse(!is.na(sw_sus$fao_species), sw_sus$fao_species, sw_sus$
 
 ### Keep NA countries
 
-```{r keep-na-countries_sw-sus}
+```{r keep-na-countries_sw-sus, eval = FALSE}
 
 ## These need to be re-added later (get cut when associated with region ids)
 sw_sus_no_rgn <- filter(sw_sus, is.na(country))
@@ -1162,7 +441,7 @@ sw_sus_no_rgn <- filter(sw_sus, is.na(country))
 
 ### Convert country names to OHI region IDs.
 
-```{r sw-sus_convert-region}
+```{r sw-sus_convert-region, eval = FALSE}
 
 ## Change country names to match OHI region names
 sw_sus <- sw_sus %>% 
@@ -1186,7 +465,7 @@ sw_sus_rgn <- bind_rows(sw_sus_rgn, sw_sus_no_rgn) %>%
 
 **Check that the non-matches between Seafood Watch sustainability data species (sw_sus_rgn) and the FAO mariculture species in the wrangled FAO Aquaculture Production data table (maric) are not due to spelling errors or slightly different names. We want to include as many species that have sustainability scores as possible**
 
-```{r sw-sus_check-non-matches}
+```{r sw-sus_check-non-matches, eval = FALSE}
 maric <- read_csv("output/MAR_FP_data.csv")
 
 ## Make sure same species are spelled the same in the two data tables (e.g. check that there are no extra spaces)
@@ -1199,7 +478,7 @@ sort(setdiff(maric$species, sw_sus_rgn$species)) # FAO species with no Seafood W
 
 ```
 
-```{r sw-sus_fix-non-matches}
+```{r sw-sus_fix-non-matches, eval = FALSE}
 
 ## Rename species in Seafood Watch data to match FAO species data
 sw_sus_rgn$species <- gsub("Abalone", "Abalones nei", sw_sus_rgn$species)
@@ -1208,12 +487,13 @@ sw_sus_rgn$species <- gsub("Coho salmon", "Coho(=Silver) salmon", sw_sus_rgn$spe
 sw_sus_rgn$species <- gsub("Manila clam", "Japanese carpet shell", sw_sus_rgn$species) # Japanese carpet shell is another name for Manila clam (thanks animal crossing :P )
 sw_sus_rgn$species <- gsub("New Zealand Mussel", "New Zealand mussel", sw_sus_rgn$species)
 sw_sus_rgn$species <- gsub("Hard clam (unspecified)", "Northern quahog(=Hard clam)", sw_sus_rgn$species) # Hard clams are also known as quahogs, round clams, or hard-shell clams
+sw_sus_rgn$species <- gsub("Common sole", "[Solea spp]", sw_sus_rgn$species)
 
 ```
 
 # FAO mariculture and Seafood Watch sustainability scores
 
-```{r match-type_sw-sus-data}
+```{r match-type_sw-sus-data, eval = FALSE}
 
 ## Add column "match_type" to categorize obs. that 1) have a country associated, 2) are "global" Seafood Watch data, or 3) only distinguished by water body
 sw_sus_rgn <- sw_sus_rgn %>% 
@@ -1226,17 +506,8 @@ table(sw_sus_rgn$match_type)
 
 ```
 
-```{r gapfill-sw-sus-match-rgn-id}
 
-## Add column "gapfill" to track which match_type uses the Seafood Watch sustainability data directly, or needs to be gapfilled
-sw_sus_rgn <- sw_sus_rgn %>% 
-  dplyr::mutate(gapfill = dplyr::case_when(match_type == "sw_sp_c" ~ "actuals",
-                                           match_type == "sw_sp_g" ~ "sp_global",
-                                           match_type == "sw_sp_w" ~ "sp_waterbody"))
-
-```
-
-```{r gf_sw_sp_w}
+```{r gf_sw_sp_w, eval = FALSE}
   
 
 ## Add a line for each country that borders each water body
@@ -1244,306 +515,112 @@ sw_sus_rgn <- sw_sus_rgn %>%
 gf_sw_sp_w <- sw_sus_rgn %>% 
   filter(match_type == 'sw_sp_w') %>% 
   # Atlantic bluefin tuna - Marine net pen
-  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>% 
-  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 179, rgn_name = 'France', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>%
-  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 1) %>% 
+  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>% 
+  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 179, rgn_name = 'France', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
+  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>% 
 
   # Gilthead seabream - Marine net pen
-  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>% 
-  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 179, rgn_name = 'France', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>%
-  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 23) %>% 
+  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>% 
+  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 179, rgn_name = 'France', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
+  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>% 
   
   # Meagre - Marine net pen
-  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>% 
-  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 179, rgn_name = 'France', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>%
-  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 45) %>% 
+  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>% 
+  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 179, rgn_name = 'France', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
+  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>% 
   
 # European seabass - Marine net pen
-  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>% 
-  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 179, rgn_name = 'France', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67) %>%
-  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w', gapfill = 'sp_waterbody', .after = 67)
+  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>% 
+  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 179, rgn_name = 'France', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
+  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67)
 
 ```
 
-```{r gf_sw_sp_g}
+```{r sw-fao-joining, eval = FALSE}
 
-## Research species according to method and create new rows matching up species score with regions that are found to produce that type of aquaculture
-gf_sw_sp_g <- sw_sus_rgn %>% 
-  filter(match_type == 'sw_sp_g') %>% 
-  
-  # Atlantic cod - Indoor recirculating tank (without wastewater treatment)
-  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
-  add_row(rgn_id = 143, rgn_name = 'Iceland', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
-  add_row(rgn_id = 223, rgn_name = 'Norway', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
-  add_row(rgn_id = 180, rgn_name = 'United Kingdom', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
-    add_row(rgn_id = 73, rgn_name = 'Russia', species = 'Atlantic cod', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 1) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Gadus+morhua
-  
-  # Mussels - Bottom culture (regions only include those listed in 'maric' for 'Sea mussels nei')
-  add_row(rgn_id = 25, rgn_name = 'Thailand', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 73, rgn_name = 'Russia', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 102, rgn_name = 'South Africa', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 135, rgn_name = 'Mexico', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 136, rgn_name = 'Guatemala', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 147, rgn_name = 'French Polynesia', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 180, rgn_name = 'United Kingdom', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 183, rgn_name = 'Portugal', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 219, rgn_name = 'Saint Pierre and Miquelon', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 6) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  
-  # Basket Cockle - Off-bottom culture
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
-  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
-  add_row(rgn_id = 207, rgn_name = 'Vietnam', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
-  add_row(rgn_id = 20, rgn_name = 'South Korea', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
-  add_row(rgn_id = 210, rgn_name = 'Japan', species = 'Basket Cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 18) %>% # Source: https://www.seafoodwatch.org/-/m/c1eb959a63b645b9b8ddefff5cd6967f.pdf
-  
-  # Abalones nei - Open bottom culture
-  add_row(rgn_id = 210, rgn_name = 'Japan', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 25) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 25) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 25) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 16, rgn_name = 'Australia', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 25) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 135, rgn_name = 'Mexico', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 25) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 224, rgn_name = 'Chile', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 25) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 162, rgn_name = 'New Zealand', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 25) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 102, rgn_name = 'South Africa', species = 'Abalones nei', score = 6.23, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 25) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  
-  # European seabass - Indoor recirculating tank (without wastewater treatment)	
-  add_row(rgn_id = 179, rgn_name = 'France', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 176, rgn_name = 'Germany', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 183, rgn_name = 'Portugal', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'European seabass', score = 6.61, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 34) %>% # Source: http://www.fao.org/fishery/culturedspecies/Dicentrarchus_labrax/en
-  
-  # Sand gaper - Bottom culture
-  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Sand gaper', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 52) %>% # Source: https://www.seafoodwatch.org/-/m/b564a45ea2cb4034b73cdb4b106b4b86.pdf
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Sand gaper', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 52) %>% # Source: https://www.seafoodwatch.org/-/m/7e33b7917e0940d6b5d1e27f0711ae01.pdf
-  
-  # Blood cockle - Off-bottom culture
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Blood cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 55) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Blood cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 55) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Blood cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 55) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 207, rgn_name = 'Vietnam', species = 'Blood cockle', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 55) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  
-  # Rex sole - Indoor recirculating tank (with wastewater)
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Rex sole', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 60) %>% # Source: https://www.seafoodwatch.org/seafood-recommendations/groups/sole?q=Rex%20Sole&t=Rex%20Sole&type=rex&method=farmed&o=284100531
-  
-  # Black sea bass - Indoor recirculating tank (with wastewater)
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Black sea bass', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 62) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Centropristis+striata
-  
-  # Abalones nei - Indoor flowthrough tank
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 64) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 16, rgn_name = 'Australia', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 64) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 64) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 135, rgn_name = 'Mexico', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 64) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 224, rgn_name = 'Chile', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 64) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 210, rgn_name = 'Japan', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 64) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 162, rgn_name = 'New Zealand', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 64) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  add_row(rgn_id = 102, rgn_name = 'South Africa', species = 'Abalones nei', score = 6.95, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 64) %>% # Source: https://www.seafoodwatch.org/-/m/3894b7bcd4e34144b85179d9455ffa91.pdf
-  
-  # Arctic char - Indoor recirculating tank (with wastewater)
-  add_row(rgn_id = 175, rgn_name = 'Denmark', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 73) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
-  add_row(rgn_id = 179, rgn_name = 'France', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 73) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
-  add_row(rgn_id = 143, rgn_name = 'Iceland', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 73) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
-  add_row(rgn_id = 181, rgn_name = 'Ireland', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 73) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
-  add_row(rgn_id = 180, rgn_name = 'United Kingdom', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 73) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Arctic char', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 73) %>% # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Salvelinus+alpinus
-  
-  # Chilean mussel - Off-bottom culture
-  add_row(rgn_id = 224, rgn_name = 'Chile', species = 'Chilean mussel', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 80) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  
-  # Lined scallop - Bottom culture
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 82) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 82) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 82) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  add_row(rgn_id = 171, rgn_name = 'Brazil', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 82) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  add_row(rgn_id = 137, rgn_name = 'Ecuador', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 82) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  add_row(rgn_id = 223, rgn_name = 'Norway', species = 'Lined scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 82) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  
-  # Razor clam - Bottom culture
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Razor clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 89) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Razor clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 89) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Razor clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 89) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 207, rgn_name = 'Vietnam', species = 'Razor clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 89) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 20, rgn_name = 'South Korea', species = 'Razor clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 89) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 210, rgn_name = 'Japan', species = 'Razor clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 89) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  
-  # NOT INCLUDED (because freshwater species): Giant river prawn - Indoor recirculating tank (without wastewater treatment)
-  
-  # Mussels - Off-bottom culture (regions only include those listed in 'maric' for 'Sea mussels nei')
-  add_row(rgn_id = 25, rgn_name = 'Thailand', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 97) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 73, rgn_name = 'Russia', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 97) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 102, rgn_name = 'South Africa', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 97) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 135, rgn_name = 'Mexico', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 97) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 136, rgn_name = 'Guatemala', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 97) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 147, rgn_name = 'French Polynesia', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 97) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 180, rgn_name = 'United Kingdom', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 97) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 97) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 183, rgn_name = 'Portugal', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 97) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 97) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  add_row(rgn_id = 219, rgn_name = 'Saint Pierre and Miquelon', species = 'Mussels', score = 8.10, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 97) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/m/mba_seafoodwatch_farmedmussels.pdf
-  
-  # Snubnose pompano - Indoor recirculating tank (with wastewater) (regions only include those listed in 'maric' for 'Snubnose pompano')
-  add_row(rgn_id = 15, rgn_name = 'Philippines', species = 'Snubnose pompano', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 109) %>% # Sources: https://www.seafoodwatch.org/seafood-recommendations/groups/pompano?type=snubnose&o=1409791156, http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Trachinotus+blochii
-  add_row(rgn_id = 206, rgn_name = 'Malaysia', species = 'Snubnose pompano', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 109) %>% # Sources: https://www.seafoodwatch.org/seafood-recommendations/groups/pompano?type=snubnose&o=1409791156, http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Trachinotus+blochii
-  add_row(rgn_id = 208, rgn_name = 'Singapore', species = 'Snubnose pompano', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 109) %>% # Sources: https://www.seafoodwatch.org/seafood-recommendations/groups/pompano?type=snubnose&o=1409791156, http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Trachinotus+blochii
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Snubnose pompano', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 109) %>% # Sources: https://www.seafoodwatch.org/seafood-recommendations/groups/pompano?type=snubnose&o=1409791156, http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Trachinotus+blochii
-  
-  # Hard clam (unspecified) - Off-bottom culture
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Hard clam (unspecified)', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 114) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Hard clam (unspecified)', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 114) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Hard clam (unspecified)', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 114) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 207, rgn_name = 'Vietnam', species = 'Hard clam (unspecified)', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 114) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 20, rgn_name = 'South Korea', species = 'Hard clam (unspecified)', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 114) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 210, rgn_name = 'Japan', species = 'Hard clam (unspecified)', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 114) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  
-  # Striped bass - Indoor recirculating tank (with wastewater)
-  add_row(rgn_id = 135, rgn_name = 'Mexico', species = 'Striped bass', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 121) %>% # Sources: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Morone+saxatilis, https://www.seafoodwatch.org/seafood-recommendations/groups/bass?type=striped&o=620802890
-  
-  # Beluga - Indoor recirculating tank (with wastewater)
-  add_row(rgn_id = 71, rgn_name = 'Bulgaria', species = 'Beluga', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 123) %>% # Sources: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Huso+huso, https://www.seafoodwatch.org/seafood-recommendations/groups/sturgeon?q=Sturgeon&location=domestic&type=beluga&o=983567610
-  add_row(rgn_id = 75, rgn_name = 'Ukraine', species = 'Beluga', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 123) %>% # Sources: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Huso+huso, https://www.seafoodwatch.org/seafood-recommendations/groups/sturgeon?q=Sturgeon&location=domestic&type=beluga&o=983567610
-  
-  # NOT INCLUDED (because freshwater species): Giant river prawn - Indoor recirculating tank (with wastewater)
-
-  # Venus clam - Off-bottom culture
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Venus clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 127) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Venus clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 127) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Venus clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 127) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 207, rgn_name = 'Vietnam', species = 'Venus clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 127) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 20, rgn_name = 'South Korea', species = 'Venus clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 127) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  add_row(rgn_id = 210, rgn_name = 'Japan', species = 'Venus clam', score = 7.00, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 127) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/c/mba_seafoodwatch_farmedclamsreport.pdf
-  
-  # Iceland scallop - Bottom culture
-  add_row(rgn_id = 209, rgn_name = 'China', species = 'Iceland scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 134) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  add_row(rgn_id = 218, rgn_name = 'Canada', species = 'Iceland scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 134) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  add_row(rgn_id = 163, rgn_name = 'United States', species = 'Iceland scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 134) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  add_row(rgn_id = 171, rgn_name = 'Brazil', species = 'Iceland scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 134) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  add_row(rgn_id = 137, rgn_name = 'Ecuador', species = 'Iceland scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 134) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  add_row(rgn_id = 223, rgn_name = 'Norway', species = 'Iceland scallop', score = 8.86, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 134) %>% # Source: https://www.seafoodwatch.org/-/m/sfw/pdf/reports/s/mba_seafoodwatch_farmedscallopsreport.pdf
-  
-  # Meagre - Indoor recirculating tank (with wastewater)
-  add_row(rgn_id = 183, rgn_name = 'Portugal', species = 'Meagre', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 141) %>% # Source: https://www.seafoodwatch.org/seafood-recommendations/groups/meagre?o=1301679247 (NO: Egypt, Turkey, Croatia, Cyprus, France, Greece, Italy and Spain)
-  
-  # Japanese amberjack - Indoor recirculating tank (with wastewater)
-  add_row(rgn_id = 20, rgn_name = 'South Korea', species = 'Japanese amberjack', score = 6.90, match_type = 'sw_sp_g', gapfill = 'sp_global', .after = 143) # Source: http://www.fishbase.us/report/fao/FAOAquacultureList.php?scientific=Seriola+quinqueradiata, https://www.seafoodwatch.org/seafood-recommendations/groups/amberjack?type=yellowtail&q=Amberjack,%20Yellowtail&o=262057062 (NO: Japan (farmed in marine net pens; but no way to differentiate))
-  
-  #
-  #add_row(rgn_id = , rgn_name = '', species = '', score = , match_type = 'sw_sp_g', gapfill = 'sp_global', .after = ) %>% # Source:
-  # NEEDS TO BE FINISHED
-  
-
-
-  ## Species that need a name change to match 'maric':
-    # Mussels -> Sea mussels nei
-    # Hard clam (unspecified) -> Clams, etc. nei (? doesn't specify hard clams though)
-  
-  
-  #select(rgn_id, species, score, report_title, genus, spp, parent_method, method)
-
-```
-
-Append Seafood Watch sustainability scores data to the FAO mariculture data.
-
-The following joins the Seafood Watch sustainability scores to regions/species that have FAO mariculture data.
-
-```{r}
 ## Join data specific to species/country
 sw_sp_c <- sw_sus_rgn %>%
   filter(match_type == 'sw_sp_c') %>%
-  select(rgn_id, species, Sust_sw_sp_c = score)
+  select(rgn_id, species, Sust_sw_sp_c = score, esc_sw_sp_c = escapes_score)
 
 mar_sw_sus <- maric %>%
   left_join(sw_sp_c, by = c("species", "rgn_id"))
 
 ## Join data specific to species/water body
 sw_sp_w <- gf_sw_sp_w %>%
-  select(rgn_id, species, Sust_sw_sp_w = score)
+  select(rgn_id, species, Sust_sw_sp_w = score, esc_sw_sp_w = escapes_score)
 
 mar_sw_sus <- mar_sw_sus %>%
   left_join(sw_sp_w, by= c("species", "rgn_id"))
@@ -1552,244 +629,522 @@ mar_sw_sus <- mar_sw_sus %>%
 ## Join data specific to species/global Seafood Watch data
 sw_sp_g <- sw_sus_rgn %>% 
   filter(match_type == 'sw_sp_g') %>%
-  select(species, Sust_sw_sp_g = score)
+  select(species, Sust_sw_sp_g = score, esc_sw_sp_g = escapes_score)
 
 mar_sw_sus <- mar_sw_sus %>%
   left_join(sw_sp_g, by= c("species"))
 
+
+# test3 <- mar_sw_sus %>%
+#   filter(Taxon_code == "GAST")
 ```
 
 
-```{r add-sw-sus-fao-data}
-
-## Join data specific to species/country
-sw_sp_c <- sw_sus_rgn %>% 
-  filter(match_type == 'sw_sp_c') %>% 
-  select(rgn_id, species, Sust_sw_sp_c = score)
-
-mar_sw_sus <- maric %>%
-  left_join(sw_sp_c, by= c("species", "rgn_id"))
+Merge the three Seafood Watch type categories into a single sustainability score and genetic escapes score column in the following order:
 
 
-## Join data specific to species/water body
-sw_sp_w = gf_sw_sp_w %>% 
-  select(rgn_id, species, Sust_sw_sp_w = score)
+1. Sust_sw_sp_c: specific to species/country
+2. Sust_sw_sp_w: specific to species/water body
+3. Sust_sw_sp_g: specific to species/global Seafood Watch data
 
-mar_sw_sus <-mar_sw_sus %>%
-  left_join(sw_sp_w, by= c("species", "rgn_id"))
+For example, if Sust_sw_sp_c is missing, use Sust_sw_sp_w and so on. 
 
+```{r sw-fao-sust-scores, eval = FALSE}
+mar_sw_sus = mar_sw_sus %>% 
+  dplyr::mutate(Sust = ifelse(!is.na(Sust_sw_sp_c), Sust_sw_sp_c, Sust_sw_sp_w)) %>%
+  dplyr::mutate(Sust = ifelse(is.na(Sust), Sust_sw_sp_g, Sust)) %>%
+  dplyr::mutate(gapfill_sus = case_when(Sust_sw_sp_c == Sust ~ "none",
+                                        is.na(Sust_sw_sp_c) & Sust_sw_sp_w == Sust ~ "water_body",
+                                        is.na(Sust_sw_sp_c) & is.na(Sust_sw_sp_w) & Sust_sw_sp_g == Sust ~ "global_species")) %>%
+  dplyr::mutate(esc_score = ifelse(!is.na(esc_sw_sp_c), esc_sw_sp_c, esc_sw_sp_w)) %>%
+  dplyr::mutate(esc_score = ifelse(is.na(esc_score), esc_sw_sp_g, esc_score)) %>%
+  dplyr::mutate(gapfill_esc = case_when(esc_sw_sp_c == esc_score ~ "none",
+                                        is.na(esc_sw_sp_c) & esc_sw_sp_w == esc_score ~ "water_body",
+                                        is.na(esc_sw_sp_c) & is.na(esc_sw_sp_w) & esc_sw_sp_g == esc_score ~ "global_species")) %>%
+  dplyr::select(-Sust_sw_sp_c, -Sust_sw_sp_w, -Sust_sw_sp_g, -esc_sw_sp_c, -esc_sw_sp_w, -esc_sw_sp_g) 
 
-## Join data specific to species/global Seafood Watch data
-sw_sp_g = gf_sw_sp_g %>% 
-  select(rgn_id, species, Sust_sw_sp_g = score)
-
-mar_sw_sus <- mar_sw_sus %>%
-  left_join(sw_sp_g, by= c("species", "rgn_id"))
-
+summary(mar_sw_sus)
 ```
 
 Since some regions have multiple sustainability scores for the same species due to multiple aquaculture methods, but we don't know what proportions of which methods are used, we take the average of the sustainability scores in these instances.
 
-```{r avg-sw-sus-types}
-
-## Average sustainability scores of the three "Sust_" types:
-mar_sw_sus <- mar_sw_sus %>% 
-  dplyr::mutate(Sust_mean = rowMeans(dplyr::select(., starts_with("Sust")), na.rm = TRUE))
-
-```
-
-Merge the three Seafood Watch type categories into a single sustainability score column in the following order:
-
-
-2. Sust_sw_sp_c: specific to species/country
-3. Sust_sw_sp_w: specific to species/water body
-4. Sust_sw_sp_g: specific to species/global Seafood Watch data
-
-For example, if Sust_mean is missing, use Sust_sw_sp_c and so on. 
-
-```{r}
-mar_sw_sus_test = mar_sw_sus %>% 
-  dplyr::mutate(Sust = ifelse(!is.na(Sust_sw_sp_c), Sust_sw_sp_c, Sust_sw_sp_w)) %>%
-  dplyr::mutate(Sust = ifelse(is.na(Sust), Sust_sw_sp_g, Sust)) %>%
-  dplyr::select(-Sust_sw_sp_c, -Sust_sw_sp_w, -Sust_sw_sp_g)
-
-summary(mar_sw_sus_test)
-```
-
-
-```{r sw-sus-merge}
-
-mar_sw_sus = mar_sw_sus %>% 
-  dplyr::mutate(Sust = ifelse(!is.na(Sust_mean), Sust_mean, Sust_sw_sp_c)) %>%
-  dplyr::mutate(Sust = ifelse(is.na(Sust), Sust_sw_sp_w, Sust)) %>%
-  dplyr::mutate(Sust = ifelse(is.na(Sust), Sust_sw_sp_g, Sust)) %>%
-  dplyr::select(-Sust_mean, -Sust_sw_sp_c, -Sust_sw_sp_w, -Sust_sw_sp_g)
-
-```
-
 Average sustainability scores within regions with more than score (due to more than one aquaculture method):
 
-```{r sw-sus-avg}
+```{r sw-sus-avg, eval = FALSE}
 
 mar_sw_sus <- mar_sw_sus %>% 
   dplyr::group_by(rgn_id, species) %>% 
-  dplyr::mutate(Sust_avg = mean(Sust, na.rm=TRUE)) %>% 
+  dplyr::mutate(Sust_avg = mean(Sust, na.rm=TRUE),
+                esc_avg = mean(esc_score, na.rm = TRUE)) %>% 
   dplyr::ungroup()
+
 
 ```
 
 Get rid of duplicates for region/species/year:
 
-```{r sw-sus-dup}
+```{r sw-sus-dup, eval = FALSE}
+# test_dups <- mar_sw_sus %>%
+#   duplicated() 
+# 
+# tests_3 <- data.frame(test_dups, mar_sw_sus) %>%
+#   filter(test_dups == TRUE)
+# 
+# test4 <- mar_sw_sus %>%
+#   filter(species == "Pacific cupped oyster")
 
 mar_sw_sus <- mar_sw_sus %>% 
-  dplyr::distinct(rgn_id, species, environment, year, .keep_all = TRUE)
-  # Went from 30682 obs. to 28507 obs.
+  dplyr::distinct(rgn_id, species, environment, year, .keep_all = TRUE) %>%
+  dplyr::select(-Sust, Sust = Sust_avg, -esc_score, esc_score = esc_avg)
 
 ```
 
 **Now look at a summary after appending all the Seafood Watch data**
 
-```{r sw-sus-summary}
+```{r sw-sus-summary, eval = FALSE}
 
 summary(mar_sw_sus)
-# Sust_avg still has 24951 NAs out of 28507 total obs.; there are 3556 obs. with sustainability data
+# Sust_avg still has 17202 NAs out of 28472 total obs.; ~60% without sustainability data
+# esc_score still have 17348 NAs out of 28742 total obs; ~60% without scores
 
 ```
 
-**LAURA STOPPED HERE 8.28.2020**
-- need to gapfill by averaging species within a taxonomic category
+Gapfilling based on families and taxon_code
 
+Steps: 
+ - Group by country and family and summarise to get mean sustainability/escapes values (gapfilled by country/family)
+ - Group by georegion and family and summarise to get mean sustainability/escapes values (gapfilled by georegion/family)
+ - Group by family (global family gapfilled)
+ - Gapfill by average of the taxon_code 
+ - Assign any Algae with the seaweeds score from SFW data (7.92)
+ - Apply the global average to any remaining sustainability/escapes score NAs 
 
-This joins the sustainability data that is gapfilled either at the species level (average of specific species/genera across regions) or at a higher course taxonomic levels and documents which data are gapfilled and how.
+```{r sw-gapfill-categories, eval = FALSE}
+## First we need to add a georegion column that we can group by later on. 
 
-```{r sw-sus-join-gapfilled}
+mar_sw_sus <- mar_sw_sus %>%
+  add_georegion_id() %>%
+  dplyr::select(-level)
 
-# ## Select observations gapfilled at the species/water body level:
-# gf_sw_w_sus <- sw_sus_rgn %>% 
-#   filter(gapfill != "actuals" & match_type == "sw_sp_w") %>%
-#   select(species, gapfill, Sust_gf_sw_w = score)
+## Exploratory plots on whether regions or species drive the sustainability scores...
+# plot(mar_sw_sus$georgn_id, mar_sw_sus$Sust)
+# plot(as.numeric(mar_sw_sus$species), mar_sw_sus$Sust)
 # 
-# ## Check that there are no duplicated species
-# gf_sw_w_sus[duplicated(gf_sw_w_sus$species), ]
+# mod_spp <- lm(Sust ~ as.factor(georgn_id) + species, data = mar_sw_sus)
+# anova(mod_spp)
+# summary(mod_spp)
 # 
-# ## Match gapfilling values by species
-# mar_sw_sus_gf = mar_sw_sus %>%
-#   left_join(gf_sw_w_sus, by = 'species')
+# mod_rgn <- lm(Sust ~ as.factor(georgn_id), data = mar_sw_sus)
+# anova(mod_rgn)
+# summary(mod_rgn)
 # 
-# 
-# ## Select observations gapfilled at the species/global level:
-# gf_sw_g_sus <- sw_sus_rgn %>% 
-#   filter(gapfill != "actuals" & match_type == "sw_sp_g") %>%
-#   select(species, Sust_gf_sw_g = score)
-# 
-# ## Check that there are no duplicated species
-# gf_sw_g_sus[duplicated(gf_sw_g_sus$species), ]
-#   # There are duplicated species because multiple aquaculture methods are listed for multiple "global" species
-# 
-# ## Match gapfilling values by species
-# mar_sw_sus_gf = mar_sw_sus_gf %>%
-#   left_join(gf_sw_g_sus, by = 'species')
+# mod_spp1 <- lm(Sust ~ family, data = mar_sw_sus)
+# anova(mod_rgn)
+# summary(mod_spp1)
+## it makes more sense to use species/taxon gapfilling methods
 
-```
-
-**Take a look at the wrangled data**
-
-```{r view-sw-sus-gapfilled}
-
-# summary(mar_sw_sus_gf)
-# 
-# table(mar_sw_sus_gf$gapfill)
-
-```
-
-Obtain a sustainability score for each record, and a book-keeping column of whether it's actual or gapfilled
-
-For missing sustainability scores:
-
-1. Use species-level Sustainability score
-2. If no species-level scores, gapfill with genus-level sustainability average
-
-```{r sw-sus-gapfill-missing}
-
-# mar_sw_sus_final = mar_sw_sus_gf %>% 
-#   mutate(gapfill = ifelse(!is.na(Sust), "none", gapfill)) %>%
-#   mutate(Sust = ifelse(is.na(Sust), Sust_gf_sp, Sust)) %>% # Gapfill with species level
-#   mutate(gapfill = ifelse(is.na(Sust), "taxon_average", gapfill)) %>% # Add in taxon gapfill record
-#   mutate(Sust = ifelse(is.na(Sust), Sust_gf_taxon, Sust)) %>% # Gapfill with taxon level
-#   mutate(taxa_code = paste(species, species_code, sep="_")) %>%
-#   select(rgn_id, species, species_code, taxa_code, taxa_group=Taxon_code, year, gapfill_sus = gapfill, gapfill_fao = gap_0_fill, tonnes=value, Sust)
+mar_sw_sus_test <- mar_sw_sus %>%
+  group_by(rgn_id, family) %>%
+  mutate(avg_rgn_fam_sust = mean(Sust, na.rm = TRUE),
+         avg_rgn_fam_esc = mean(esc_score, na.rm = TRUE)) %>%
+  ungroup() %>%
+  group_by(georgn_id, family) %>%
+  mutate(avg_gr_fam_sust = mean(Sust, na.rm = TRUE),
+         avg_gr_fam_esc = mean(esc_score, na.rm = TRUE)) %>%
+  ungroup() %>%
+  group_by(family) %>%
+  mutate(avg_fam_sust = mean(Sust, na.rm = TRUE),
+         avg_fam_esc = mean(esc_score, na.rm = TRUE)) %>%
+  ungroup() %>%
+  group_by(Taxon_code) %>%
+  mutate(avg_taxon_code_sust = mean(Sust, na.rm = TRUE),
+         avg_taxon_code_esc = mean(esc_score, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(avg_global = mean(Sust, na.rm = TRUE),
+         avg_global_esc = mean(esc_score, na.rm = TRUE)) %>%
+  ungroup()
 
 ```
 
-# Save Data:
 
-```{r save-mar-sw-harvest-data}
+Obtain a sustainability and escapes score for each record, and a book-keeping column of whether it's actual or gapfilled
 
-# ## Save mariculture harvest data
-# mar_harvest_tonnes = mar_sus_final %>%
-#   select(rgn_id, taxa_code, taxa_group, year, tonnes)
-# 
-# anyDuplicated(mar_harvest_tonnes) # Check for duplication
-# 
-# ## Saves the appropriate Mariculture Harvest Tonnes file depending on whether we are excluding species based on best judgment (exclude), all seaweeds (exclude_no_seaweed), or just seaweeds nei (exclude_no_nei). See method changes above.
-# if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
-#  write.csv(mar_harvest_tonnes, 'output/mar_harvest_tonnes.csv', row.names=F)
-#  } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-#    write.csv(mar_harvest_tonnes, 'test/mar_harvest_tonnes_no_seaweed.csv', row.names=F)
-#    } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-#      write.csv(mar_harvest_tonnes, 'test/mar_harvest_tonnes_no_nei.csv', row.names=F)
-#      }
-# 
-# ## Save gapfill data for mariculture harvest
-# mar_harvest_tonnes_gf = mar_sus_final %>%
-#   select(rgn_id, taxa_code, taxa_group, year, tonnes=gapfill_fao)
-# 
-# 
-# ## Saves the appropriate Mariculture Harvest Gapfill file depending on whether we are excluding species based on best judgment (exclude), all seaweeds (exclude_no_seaweed), or just seaweeds nei (exclude_no_nei). See method changes above
-# if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
-#  write.csv(mar_harvest_tonnes_gf, 'output/mar_harvest_tonnes_gf.csv', row.names=F)
-#  } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-#    write.csv(mar_harvest_tonnes_gf, 'test/mar_harvest_tonnes_gf_no_seaweed.csv', row.names=F)
-#    } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-#      write.csv(mar_harvest_tonnes_gf, 'test/mar_harvest_tonnes_gf_no_nei.csv', row.names=F)
-#      }
-# 
-# 
-# ## Save sustainability scores data for 2012
-# mar_sustainability_score = mar_sus_final %>% 
-#   mutate(year = 2012) %>% # Only 2012 sustainability scores exist (Trujillo)
-#   select(rgn_id, year, taxa_code, sust_coeff = Sust) %>% 
-#   unique()
-# 
-# anyDuplicated(mar_sustainability_score)
-# 
-# 
-# ## Saves the appropriate Sustainability Score file depending on whether we are excluding species based on best judgment (exclude), all seaweeds (exclude_no_seaweed), or just seaweeds nei (exclude_no_nei). See method changes above
-# if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
-#  write.csv(mar_sustainability_score, 'output/mar_sustainability.csv', row.names=F)
-#  } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-#    write.csv(mar_sustainability_score, 'test/mar_sustainability_no_seaweed.csv', row.names=F)
-#    } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-#      write.csv(mar_sustainability_score, 'test/mar_sustainability_no_nei.csv', row.names=F)
-#      }
-# 
-# 
-# ## Save gapfill data for sustainability scores
-# mar_sustainability_score_gf = mar_sus_final %>% 
-#   select(rgn_id, taxa_code, sust_coeff = gapfill_sus) %>% 
-#   unique()
-# 
-# 
-# ## Saves the appropriate Sustainability Score Gapfill file depending on whether we are excluding species based on best judgment (exclude), all seaweeds (exclude_no_seaweed), or just seaweeds nei (exclude_no_nei). See method changes above
-# if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
-#  write.csv(mar_sustainability_score_gf, 'output/mar_sustainability_gf.csv', row.names=F)
-#  } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-#    write.csv(mar_sustainability_score_gf, 'test/mar_sustainability_gf_no_seaweed.csv', row.names=F)
-#    } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-#      write.csv(mar_sustainability_score_gf, 'test/mar_sustainability_gf_no_nei.csv', row.names=F)
-#      }
+For missing sustainability and escapes scores:
 
+Steps: 
+ 1. Group by country and family and summarise to get mean sustainability and escapes values (gapfilled by country/family)
+ 2. Group by georegion and family and summarise to get mean sustainability and escapes values (gapfilled by georegion/family)
+ 3. Group by family to get mean sustainability and escapes values (global family gapfilled)
+ 4. Gapfill by average of the taxon_code to get mean sustainability and escapes values (taxon_group gapfilled)
+ 5. Assign any Algae with the seaweeds score from SFW data (7.92 for sustainability, 4 for escapes)
+ 6. Apply the global average to any remaining sustainability and escapes score NAs 
+
+```{r sw-sus-gapfill-missing, eval = FALSE}
+
+mar_sw_sus_final = mar_sw_sus_test %>%
+  
+  #### sustainability scores ####
+  mutate(Sust = ifelse(is.na(Sust), avg_rgn_fam_sust, Sust)) %>% # Gapfill with region/family level
+    mutate(gapfill_sus = ifelse(is.na(gapfill_sus) & Sust == avg_rgn_fam_sust, "region_family_avg", gapfill_sus)) %>% ## add in rgn family gapfill record
+  mutate(Sust = ifelse(is.na(Sust), avg_gr_fam_sust, Sust)) %>% # Gapfill with georegion/family level
+  mutate(gapfill_sus = ifelse(is.na(gapfill_sus) & Sust == avg_gr_fam_sust, "georegion_family_avg", gapfill_sus)) %>% # Add in georegion/family gapfill record
+  mutate(Sust = ifelse(is.na(Sust),  avg_fam_sust, Sust)) %>% # Gapfill with family level
+  mutate(gapfill_sus = ifelse(is.na(gapfill_sus) & Sust == avg_fam_sust, "family_avg", gapfill_sus)) %>% ## Add in family gapfill record
+  mutate(Sust = ifelse(is.na(Sust), avg_taxon_code_sust, Sust)) %>%
+  mutate(gapfill_sus = ifelse(is.na(gapfill_sus) & Sust == avg_taxon_code_sust, "taxon_group_avg", gapfill_sus)) %>%
+  mutate(Sust = ifelse(Taxon_code == "AL", 7.92, Sust)) %>% ## assign any algae with the SFW seaweed score (7.92)
+  mutate(gapfill_sus = ifelse(is.na(gapfill_sus) & Sust == 7.92, "seaweed_score", gapfill_sus)) %>%
+  mutate(Sust = ifelse(is.na(Sust), avg_global, Sust)) %>% 
+  mutate(gapfill_sus = ifelse(is.na(gapfill_sus) & Sust == avg_global, "global_avg", gapfill_sus)) %>%
+  
+  #### genetic escapes scores ####
+    mutate(esc_score = ifelse(is.na(esc_score), avg_rgn_fam_esc, esc_score)) %>% # Gapfill with region/family level
+    mutate(gapfill_esc = ifelse(is.na(gapfill_esc) & esc_score == avg_rgn_fam_esc, "region_family_avg", gapfill_esc)) %>% ## add in rgn family gapfill record
+  mutate(esc_score = ifelse(is.na(esc_score), avg_gr_fam_esc, esc_score)) %>% # Gapfill with georegion/family level
+  mutate(gapfill_esc = ifelse(is.na(gapfill_esc) & esc_score == avg_gr_fam_esc, "georegion_family_avg", gapfill_esc)) %>% # Add in georegion/family gapfill record
+  mutate(esc_score = ifelse(is.na(esc_score),  avg_fam_esc, esc_score)) %>% # Gapfill with family level
+  mutate(gapfill_esc = ifelse(is.na(gapfill_esc) & esc_score == avg_fam_esc, "family_avg", gapfill_esc)) %>% ## Add in family gapfill record
+  mutate(esc_score = ifelse(is.na(esc_score), avg_taxon_code_esc, esc_score)) %>%
+  mutate(gapfill_esc = ifelse(is.na(gapfill_esc) & esc_score == avg_taxon_code_esc, "taxon_group_avg", gapfill_esc)) %>%
+  mutate(esc_score = ifelse(Taxon_code == "AL", 4, esc_score)) %>% ## assign any algae with the SFW seaweed score (4)
+  mutate(gapfill_esc = ifelse(is.na(gapfill_esc) & esc_score == 4, "seaweed_score", gapfill_esc)) %>%
+  mutate(esc_score = ifelse(is.na(esc_score), avg_global_esc, esc_score)) %>% 
+  mutate(gapfill_esc = ifelse(is.na(gapfill_esc) & esc_score == avg_global_esc, "global_avg", gapfill_esc)) %>%
+
+  #### final tidying ####
+  mutate(taxa_code = paste(species, species_code, sep="_")) %>%
+  select(rgn_id, species, species_code, taxa_code, taxa_group=Taxon_code, family, year, gapfill_sus, gapfill_esc, gapfill_fao = gap_0_fill, tonnes=value, Sust, esc_score) %>%
+  mutate(Sust = round(Sust/10, 2),
+         esc_score = 1 - round(esc_score/10, 2))
+
+
+summary(mar_sw_sus_final)
+filter(mar_sw_sus_final, gapfill_sus == "georegion_family_avg")
+filter(mar_sw_sus_final, gapfill_sus == "family_avg")
+filter(mar_sw_sus_final, gapfill_sus == "taxon_group_avg")
+
+
+# test1 <- mar_sw_sus_final %>%
+#   filter(is.na(Sust)) %>%
+#   dplyr::select(rgn_id, species, year, Taxon_code, family, Sust, avg_rgn_fam_sust, avg_gr_fam_sust, avg_fam_sust, avg_taxon_code_sust)
+
+# filter(mar_sw_sus_final, family == "Mollusca")
+
+```
+
+**Now we need to prep the escapes pressure layer a bit more**
+Final formatting of the escapee data. This is used as a pressure layer.
+
+For each region/year: take a weighted average of the genetic escape probability for each taxa based on tonnes mariculture
+```{r gen-esc-formatting, eval = FALSE}
+tonnes_esc <- mar_sw_sus_final %>%
+  dplyr::select(rgn_id, year, species, gapfill_esc, esc_score, tonnes)
+
+genEscapes <- tonnes_esc %>%
+  group_by(rgn_id, year) %>%
+  summarize(genEscapes = weighted.mean(esc_score, tonnes, na.rm=TRUE))
+```
+
+Obtain gapfill information from `genEscapes`
+
+Gapfill values in output file are the proportion of data that is gapfilled.
+
+```{r obtain-gapfill-info-genEscapes, eval = FALSE}
+
+## Obtain corresponding gapfilling information for each region (average of gapfilled data, weighted by tonnes of mariculture).
+genEscapes_gf <- tonnes_esc %>%
+  mutate(gapfill = ifelse(gapfill_esc =="none", 0, 1)) %>%
+  group_by(rgn_id, year) %>%
+  summarize(genEscapes = weighted.mean(gapfill, tonnes, na.rm=TRUE)) %>%
+  ungroup() %>%
+  filter(year==2018) %>%
+  select(rgn_id, pressures.score=genEscapes) %>%
+  mutate(pressures.score=ifelse(pressures.score=="NaN", NA, pressures.score)) %>%
+  data.frame()
+
+```
+# Save data: Genetic Escapes
+## Save gapfill data
+
+```{r save-gen-esc-gapfilled, eval = FALSE}
+
+## Saves the Genetic Escapes Gapfill file
+
+ write.csv(genEscapes_gf, 'output/GenEsc_gf.csv', row.names=FALSE)
+
+```
+
+Obtain escapee data layers from `genEscapes`
+
+```{r create-gen-esc-layers, eval = FALSE}
+
+# Create the escapee data layers:
+data <- genEscapes %>%
+    select(rgn_id, year, pressure_score = genEscapes)
+
+```
+
+## Save escapee pressure layer 
+
+```{r save-gen-esc-pressure-layer, eval = FALSE}
+
+## Saves the Genetic Escapes data file 
+
+ write.csv(data, 'output/GenEsc.csv', row.names=FALSE)  
+
+```
+
+# Save Data: Mariculture tonnes and sustainability scores
+
+```{r save-mar-sw-harvest-data, eval = FALSE}
+
+## Save mariculture harvest data
+mar_harvest_tonnes = mar_sw_sus_final %>%
+  select(rgn_id, taxa_code, taxa_group, family, year, tonnes)
+
+anyDuplicated(mar_harvest_tonnes) # Check for duplication
+
+## Saves the appropriate Mariculture Harvest Tonnes file
+
+
+ write.csv(mar_harvest_tonnes, 'output/mar_harvest_tonnes.csv', row.names=F)
+
+
+## Save gapfill data for mariculture harvest
+mar_harvest_tonnes_gf = mar_sw_sus_final %>%
+  select(rgn_id, taxa_code, taxa_group, family, year, tonnes=gapfill_fao)
+
+
+## Saves the appropriate Mariculture Harvest Gapfill file 
+
+
+ write.csv(mar_harvest_tonnes_gf, 'output/mar_harvest_tonnes_gf.csv', row.names=F)
+
+
+## Save sustainability scores data for 2020 (SFW data year)
+mar_sustainability_score = mar_sw_sus_final %>%
+  mutate(year = 2020) %>% # Only 2020 sustainability scores exist (Seafood Watch)
+  select(rgn_id, year, taxa_code, sust_coeff = Sust) %>%
+  unique()
+
+anyDuplicated(mar_sustainability_score)
+
+
+## Saves the appropriate Sustainability Score file 
+
+ write.csv(mar_sustainability_score, 'output/mar_sustainability.csv', row.names=F)
+
+
+## Save gapfill data for sustainability scores
+mar_sustainability_score_gf = mar_sw_sus_final %>%
+  select(rgn_id, taxa_code, sust_coeff = gapfill_sus) %>%
+  unique()
+
+
+## Saves the appropriate Sustainability Score Gapfill file 
+
+
+ write.csv(mar_sustainability_score_gf, 'output/mar_sustainability_gf.csv', row.names=F)
+
+
+## save mar sustainability for data checking; rgn_id, species, score
+
+mar_sustainability_score = mar_sw_sus_final %>%
+  mutate(year = 2020) %>% # Only 2020 sustainability scores exist (Seafood Watch)
+  select(rgn_id, year, species, sust_coeff = Sust) %>%
+  unique()
+
+## Saves the appropriate Sustainability Score file
+
+
+ write.csv(mar_sustainability_score, 'int/mar_sustainability_check.csv', row.names=F)
+
+```
+
+## Data check mariculture and sustainability scores 
+
+Comparing this year's data to previous year's data. Expect small variation from year to year. Plot to view differences.
+
+```{r data-check, eval = FALSE}
+
+## Compare yield data for Russia
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 73, year == 2017) %>% 
+  select(rgn_id, species, fao, old_value = value)
+mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 73, year == 2018) %>% 
+  select(rgn_id, species, fao, value)
+
+yield <- mar_old %>% 
+  full_join(mar_new, by = c("rgn_id","species","fao")); View(yield)
+
+plot(yield$old_value, yield$value)
+
+## Compare yield data for Vietnam
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 207, year == 2017) %>% 
+  select(rgn_id, species, fao, environment, old_value = value)
+mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 207, year == 2018) %>% 
+  select(rgn_id, species, fao, environment, value)
+
+yield <- mar_old %>% 
+  full_join(mar_new, by = c("rgn_id","species","fao", "environment")); View(yield)
+
+
+
+## Compare yield data for Iceland. Atlantic Salmon increased by a lot between 2018 and 2019 assessment years. Atlantic Salmon stayed relatively stable between 2020 and 2019 assessment years. However, Senegalese sole has an NA value in 2019 assessment; maybe a gapfilling error from last year?
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 143, year == 2017) %>% 
+  select(rgn_id, species, fao, environment, old_value = value)
+mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 143, year == 2018) %>% 
+  select(rgn_id, species, fao, environment, value)
+
+yield <- mar_old %>% 
+  full_join(mar_new, by = c("rgn_id","species","fao", "environment")); View(yield)
+
+
+## Compare yield data for Belize; yield of Whiteleg shrimp was halved between 2019 and 2020 assessment years.
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 164, year == 2017) %>% 
+  select(rgn_id, species, fao, old_value = value)
+mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 164, year == 2018) %>% 
+  select(rgn_id, species, fao, value)
+
+yield <- mar_old %>% 
+  full_join(mar_new, by = c("rgn_id","species","fao")); View(yield)
+
+
+## Compare yield data for France
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 179, year == 2017) %>% 
+  select(rgn_id, species, fao, old_value = value)
+mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 179, year == 2018) %>% 
+  select(rgn_id, species, fao, value)
+
+yield <- mar_old %>% 
+  full_join(mar_new, by = c("rgn_id","species","fao")); View(yield)
+
+plot(yield$old_value, yield$value);abline(0,1,col="red")
+
+
+## Compare yield data for Malta
+mar_old <- read.csv("../v2019/output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 68, year == 2017) %>% 
+  select(rgn_id, species, fao, old_value = value)
+mar_new <- read.csv("output/MAR_FP_data.csv") %>% 
+  filter(rgn_id == 68, year == 2018) %>% 
+  select(rgn_id, species, fao, value)
+
+yield <- mar_old %>% 
+  full_join(mar_new, by = c("rgn_id","species","fao")); View(yield)
+
+plot(yield$old_value, yield$value);abline(0,1,col="red")
+
+
+## Compare new/old Mariculture sustainability scores
+tmp_old <- read.csv("../v2019/output/mar_sustainability.csv") %>% 
+  select(rgn_id, taxa_code, sust_old = sust_coeff)
+  
+  tmp_old$species = str_remove(tmp_old$taxa_code, "\\_[^.]*$")
+
+
+  
+tmp_new <- read.csv("int/mar_sustainability_check.csv") %>% 
+  select(rgn_id, species, sust_new = sust_coeff)
+
+test <- tmp_new %>% 
+  full_join(tmp_old, by=c("rgn_id", "species"))
+View(test)
+
+plot(test$sust_old, test$sust_new);abline(0,1,col="red")
+
+```
+
+## Data check genetic escapes 
+
+Comparing this year's data to previous year's data. Expect small variation from year to year. Plot to view differences.
+
+```{r data-check-gen-esc, eval = FALSE}
+
+## Compare genetic escapes pressure score; saw large changes between 2018 and 2017 assessment years. No big changes between 2019 and 2018 assessment years. Big changes from 2019 to 2020 due to a data update 
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
+  select(rgn_id, year, prs_score_old=pressure_score)
+
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
+  select(rgn_id, year, pressure_score)
+
+compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
+
+plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
+
+## Compare genetic escapes pressure scores for Vietnam; no change in pressures between 2020 and 2019 assessment years.
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
+  filter(rgn_id == 207) %>% 
+  select(rgn_id, year, prs_score_old=pressure_score)
+
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
+  filter(rgn_id == 207) %>% 
+  select(rgn_id, year, pressure_score)
+
+compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
+
+plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
+
+## Compare genetic escapes pressure scores for Iceland; saw large changes between 2018 and 2017 assessment years, we do not see a big difference between 2019 and 2018 assessment years. We see huge changes between 2019 and 2020 due to the data update
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
+  filter(rgn_id == 143) %>% 
+  select(rgn_id, year, prs_score_old=pressure_score)
+
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
+  filter(rgn_id == 143) %>% 
+  select(rgn_id, year, pressure_score)
+
+compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
+
+plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
+
+## Compare genetic escapes pressure scores for Belize; saw large changes between 2018 and 2017 assessment years, we do not see big differences between 2019 and 2018 assessment years. Large changes between 2019 and 2020.
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
+  filter(rgn_id == 164) %>% 
+  select(rgn_id, year, prs_score_old=pressure_score)
+
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
+  filter(rgn_id == 164) %>% 
+  select(rgn_id, year, pressure_score)
+
+compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
+
+plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
+
+## Compare genetic escapes pressure scores for France; saw large changes between 2018 and 2017 assessment years, we do not see big differences between 2019 and 2018 assessment year. Large changes between 2019 and 2020
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
+  filter(rgn_id == 179) %>% 
+  select(rgn_id, year, prs_score_old=pressure_score)
+
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
+  filter(rgn_id == 179) %>% 
+  select(rgn_id, year, pressure_score)
+
+compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
+
+plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
+
+## Compare genetic escapes pressure scores for Malta; saw large changes between 2019 and 2020 assessment years. 
+old <- read.csv("../v2019/output/GenEsc.csv") %>%
+  filter(rgn_id == 68) %>% 
+  select(rgn_id, year, prs_score_old=pressure_score)
+
+new <- read.csv("../v2020/output/GenEsc.csv") %>%
+  filter(rgn_id == 68) %>% 
+  select(rgn_id, year, pressure_score)
+
+compare <- full_join(old, new, by=c("rgn_id","year")); View(compare)
+
+plot(compare$prs_score_old, compare$pressure_score);abline(0,1,col="red")
 ```
 
 
@@ -1802,7 +1157,7 @@ For missing sustainability scores:
 [REFERENCE RMD FILE: https://raw.githubusercontent.com/OHI-Science/ohiprep_v2019/gh-pages/globalprep/mar/v2019/reference_point/CountryProductionEstimate.Rmd]
 
 # Summary
-This analysis produces potential tonnes of aquaculture from growth potential estimates of finfish and bivalves. These aquaculture numbers will be used for the reference point for the mariculture subgoal. 
+This analysis produces potential tonnes of aquaculture from growth potential estimates of finfish and bivalves. These aquaculture numbers will be used for the reference point for the mariculture subgoal. This only needs to be run for the 2019 global assessment, as this data is static.
 
 ***
 
