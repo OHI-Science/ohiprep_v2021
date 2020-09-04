@@ -968,6 +968,44 @@ View(test)
 
 plot(test$sust_old, test$sust_new);abline(0,1,col="red")
 
+
+## Compare new/old Mariculture sustainability scores for Egypt
+tmp_old <- read.csv("../v2019/output/mar_sustainability.csv") %>% 
+  select(rgn_id, taxa_code, sust_old = sust_coeff) %>%
+  filter(rgn_id == 214) 
+  tmp_old$species = str_remove(tmp_old$taxa_code, "\\_[^.]*$")
+
+
+  
+tmp_new <- read.csv("int/mar_sustainability_check.csv") %>% 
+  select(rgn_id, species, sust_new = sust_coeff) %>% 
+  filter(rgn_id == 214)
+
+test <- tmp_new %>% 
+  full_join(tmp_old, by=c("rgn_id", "species"))
+View(test)
+
+plot(test$sust_old, test$sust_new);abline(0,1,col="red")
+
+
+## Compare new/old Mariculture sustainability scores for Greece
+tmp_old <- read.csv("../v2019/output/mar_sustainability.csv") %>% 
+  select(rgn_id, taxa_code, sust_old = sust_coeff) %>%
+  filter(rgn_id == 80) 
+  tmp_old$species = str_remove(tmp_old$taxa_code, "\\_[^.]*$")
+
+
+  
+tmp_new <- read.csv("int/mar_sustainability_check.csv") %>% 
+  select(rgn_id, species, sust_new = sust_coeff) %>% 
+  filter(rgn_id == 80)
+
+test <- tmp_new %>% 
+  full_join(tmp_old, by=c("rgn_id", "species"))
+View(test)
+
+plot(test$sust_old, test$sust_new);abline(0,1,col="red")
+
 ```
 
 ## Data check genetic escapes 
