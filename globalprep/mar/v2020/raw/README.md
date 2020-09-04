@@ -1,22 +1,45 @@
 ## Source for Truj_label_sust.csv:
 
-Mariculture Sustainability Index (Trujillo 2008)
+Seafood Watch sustainability data
 
-Trujillo, P. (2008) Using a mariculture sustainability index to rank countries’   performance. p. 28-56 In: Alder, J. and Pauly, D. (eds.) A comparative assessment of biodiversity, fisheries and aquaculture in 53 countries’ Exclusive Economic Zones. Fisheries Centre Research Reports 16(7). Fisheries Centre, University of British Columbia, Vancouver, Canada. 
+Monterey Bay Aquarium Seafood Watch aquaculture recommendations. Sustainability scored from 0-10. Rescaled to 0-1.
+
 
 Column headers:
 
-country - country name (from original paper)
-species_fao - corresponding species name in FAO mariculture data
-fao - fao region
-environment - brackish or marine
-species_Truj - species name (from original paper)
-taxon - OHI assigned taxon for species_Truj categories that are very broad and could help gapfill FAO species that do not have a Trujillo sustainability score 
-match_type - describes the level of specificity per observation (e.g. taxon, c_sp, c_sp_env, c_sp_fao, species)
-gapfill - recorded gapfill method
-Maric_sustainability - scaled MSI
-Genetic escapees - score originally from Trujillo paper are rescaled from 0-10 to 0-1, where 1 is the highest score. This is based on whether the species being cultured is native or introduced
+report_title - title of species and where it is generally located
+start_year - corresponding species name in FAO mariculture data
+sw_species - common name of the species given by sfw
+genus - genus
+spp - species name 
+fao_species - fao species name 
+region - general region it is located in
+country - country it is located in 
+state_territory - the state or territory it is located in 
+sub_region - sub region it is located in 
+water_body - Body of water 
+parent_method - the method of aquaculture used 
+method - a more specific method of aquaculture description
+score - the overall sustainability score given by SFW
+escapes_score - the escapes score given by SFW
+rec - the overall recommendation given by SFW
 
 
-## Notes:
-I improved matching between FAO taxa and Trujillo taxa.  However, this level of change should be saved for OHI 2018.  Specifically, I made the "alias" list more complete, this field is used to identify a more general taxa that matches the Trujillo data.
+## Notes on species_list.csv
+This is the list of species from the FAO. Any new species you will have to manually add (there are instructions in the RMD). Make sure to update the taxon_code and species columns as well. 
+
+List of taxon_code categories: 
+AL - Algae; any seaweed
+GAST - gastropods   
+BI - bivalves     
+CEPH - cephalopods
+CRUST - crustaceans
+F - Fishes
+INV - invertebrates
+NS-INV
+OTHER - other (usually reptiles)  
+SH - shrimp
+TUN - tunicates
+URCH - urchins   
+ 
+ 

@@ -14,12 +14,12 @@ output:
 ---
 
 # Summary
-This analysis converts FAO mariculture data into data used to calculate the OHI global mariculture status score. This also calculates the genetic escapee from mariculture pressure data.
+This analysis converts FAO mariculture and seafood watch sustainability data into data used to calculate the OHI global mariculture status score. This also calculates the genetic escapee from mariculture pressure data.
 
 # Updates from previous assessment
 
 * New year of FAO mariculture yield data for 2018.
-* 
+* Updated sustainability scores from seafood watch.
 
 ***
 
@@ -39,19 +39,6 @@ FAO metadata found [here](http://www.fao.org/fishery/statistics/global-aquacultu
 
 **Time range**: 1950-2018 
 
-## Trujillo sustainability data
-
-**Reference**:      
-Mariculture Sustainability Index (Trujillo 2008)
-
-Trujillo, Pablo. 2008. “Using a Mariculture Sustainability Index to Rank Countries’ Performance.” In Fisheries Centre Research Reports, edited by Jackie Alder and Daniel Pauly. University of British Columbia, Vancouver, Canada: Fisheries Centre Research Reports. https://circle.ubc.ca/handle/2429/40933. 
-
-Original data table is located in the Trujillo 2008 paper saved in the OHI Zotero database. Report starts on page 28 of the link provided in the reference. 
-
-**Description**:  
-
-Original MSI rescaled from 1-10 to 0-1 for mariculture taxa groups.
-
 ## Seafood Watch sustainability data
 
 **Reference**: 
@@ -60,7 +47,7 @@ Release date: August 3, 2020
 
 **Downloaded**: July 22, 2020
 
-**Description**: Monterey Bay Aquarium Seafood Watch aquaculture recommendations. Sustainability scored from 0-10.
+**Description**: Monterey Bay Aquarium Seafood Watch aquaculture recommendations. Sustainability scored from 0-10. Rescaled to 0-1.
 
 ***
   
@@ -138,82 +125,82 @@ mar_sp <- read.csv('raw/species_list.csv', stringsAsFactors=FALSE) %>%
 
 new.spp <- setdiff(mar$FAO_name, mar_sp$FAO_name)
 new.spp # Check: if dim has 0 rows it means all match
-## If there is a list of species, hand check species_list.csv to see whether to keep (exclude seaweeds and species harvested for ornamental/medicinal), check if synonyms match Trujillo names. 
-## This is outlined in issue #8 and issue #81 for reference. You need to add the species output from this to species_list.csv and fill out the corresponding information. I.e. add FAO_name, exclude (whether to include in assessment or not. If they are only harvested for medicinal purposes, do not include), alias, Taxon_code, and family to species_list.csv.
+## If there is a list of species, hand check species_list.csv to see whether to keep (exclude seaweeds and species harvested for ornamental/medicinal).  
+## This is outlined in issue #8 and issue #81 for reference. You need to add the species output from this to species_list.csv and fill out the corresponding information. I.e. add FAO_name, exclude (whether to include in assessment or not. If they are only harvested for medicinal purposes, do not include), alias, Taxon_code (categories defined in the README in the /raw folder), and family (general family from google) to species_list.csv.
 
 #### Begin 2020 only ####
 ## Lets clean the species names first to prep for taxize. Remove []s. 
 
 ######### NOTE ######### The taxize loop in this code will likely only be necessary for 2020. Due to the large number of species we needed to find family information for, we wanted to automate it as much as possible. In the future there will likely only be a few species that you will need to find family information on, and googling that information is fine. 
 
-mar_sp_clean <- data.frame(mar_sp, spp_clean =gsub("\\[|\\]", "", mar_sp$FAO_name), stringsAsFactors=FALSE)
-
-mar_sp_clean_names <- str_replace(mar_sp_clean$spp_clean, " nei", "") ## remove nei
-
-mar_sp_clean_names_final <- data.frame(mar_sp_clean, spp_clean_final = gsub("\\(.*)", "", mar_sp_clean_names), stringsAsFactors = FALSE) ## remove weird (=) strings
-
-## Now lets use taxize to get family names for each of these species. This code will be run through a for loop and output will be written to the "temp" folder, because if tax_name breaks anywhere, you lose all of the progress. 
-
-spp_all <- mar_sp_clean_names_final %>%
-    .$spp_clean_final ## get a list of the species names to feed into the loop
-
-spp_all_NA <- spp_family_df_NA %>%
-  .$query ## this is after the initial run... run the NAs through again to see if it will pick up a family. 
-
-for(i in spp_all_NA){
-  #i = "Boleophthalmus pectinirostris"
-  chunk_file <- file.path('temp', 
-                    sprintf('spp_family_chunk_%s.csv', 
-                            i))
-  
-  if(!file.exists(chunk_file)) {
-    
-     cat_msg('Getting family info for species ', i, ' to ', max(spp_all))
-    
-spp_fam_tmp <- tax_name(i, get = "family") ## get the family names
-  
-cat_msg('... found ', nrow(spp_fam_tmp), ' family rows for these species')
-
-write_csv(spp_fam_tmp, chunk_file) ## write to a temp folder
-  
-}else {
-   cat_msg('Chunk file ', chunk_file, ' already exists; skipping these spp')
-      
-}
-}
-
-## get all the file names and read them into one dataframe
-  spp_family_chunk_files <- list.files(file.path('temp'), 
-                                    pattern = 'spp_family_chunk', 
-                                    full.names = TRUE)
-  
-  spp_family_df <- lapply(spp_family_chunk_files, FUN = function(x) {
-    read.csv(x, stringsAsFactors = FALSE)}) %>%
-    bind_rows()
-  
-  #split into NAs and Non NAs, save non NAs, and manually look up family names for the NA ones. 
-  spp_family_df_NA <- spp_family_df %>%
-    dplyr::filter(is.na(family))
-  
-  spp_family_df_non_NA <- spp_family_df %>%
-    dplyr::filter(!is.na(family))
-  
-  write.csv(spp_family_df_non_NA, "int/taxize_non_NA.csv", row.names = FALSE)
-  
-  #Save the NA families so that we can manually assign. We will reupload after.. although not entirely correct, I'm going to classify all seaweeds as algae
-    write.csv(spp_family_df_NA, "int/taxize_manual_additions_NA_raw.csv", row.names = FALSE) 
-
-    ## Now read in the manual google additions just made
-  spp_family_df_additions <- read_csv("int/taxize_manual_additions_NA_fixed.csv")
-  
-  ## join together with the non NA taxize families
-  
-  spp_taxize_families <- rbind(spp_family_df_non_NA, spp_family_df_additions)
-  
-  ## join back onto mar_sp_clean_names_final to add the family information
-  mar_sp <- left_join(mar_sp_clean_names_final, spp_taxize_families, by = c("spp_clean_final" = "query")) %>%
-    dplyr::select(FAO_name, exclude, alias, Taxon_code, family) ## now we have a dataset with the family information we will need for gapfilling later on
-  
+# mar_sp_clean <- data.frame(mar_sp, spp_clean =gsub("\\[|\\]", "", mar_sp$FAO_name), stringsAsFactors=FALSE)
+# 
+# mar_sp_clean_names <- str_replace(mar_sp_clean$spp_clean, " nei", "") ## remove nei
+# 
+# mar_sp_clean_names_final <- data.frame(mar_sp_clean, spp_clean_final = gsub("\\(.*)", "", mar_sp_clean_names), stringsAsFactors = FALSE) ## remove weird (=) strings
+# 
+# ## Now lets use taxize to get family names for each of these species. This code will be run through a for loop and output will be written to the "temp" folder, because if tax_name breaks anywhere, you lose all of the progress. 
+# 
+# spp_all <- mar_sp_clean_names_final %>%
+#     .$spp_clean_final ## get a list of the species names to feed into the loop
+# 
+# spp_all_NA <- spp_family_df_NA %>%
+#   .$query ## this is after the initial run... run the NAs through again to see if it will pick up a family. 
+# 
+# for(i in spp_all_NA){
+#   #i = "Boleophthalmus pectinirostris"
+#   chunk_file <- file.path('temp', 
+#                     sprintf('spp_family_chunk_%s.csv', 
+#                             i))
+#   
+#   if(!file.exists(chunk_file)) {
+#     
+#      cat_msg('Getting family info for species ', i, ' to ', max(spp_all))
+#     
+# spp_fam_tmp <- tax_name(i, get = "family") ## get the family names
+#   
+# cat_msg('... found ', nrow(spp_fam_tmp), ' family rows for these species')
+# 
+# write_csv(spp_fam_tmp, chunk_file) ## write to a temp folder
+#   
+# }else {
+#    cat_msg('Chunk file ', chunk_file, ' already exists; skipping these spp')
+#       
+# }
+# }
+# 
+# ## get all the file names and read them into one dataframe
+#   spp_family_chunk_files <- list.files(file.path('temp'), 
+#                                     pattern = 'spp_family_chunk', 
+#                                     full.names = TRUE)
+#   
+#   spp_family_df <- lapply(spp_family_chunk_files, FUN = function(x) {
+#     read.csv(x, stringsAsFactors = FALSE)}) %>%
+#     bind_rows()
+#   
+#   #split into NAs and Non NAs, save non NAs, and manually look up family names for the NA ones. 
+#   spp_family_df_NA <- spp_family_df %>%
+#     dplyr::filter(is.na(family))
+#   
+#   spp_family_df_non_NA <- spp_family_df %>%
+#     dplyr::filter(!is.na(family))
+#   
+#   write.csv(spp_family_df_non_NA, "int/taxize_non_NA.csv", row.names = FALSE)
+#   
+#   #Save the NA families so that we can manually assign. We will reupload after.. although not entirely correct, I'm going to classify all seaweeds as algae
+#     write.csv(spp_family_df_NA, "int/taxize_manual_additions_NA_raw.csv", row.names = FALSE) 
+# 
+#     ## Now read in the manual google additions just made
+#   spp_family_df_additions <- read_csv("int/taxize_manual_additions_NA_fixed.csv")
+#   
+#   ## join together with the non NA taxize families
+#   
+#   spp_taxize_families <- rbind(spp_family_df_non_NA, spp_family_df_additions)
+#   
+#   ## join back onto mar_sp_clean_names_final to add the family information
+#   mar_sp <- left_join(mar_sp_clean_names_final, spp_taxize_families, by = c("spp_clean_final" = "query")) %>%
+#     dplyr::select(FAO_name, exclude, alias, Taxon_code, family) ## now we have a dataset with the family information we will need for gapfilling later on
+#   
 # Now lets rewrite this as our species_list.csv
   
 #write.csv(mar_sp, "raw/species_list.csv", row.names = FALSE)
@@ -478,6 +465,7 @@ sort(setdiff(maric$species, sw_sus_rgn$species)) # FAO species with no Seafood W
 
 ```
 
+**Fix the non matches**
 ```{r sw-sus_fix-non-matches, eval = FALSE}
 
 ## Rename species in Seafood Watch data to match FAO species data
@@ -506,105 +494,23 @@ table(sw_sus_rgn$match_type)
 
 ```
 
-
+**Assign a mediterraen bordering rgn id to each waterbody row**
 ```{r gf_sw_sp_w, eval = FALSE}
-  
-
 ## Add a line for each country that borders each water body
   # The only water body is the Mediterranean; add all countries that border it (source: https://www.medqsr.org/mediterranean-marine-and-coastal-environment#:~:text=Today%2021%20countries%2C%20with%20surface,Syria%2C%20Tunisia%2C%20and%20Turkey.)
-gf_sw_sp_w <- sw_sus_rgn %>% 
-  filter(match_type == 'sw_sp_w') %>% 
-  # Atlantic bluefin tuna - Marine net pen
-  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>% 
-  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 179, rgn_name = 'France', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>%
-  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'Atlantic bluefin tuna', score = 4.42, match_type = 'sw_sp_w',   .after = 1) %>% 
 
-  # Gilthead seabream - Marine net pen
-  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>% 
-  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 179, rgn_name = 'France', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>%
-  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'Gilthead seabream', score = 4.42, match_type = 'sw_sp_w',   .after = 23) %>% 
-  
-  # Meagre - Marine net pen
-  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>% 
-  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 179, rgn_name = 'France', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>%
-  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'Meagre', score = 4.29, match_type = 'sw_sp_w',   .after = 45) %>% 
-  
-# European seabass - Marine net pen
-  add_row(rgn_id = 82, rgn_name = 'Albania', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>% 
-  add_row(rgn_id = 84, rgn_name = 'Algeria', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 232, rgn_name = 'Bosnia and Herzegovina', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 187, rgn_name = 'Croatia', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 81, rgn_name = 'Cyprus', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 214, rgn_name = 'Egypt', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 179, rgn_name = 'France', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 80, rgn_name = 'Greece', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 79, rgn_name = 'Israel', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 184, rgn_name = 'Italy', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 78, rgn_name = 'Lebanon', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 67, rgn_name = 'Libya', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 68, rgn_name = 'Malta', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 185, rgn_name = 'Monaco', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 186, rgn_name = 'Montenegro', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 62, rgn_name = 'Morocco', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 188, rgn_name = 'Slovenia', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 182, rgn_name = 'Spain', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 77, rgn_name = 'Syria', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 61, rgn_name = 'Tunisia', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67) %>%
-  add_row(rgn_id = 76, rgn_name = 'Turkey', species = 'European seabass', score = 4.45, match_type = 'sw_sp_w',   .after = 67)
+## filter for waterbody specific rows 
+sw_sus_rgn_water <- sw_sus_rgn %>%
+  filter(match_type == 'sw_sp_w')
+
+## define meditteraen rgns
+med_rgns <- data.frame(rgn_id = c(82, 84, 232, 187, 81, 214, 179, 80, 79, 184, 78, 67, 68, 185, 186, 62, 188, 182, 77, 61, 76))
+
+expand.grid.df <- function(...) Reduce(function(...) merge(..., by=NULL), list(...))
+
+gf_sw_sp_w <- expand.grid.df(sw_sus_rgn_water, med_rgns) %>%
+  dplyr::select(-rgn_id.x, rgn_id = rgn_id.y)
+
 
 ```
 
@@ -705,7 +611,7 @@ mar_sw_sus <- mar_sw_sus %>%
 
 summary(mar_sw_sus)
 # Sust_avg still has 17202 NAs out of 28472 total obs.; ~60% without sustainability data
-# esc_score still have 17348 NAs out of 28742 total obs; ~60% without scores
+# esc_score still have 17202 NAs out of 28742 total obs; ~60% without scores
 
 ```
 
@@ -743,7 +649,7 @@ mar_sw_sus <- mar_sw_sus %>%
 # summary(mod_spp1)
 ## it makes more sense to use species/taxon gapfilling methods
 
-mar_sw_sus_test <- mar_sw_sus %>%
+mar_sw_sus <- mar_sw_sus %>%
   group_by(rgn_id, family) %>%
   mutate(avg_rgn_fam_sust = mean(Sust, na.rm = TRUE),
          avg_rgn_fam_esc = mean(esc_score, na.rm = TRUE)) %>%
@@ -781,7 +687,7 @@ Steps:
 
 ```{r sw-sus-gapfill-missing, eval = FALSE}
 
-mar_sw_sus_final = mar_sw_sus_test %>%
+mar_sw_sus_final = mar_sw_sus %>%
   
   #### sustainability scores ####
   mutate(Sust = ifelse(is.na(Sust), avg_rgn_fam_sust, Sust)) %>% # Gapfill with region/family level
