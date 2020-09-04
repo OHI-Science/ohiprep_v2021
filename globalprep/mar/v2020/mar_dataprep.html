@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Fri Sep 4 10:44:23 2020 by sgclawson" />
+<meta name="author" content="Compiled on Fri Sep 4 15:08:32 2020 by sgclawson" />
 
 
 <title>OHI 2020: Mariculture</title>
@@ -420,7 +420,7 @@ summary {
 
 
 <h1 class="title toc-ignore">OHI 2020: Mariculture</h1>
-<h4 class="author"><em>Compiled on Fri Sep 4 10:44:23 2020 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Fri Sep 4 15:08:32 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -659,37 +659,28 @@ summary {
 <span id="cb7-90"><a href="#cb7-90"></a>mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">left_join</span>(mar_sp, <span class="dt">by=</span><span class="st">&quot;FAO_name&quot;</span>) </span>
 <span id="cb7-91"><a href="#cb7-91"></a></span>
 <span id="cb7-92"><a href="#cb7-92"></a><span class="co">## Filters out species that should be excluded from the MAR subgoal, depending on which of the 3 scenarios was read in. Searches for column name &quot;exclude&quot;, &quot;exclude_no_seaweed&quot;, or &quot;exclude_no_nei&quot;</span></span>
-<span id="cb7-93"><a href="#cb7-93"></a><span class="cf">if</span>(<span class="kw">sum</span>(<span class="kw">str_detect</span>(<span class="kw">names</span>(mar_sp), <span class="st">&quot;exclude$&quot;</span>))<span class="op">==</span><span class="dv">1</span>) {</span>
-<span id="cb7-94"><a href="#cb7-94"></a>  </span>
-<span id="cb7-95"><a href="#cb7-95"></a> mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(exclude<span class="op">==</span><span class="dv">0</span>)</span>
-<span id="cb7-96"><a href="#cb7-96"></a></span>
-<span id="cb7-97"><a href="#cb7-97"></a> } <span class="cf">else</span> <span class="cf">if</span> (<span class="kw">sum</span>(<span class="kw">str_detect</span>(<span class="kw">names</span>(mar_sp), <span class="st">&quot;exclude_no_seaweed&quot;</span>))<span class="op">==</span><span class="dv">1</span>) {</span>
-<span id="cb7-98"><a href="#cb7-98"></a>  </span>
-<span id="cb7-99"><a href="#cb7-99"></a>   mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(exclude_no_seaweed<span class="op">==</span><span class="dv">0</span>)</span>
+<span id="cb7-93"><a href="#cb7-93"></a>  </span>
+<span id="cb7-94"><a href="#cb7-94"></a> mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(exclude<span class="op">==</span><span class="dv">0</span>)</span>
+<span id="cb7-95"><a href="#cb7-95"></a></span>
+<span id="cb7-96"><a href="#cb7-96"></a> </span>
+<span id="cb7-97"><a href="#cb7-97"></a> </span>
+<span id="cb7-98"><a href="#cb7-98"></a><span class="co">## Change names using species alias or FAO species name (global changes)</span></span>
+<span id="cb7-99"><a href="#cb7-99"></a>mar<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">ifelse</span>(<span class="op">!</span><span class="kw">is.na</span>(mar<span class="op">$</span>alias), mar<span class="op">$</span>alias, mar<span class="op">$</span>FAO_name) </span>
 <span id="cb7-100"><a href="#cb7-100"></a></span>
-<span id="cb7-101"><a href="#cb7-101"></a>   } <span class="cf">else</span> <span class="cf">if</span> (<span class="kw">sum</span>(<span class="kw">str_detect</span>(<span class="kw">names</span>(mar_sp), <span class="st">&quot;exclude_no_nei&quot;</span>))<span class="op">==</span><span class="dv">1</span>) {</span>
-<span id="cb7-102"><a href="#cb7-102"></a>  </span>
-<span id="cb7-103"><a href="#cb7-103"></a>     mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(exclude_no_nei<span class="op">==</span><span class="dv">0</span>)</span>
-<span id="cb7-104"><a href="#cb7-104"></a></span>
-<span id="cb7-105"><a href="#cb7-105"></a>     }</span>
-<span id="cb7-106"><a href="#cb7-106"></a> </span>
-<span id="cb7-107"><a href="#cb7-107"></a><span class="co">## Change names using species alias or FAO species name (global changes)</span></span>
-<span id="cb7-108"><a href="#cb7-108"></a>mar<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">ifelse</span>(<span class="op">!</span><span class="kw">is.na</span>(mar<span class="op">$</span>alias), mar<span class="op">$</span>alias, mar<span class="op">$</span>FAO_name) </span>
-<span id="cb7-109"><a href="#cb7-109"></a></span>
-<span id="cb7-110"><a href="#cb7-110"></a><span class="co">## Sum production values for each group to account for duplicate rows after name change (remove NA values)</span></span>
-<span id="cb7-111"><a href="#cb7-111"></a>mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span></span>
-<span id="cb7-112"><a href="#cb7-112"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(value)) <span class="op">%&gt;%</span></span>
-<span id="cb7-113"><a href="#cb7-113"></a><span class="st">  </span><span class="kw">group_by</span>(country, fao, environment, species, year, Taxon_code, family) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb7-114"><a href="#cb7-114"></a><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb7-115"><a href="#cb7-115"></a><span class="st">  </span><span class="kw">ungroup</span>()</span>
-<span id="cb7-116"><a href="#cb7-116"></a></span>
-<span id="cb7-117"><a href="#cb7-117"></a><span class="co">## Eliminate country-species data with zero production throughout the time-series (1950-recent)</span></span>
-<span id="cb7-118"><a href="#cb7-118"></a>mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span></span>
-<span id="cb7-119"><a href="#cb7-119"></a><span class="st">  </span><span class="kw">group_by</span>(country, species) <span class="op">%&gt;%</span></span>
-<span id="cb7-120"><a href="#cb7-120"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">total_value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span></span>
-<span id="cb7-121"><a href="#cb7-121"></a><span class="st">  </span><span class="kw">filter</span>(total_value <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>) <span class="op">%&gt;%</span></span>
-<span id="cb7-122"><a href="#cb7-122"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>total_value) <span class="op">%&gt;%</span></span>
-<span id="cb7-123"><a href="#cb7-123"></a><span class="st">  </span><span class="kw">ungroup</span>()</span></code></pre></div>
+<span id="cb7-101"><a href="#cb7-101"></a><span class="co">## Sum production values for each group to account for duplicate rows after name change (remove NA values)</span></span>
+<span id="cb7-102"><a href="#cb7-102"></a>mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span></span>
+<span id="cb7-103"><a href="#cb7-103"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(value)) <span class="op">%&gt;%</span></span>
+<span id="cb7-104"><a href="#cb7-104"></a><span class="st">  </span><span class="kw">group_by</span>(country, fao, environment, species, year, Taxon_code, family) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-105"><a href="#cb7-105"></a><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-106"><a href="#cb7-106"></a><span class="st">  </span><span class="kw">ungroup</span>()</span>
+<span id="cb7-107"><a href="#cb7-107"></a></span>
+<span id="cb7-108"><a href="#cb7-108"></a><span class="co">## Eliminate country-species data with zero production throughout the time-series (1950-recent)</span></span>
+<span id="cb7-109"><a href="#cb7-109"></a>mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span></span>
+<span id="cb7-110"><a href="#cb7-110"></a><span class="st">  </span><span class="kw">group_by</span>(country, species) <span class="op">%&gt;%</span></span>
+<span id="cb7-111"><a href="#cb7-111"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">total_value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span></span>
+<span id="cb7-112"><a href="#cb7-112"></a><span class="st">  </span><span class="kw">filter</span>(total_value <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>) <span class="op">%&gt;%</span></span>
+<span id="cb7-113"><a href="#cb7-113"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>total_value) <span class="op">%&gt;%</span></span>
+<span id="cb7-114"><a href="#cb7-114"></a><span class="st">  </span><span class="kw">ungroup</span>()</span></code></pre></div>
 </div>
 <div id="convert-country-names-to-ohi-regions" class="section level2">
 <h2><span class="header-section-number">6.3</span> Convert country names to OHI regions</h2>

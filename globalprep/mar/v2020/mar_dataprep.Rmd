@@ -211,19 +211,10 @@ new.spp # Check: if dim has 0 rows it means all match
 mar <- mar %>% left_join(mar_sp, by="FAO_name") 
 
 ## Filters out species that should be excluded from the MAR subgoal, depending on which of the 3 scenarios was read in. Searches for column name "exclude", "exclude_no_seaweed", or "exclude_no_nei"
-if(sum(str_detect(names(mar_sp), "exclude$"))==1) {
   
  mar <- mar %>% filter(exclude==0)
 
- } else if (sum(str_detect(names(mar_sp), "exclude_no_seaweed"))==1) {
-  
-   mar <- mar %>% filter(exclude_no_seaweed==0)
-
-   } else if (sum(str_detect(names(mar_sp), "exclude_no_nei"))==1) {
-  
-     mar <- mar %>% filter(exclude_no_nei==0)
-
-     }
+ 
  
 ## Change names using species alias or FAO species name (global changes)
 mar$species <- ifelse(!is.na(mar$alias), mar$alias, mar$FAO_name) 
