@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Fri Aug 21 14:43:39 2020 by sgclawson" />
+<meta name="author" content="Compiled on Fri Sep 4 11:57:48 2020 by sgclawson" />
 
 
 <title>OHI 2020: Natural Products: Ornamentals data prep</title>
@@ -420,7 +420,7 @@ summary {
 
 
 <h1 class="title toc-ignore">OHI 2020: Natural Products: Ornamentals data prep</h1>
-<h4 class="author"><em>Compiled on Fri Aug 21 14:43:39 2020 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Fri Sep 4 11:57:48 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -430,7 +430,7 @@ summary {
 <li><a href="#updates-from-previous-assessment"><span class="toc-section-number">2</span> Updates from previous assessment</a></li>
 <li><a href="#data-source"><span class="toc-section-number">3</span> Data Source</a><ul>
 <li><a href="#production-data"><span class="toc-section-number">3.1</span> Production data</a></li>
-<li><a href="#sustainability-data"><span class="toc-section-number">3.2</span> Sustainability data</a></li>
+<li><a href="#seafood-watch-sustainability-data"><span class="toc-section-number">3.2</span> Seafood Watch sustainability data</a></li>
 </ul></li>
 <li><a href="#methods"><span class="toc-section-number">4</span> Methods</a></li>
 <li><a href="#import-raw-data-fao-mariculture-data"><span class="toc-section-number">5</span> Import Raw Data: FAO Mariculture data</a></li>
@@ -444,12 +444,17 @@ summary {
 <li><a href="#fill-in-missing-years-after-first-year-of-harvest-data-with-0-values"><span class="toc-section-number">7.1</span> Fill in missing years after first year of harvest data with 0 values</a></li>
 </ul></li>
 <li><a href="#calculate-and-save-tonnes-of-seaweed"><span class="toc-section-number">8</span> Calculate and save tonnes of seaweed</a></li>
-<li><a href="#import-data-trujillo-sustainability-scores"><span class="toc-section-number">9</span> Import data: Trujillo sustainability scores</a></li>
-<li><a href="#wrangle-1"><span class="toc-section-number">10</span> Wrangle</a><ul>
-<li><a href="#convert-country-names-to-ohi-region-names."><span class="toc-section-number">10.1</span> Convert country names to OHI region names.</a></li>
+<li><a href="#sustainability-scores-from-seafood-watch-data"><span class="toc-section-number">9</span> Sustainability Scores from Seafood Watch Data</a><ul>
+<li><a href="#import-data-seafood-watch-sustainability-scores"><span class="toc-section-number">9.1</span> Import data: Seafood Watch sustainability scores</a></li>
+<li><a href="#wrangle-1"><span class="toc-section-number">9.2</span> Wrangle</a><ul>
+<li><a href="#tidy-seafood-watch-sustainability-data"><span class="toc-section-number">9.2.1</span> Tidy Seafood Watch sustainability data</a></li>
+<li><a href="#keep-na-countries"><span class="toc-section-number">9.2.2</span> Keep NA countries</a></li>
+<li><a href="#convert-country-names-to-ohi-region-ids."><span class="toc-section-number">9.2.3</span> Convert country names to OHI region IDs.</a></li>
 </ul></li>
-<li><a href="#fao-mariculture-and-sustainability-scores"><span class="toc-section-number">11</span> FAO mariculture and sustainability scores</a></li>
-<li><a href="#save-data"><span class="toc-section-number">12</span> Save Data:</a></li>
+</ul></li>
+<li><a href="#save-data"><span class="toc-section-number">10</span> Save Data:</a><ul>
+<li><a href="#save-gapfill-datasets"><span class="toc-section-number">10.1</span> Save gapfill datasets</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -473,14 +478,11 @@ summary {
 <p><strong>Description</strong>: Quantity (tonnes) of mariculture for each country, species, year.</p>
 <p><strong>Time range</strong>: 1950-2018</p>
 </div>
-<div id="sustainability-data" class="section level2">
-<h2><span class="header-section-number">3.2</span> Sustainability data</h2>
-<p><strong>Reference</strong>:<br />
-Mariculture Sustainability Index (Trujillo 2008)</p>
-<p>Trujillo, Pablo. 2008. “Using a Mariculture Sustainability Index to Rank Countries’ Performance.” In Fisheries Centre Research Reports, edited by Jackie Alder and Daniel Pauly. University of British Columbia, Vancouver, Canada: Fisheries Centre Research Reports. <a href="https://circle.ubc.ca/handle/2429/40933" class="uri">https://circle.ubc.ca/handle/2429/40933</a>.</p>
-<p>Original data table is located in the Trujillo 2008 paper saved in the OHI Zotero database. Report starts on page 28 of the link provided in the reference.</p>
-<p><strong>Description</strong>:</p>
-<p>Original MSI rescaled from 1-10 to 0-1 for mariculture taxa groups.</p>
+<div id="seafood-watch-sustainability-data" class="section level2">
+<h2><span class="header-section-number">3.2</span> Seafood Watch sustainability data</h2>
+<p><strong>Reference</strong>: <a href="https://www.seafoodwatch.org/-/m/sfw/pdf/whats%20new/complete%20recommendation%20list.pdf" class="uri">https://www.seafoodwatch.org/-/m/sfw/pdf/whats%20new/complete%20recommendation%20list.pdf</a> Release date: August 3, 2020</p>
+<p><strong>Downloaded</strong>: July 22, 2020</p>
+<p><strong>Description</strong>: Monterey Bay Aquarium Seafood Watch aquaculture recommendations. Sustainability scored from 0-10. Rescaled to 0-1.</p>
 <hr />
 </div>
 </div>
@@ -549,17 +551,19 @@ Mariculture Sustainability Index (Trujillo 2008)</p>
 <div id="update-seaweed-species-information" class="section level2">
 <h2><span class="header-section-number">6.2</span> Update seaweed species information</h2>
 <p>Filter out seaweed species from ‘raw/species_list.csv’ (originally from ‘globalprep/mar/v2020/raw’), rename columns, and assign proportions to “include” column determined by research of non-human food vs human food seaweed species cultivated in mariculture. For NP, we are only including non-human food seaweed species. Since some species are used for both non-human food and human food purposes, a proportion is assigned based on research and best guess.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">## Read in &#39;species_list.csv&#39; (originally from &#39;globalprep/mar/v2020/raw&#39;). Filter for &#39;Taxon_code = AL&#39; (only seaweed species). Rename &#39;exclude&#39; columns to &#39;include&#39; since we&#39;re now including seaweed species that were excluded in the MAR dataprep (not primarily used as human food). Therefore, &quot;0&quot; means exclude completely (0%), and &quot;1&quot; means include completely (100%). Four scenarios for comparison purposes: 1) &quot;include&quot; - best guess of non-human food species; 2) &quot;include_no_food&quot; - if species is used for human food at all, exclude it; 3) &quot;include_all_seaweed&quot; - including all seaweeds in NP goal (including seaweeds used primarily for human food), 4) &quot;include_all_nei&quot; - including all seaweeds not elsewhere included in the dataset.</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a>seaweed_sp &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&#39;raw/species_list.csv&#39;</span>, <span class="dt">stringsAsFactors=</span><span class="ot">FALSE</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb6-3"><a href="#cb6-3"></a><span class="st">  </span><span class="kw">filter</span>(Taxon_code <span class="op">==</span><span class="st"> &#39;AL&#39;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb6-4"><a href="#cb6-4"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">include =</span> exclude, </span>
-<span id="cb6-5"><a href="#cb6-5"></a>         <span class="dt">include_all_seaweed =</span> exclude_no_seaweed, </span>
-<span id="cb6-6"><a href="#cb6-6"></a>         <span class="dt">include_all_nei =</span> exclude_no_nei) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb6-7"><a href="#cb6-7"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">include_no_food =</span> include) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb6-8"><a href="#cb6-8"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>, include_no_food, <span class="kw">everything</span>())</span>
-<span id="cb6-9"><a href="#cb6-9"></a>  </span>
-<span id="cb6-10"><a href="#cb6-10"></a><span class="co">## Save in &#39;globalprep/np/v2020/raw&#39; as &#39;species_list_np_seaweeds.csv&#39;. Export and edit csv file directly to go through each species and confirm if appropriate to include in NP goal, adding to &#39;notes_2&#39; column why each species is included/excluded and what proportion (with a reference).</span></span>
-<span id="cb6-11"><a href="#cb6-11"></a><span class="kw">write.csv</span>(seaweed_sp,<span class="st">&quot;raw/species_list_np_seaweeds.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co">#### </span><span class="al">NOTE</span><span class="co">: this is likely only necessary for the v2020 udpate. If any species are to be added, it will be done in the chunk below this one ####</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="co">## Read in &#39;species_list.csv&#39; (originally from &#39;globalprep/mar/v2020/raw&#39;). Filter for &#39;Taxon_code = AL&#39; (only seaweed species). Rename &#39;exclude&#39; columns to &#39;include&#39; since we&#39;re now including seaweed species that were excluded in the MAR dataprep (not primarily used as human food). Therefore, &quot;0&quot; means exclude completely (0%), and &quot;1&quot; means include completely (100%). Four scenarios for comparison purposes: 1) &quot;include&quot; - best guess of non-human food species; 2) &quot;include_no_food&quot; - if species is used for human food at all, exclude it; 3) &quot;include_all_seaweed&quot; - including all seaweeds in NP goal (including seaweeds used primarily for human food), 4) &quot;include_all_nei&quot; - including all seaweeds not elsewhere included in the dataset.</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>seaweed_sp &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&#39;raw/species_list.csv&#39;</span>, <span class="dt">stringsAsFactors=</span><span class="ot">FALSE</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="st">  </span><span class="kw">filter</span>(Taxon_code <span class="op">==</span><span class="st"> &#39;AL&#39;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">include =</span> exclude, </span>
+<span id="cb6-7"><a href="#cb6-7"></a>         <span class="dt">include_all_seaweed =</span> exclude_no_seaweed, </span>
+<span id="cb6-8"><a href="#cb6-8"></a>         <span class="dt">include_all_nei =</span> exclude_no_nei) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">include_no_food =</span> include) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>, include_no_food, <span class="kw">everything</span>())</span>
+<span id="cb6-11"><a href="#cb6-11"></a>  </span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="co">## Save in &#39;globalprep/np/v2020/raw&#39; as &#39;species_list_np_seaweeds.csv&#39;. Export and edit csv file directly to go through each species and confirm if appropriate to include in NP goal, adding to &#39;notes_2&#39; column why each species is included/excluded and what proportion (with a reference).</span></span>
+<span id="cb6-13"><a href="#cb6-13"></a><span class="kw">write.csv</span>(seaweed_sp,<span class="st">&quot;raw/species_list_np_seaweeds.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
 <p>Changes made to species_list_np_seaweeds.csv:</p>
 <table>
 <colgroup>
@@ -802,7 +806,7 @@ Mariculture Sustainability Index (Trujillo 2008)</p>
 <span id="cb7-3"><a href="#cb7-3"></a></span>
 <span id="cb7-4"><a href="#cb7-4"></a><span class="co">## Different versions of the dataset, representing the four different seaweed inclusion methods (include proportions of non-human food species, include only completely non-human food species, include all seaweeds, include all seaweeds nei). Use at the end for data checking. The first one is the one which is saved to the &quot;output&quot; folder. </span></span>
 <span id="cb7-5"><a href="#cb7-5"></a>seaweeds_sp &lt;-<span class="st"> </span>seaweeds <span class="op">%&gt;%</span></span>
-<span id="cb7-6"><a href="#cb7-6"></a><span class="st">  </span><span class="kw">select</span>(FAO_name, include, alias, Taxon_code)</span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="st">  </span><span class="kw">select</span>(FAO_name, include, alias, Taxon_code, family)</span>
 <span id="cb7-7"><a href="#cb7-7"></a><span class="co"># seaweeds_sp &lt;- seaweeds %&gt;%</span></span>
 <span id="cb7-8"><a href="#cb7-8"></a><span class="co">#   select(FAO_name, include_no_food, alias, Taxon_code)</span></span>
 <span id="cb7-9"><a href="#cb7-9"></a><span class="co"># seaweeds_sp &lt;- seaweeds %&gt;%</span></span>
@@ -813,34 +817,38 @@ Mariculture Sustainability Index (Trujillo 2008)</p>
 <span id="cb7-14"><a href="#cb7-14"></a>new.spp &lt;-<span class="st"> </span><span class="kw">setdiff</span>(mar<span class="op">$</span>FAO_name, seaweeds_sp<span class="op">$</span>FAO_name)</span>
 <span id="cb7-15"><a href="#cb7-15"></a>new.spp <span class="co"># check: if dim has 0 rows it means all match</span></span>
 <span id="cb7-16"><a href="#cb7-16"></a><span class="co"># if there is a list of species, hand check species_list.csv to see whether to keep (include seaweeds and species harvested for ornamental/medicinal), check if synonyms match Trujillo names. </span></span>
-<span id="cb7-17"><a href="#cb7-17"></a><span class="co"># this is outlined in issue #8 and issue #81 for reference. You need to add the species output from this to species_list_np_seaweeds_edited.csv and fill out the corresponding information. I.e. add FAO_name, include (whether to include in assessment or not. If they are only harvested for human food purposes, do not include), alias, and Taxon_code to species_list_np_seaweeds_edited.csv.</span></span>
+<span id="cb7-17"><a href="#cb7-17"></a><span class="co"># this is outlined in issue #8 and issue #81 for reference. You need to add the species output from this to species_list_np_seaweeds_edited.csv and fill out the corresponding information. I.e. add FAO_name, include (whether to include in assessment or not. If they are only harvested for human food purposes, do not include. Assign a proportion here), alias, and Taxon_code, and family to species_list_np_seaweeds_edited.csv.</span></span>
 <span id="cb7-18"><a href="#cb7-18"></a><span class="co"># no seaweed species were listed - v2020</span></span>
 <span id="cb7-19"><a href="#cb7-19"></a></span>
 <span id="cb7-20"><a href="#cb7-20"></a><span class="co">## REMOVE SPECIES not relevant to natural products goal (i.e., human food species)</span></span>
 <span id="cb7-21"><a href="#cb7-21"></a>seaweed_np &lt;-<span class="st"> </span>seaweeds_sp <span class="op">%&gt;%</span><span class="st"> </span></span>
 <span id="cb7-22"><a href="#cb7-22"></a><span class="st">  </span><span class="kw">left_join</span>(mar, <span class="dt">by=</span><span class="st">&quot;FAO_name&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
 <span id="cb7-23"><a href="#cb7-23"></a><span class="st">  </span><span class="kw">filter</span>(include <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>)</span>
-<span id="cb7-24"><a href="#cb7-24"></a><span class="co"># went from 43 species to 39 species (4 completely human food species removed) - v2020</span></span>
-<span id="cb7-25"><a href="#cb7-25"></a> </span>
-<span id="cb7-26"><a href="#cb7-26"></a><span class="co">## Change names using species alias or FAO species name (global changes)</span></span>
-<span id="cb7-27"><a href="#cb7-27"></a>seaweed_np<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">ifelse</span>(<span class="op">!</span><span class="kw">is.na</span>(seaweed_np<span class="op">$</span>alias), seaweed_np<span class="op">$</span>alias, seaweed_np<span class="op">$</span>FAO_name) </span>
-<span id="cb7-28"><a href="#cb7-28"></a></span>
-<span id="cb7-29"><a href="#cb7-29"></a><span class="co">## Sum production values for each group to account for duplicate rows after name change (remove NA values)</span></span>
-<span id="cb7-30"><a href="#cb7-30"></a>seaweed_np &lt;-<span class="st"> </span>seaweed_np <span class="op">%&gt;%</span></span>
-<span id="cb7-31"><a href="#cb7-31"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(value)) <span class="op">%&gt;%</span></span>
-<span id="cb7-32"><a href="#cb7-32"></a><span class="st">  </span><span class="kw">group_by</span>(country, fao, environment, species, year, Taxon_code, include) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb7-33"><a href="#cb7-33"></a><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb7-34"><a href="#cb7-34"></a><span class="st">  </span><span class="kw">ungroup</span>()</span>
-<span id="cb7-35"><a href="#cb7-35"></a><span class="co"># went from 39 species to 35 species (lost &quot;Aquatic plants nei&quot;, &quot;Bright green nori&quot;, &quot;Kelp nei&quot;, &quot;Giant kelps nei&quot;) due to no production values for those species - v2020</span></span>
-<span id="cb7-36"><a href="#cb7-36"></a><span class="co"># went from 50 to 49 countries</span></span>
+<span id="cb7-24"><a href="#cb7-24"></a></span>
+<span id="cb7-25"><a href="#cb7-25"></a><span class="kw">unique</span>(seaweed_np<span class="op">$</span>FAO_name)</span>
+<span id="cb7-26"><a href="#cb7-26"></a><span class="co"># went from 43 species to 39 species (4 completely human food species removed) - v2020</span></span>
+<span id="cb7-27"><a href="#cb7-27"></a> </span>
+<span id="cb7-28"><a href="#cb7-28"></a><span class="co">## Change names using species alias or FAO species name (global changes)</span></span>
+<span id="cb7-29"><a href="#cb7-29"></a>seaweed_np<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">ifelse</span>(<span class="op">!</span><span class="kw">is.na</span>(seaweed_np<span class="op">$</span>alias), seaweed_np<span class="op">$</span>alias, seaweed_np<span class="op">$</span>FAO_name) </span>
+<span id="cb7-30"><a href="#cb7-30"></a></span>
+<span id="cb7-31"><a href="#cb7-31"></a><span class="co">## Sum production values for each group to account for duplicate rows after name change (remove NA values)</span></span>
+<span id="cb7-32"><a href="#cb7-32"></a>seaweed_np &lt;-<span class="st"> </span>seaweed_np <span class="op">%&gt;%</span></span>
+<span id="cb7-33"><a href="#cb7-33"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(value)) <span class="op">%&gt;%</span></span>
+<span id="cb7-34"><a href="#cb7-34"></a><span class="st">  </span><span class="kw">group_by</span>(country, fao, environment, species, year, Taxon_code, family, include) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-35"><a href="#cb7-35"></a><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-36"><a href="#cb7-36"></a><span class="st">  </span><span class="kw">ungroup</span>()</span>
 <span id="cb7-37"><a href="#cb7-37"></a></span>
-<span id="cb7-38"><a href="#cb7-38"></a><span class="co">## Eliminate country-species data with zero production throughout the time-series (1950-recent)</span></span>
-<span id="cb7-39"><a href="#cb7-39"></a>seaweed_np &lt;-<span class="st"> </span>seaweed_np <span class="op">%&gt;%</span></span>
-<span id="cb7-40"><a href="#cb7-40"></a><span class="st">  </span><span class="kw">group_by</span>(country, species) <span class="op">%&gt;%</span></span>
-<span id="cb7-41"><a href="#cb7-41"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">total_value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span></span>
-<span id="cb7-42"><a href="#cb7-42"></a><span class="st">  </span><span class="kw">filter</span>(total_value <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>) <span class="op">%&gt;%</span></span>
-<span id="cb7-43"><a href="#cb7-43"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>total_value) <span class="op">%&gt;%</span></span>
-<span id="cb7-44"><a href="#cb7-44"></a><span class="st">  </span><span class="kw">ungroup</span>()</span></code></pre></div>
+<span id="cb7-38"><a href="#cb7-38"></a><span class="kw">unique</span>(seaweed_np<span class="op">$</span>species)</span>
+<span id="cb7-39"><a href="#cb7-39"></a><span class="co"># went from 39 species to 35 species (lost &quot;Aquatic plants nei&quot;, &quot;Bright green nori&quot;, &quot;Kelp nei&quot;, &quot;Giant kelps nei&quot;) due to no production values for those species - v2020</span></span>
+<span id="cb7-40"><a href="#cb7-40"></a><span class="co"># went from 50 to 49 countries</span></span>
+<span id="cb7-41"><a href="#cb7-41"></a></span>
+<span id="cb7-42"><a href="#cb7-42"></a><span class="co">## Eliminate country-species data with zero production throughout the time-series (1950-recent)</span></span>
+<span id="cb7-43"><a href="#cb7-43"></a>seaweed_np &lt;-<span class="st"> </span>seaweed_np <span class="op">%&gt;%</span></span>
+<span id="cb7-44"><a href="#cb7-44"></a><span class="st">  </span><span class="kw">group_by</span>(country, species) <span class="op">%&gt;%</span></span>
+<span id="cb7-45"><a href="#cb7-45"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">total_value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span></span>
+<span id="cb7-46"><a href="#cb7-46"></a><span class="st">  </span><span class="kw">filter</span>(total_value <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>) <span class="op">%&gt;%</span></span>
+<span id="cb7-47"><a href="#cb7-47"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>total_value) <span class="op">%&gt;%</span></span>
+<span id="cb7-48"><a href="#cb7-48"></a><span class="st">  </span><span class="kw">ungroup</span>()</span></code></pre></div>
 </div>
 <div id="convert-country-names-to-ohi-regions" class="section level2">
 <h2><span class="header-section-number">6.4</span> Convert country names to OHI regions</h2>
@@ -860,7 +868,7 @@ Mariculture Sustainability Index (Trujillo 2008)</p>
 <span id="cb8-14"><a href="#cb8-14"></a></span>
 <span id="cb8-15"><a href="#cb8-15"></a><span class="co">## Sum values of regions with multiple subregions</span></span>
 <span id="cb8-16"><a href="#cb8-16"></a>mar_rgn &lt;-<span class="st"> </span>mar_rgn <span class="op">%&gt;%</span></span>
-<span id="cb8-17"><a href="#cb8-17"></a><span class="st">  </span><span class="kw">group_by</span>(fao, environment, species, year, Taxon_code, rgn_id, include) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-17"><a href="#cb8-17"></a><span class="st">  </span><span class="kw">group_by</span>(fao, environment, species, year, Taxon_code, family, rgn_id, include) <span class="op">%&gt;%</span><span class="st"> </span></span>
 <span id="cb8-18"><a href="#cb8-18"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span></span>
 <span id="cb8-19"><a href="#cb8-19"></a><span class="st">  </span><span class="kw">ungroup</span>()</span>
 <span id="cb8-20"><a href="#cb8-20"></a><span class="co"># went from 2979 to 2950 observations - v2020</span></span></code></pre></div>
@@ -927,163 +935,153 @@ Mariculture Sustainability Index (Trujillo 2008)</p>
 <span id="cb14-5"><a href="#cb14-5"></a><span class="co">## Save in &#39;globalprep/np/v2020_new/int&#39; as &#39;np_seaweeds_tonnes.csv&#39; for weighting purposes later on</span></span>
 <span id="cb14-6"><a href="#cb14-6"></a><span class="kw">write.csv</span>(maric,<span class="st">&quot;int/np_seaweeds_tonnes_weighting.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
 </div>
-<div id="import-data-trujillo-sustainability-scores" class="section level1">
-<h1><span class="header-section-number">9</span> Import data: Trujillo sustainability scores</h1>
-<p>These data describe the sustainability and genetic escapes for country/species combinations (and, in a couple cases, environment and FAO region combinations). In cases where these data were not available for a specific county/species, we averaged the data across taxonomic groups to gapfill the missing data.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">## Trujillo sustainability data copied over from &#39;globalprep/mar/v2020/raw&#39;:</span></span>
-<span id="cb15-2"><a href="#cb15-2"></a>sus =<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&#39;raw/Truj_label_sust.csv&#39;</span>, <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>, <span class="dt">na.strings =</span> <span class="ot">NA</span>)</span></code></pre></div>
+<div id="sustainability-scores-from-seafood-watch-data" class="section level1">
+<h1><span class="header-section-number">9</span> Sustainability Scores from Seafood Watch Data</h1>
+<div id="import-data-seafood-watch-sustainability-scores" class="section level2">
+<h2><span class="header-section-number">9.1</span> Import data: Seafood Watch sustainability scores</h2>
+<p>These data describe the sustainability country/species combinations. In cases where these data were not available for a specific county/species, we just used the seafood watch seaweed sustainability score (7.92) (this was all of the seaweed species listed).</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="co">## Load in Seafood Watch sustainability scores data from mazu:</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a>sw_sus &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="kw">file.path</span>(dir_M, <span class="st">&#39;git-annex/globalprep/_raw_data/seafood_watch_mar_sustainability/d2020/Seafood-Watch_aquaculture-recs_July-2020.csv&#39;</span>), <span class="dt">check.names =</span> <span class="ot">FALSE</span>, <span class="dt">stringsAsFactors =</span> <span class="ot">FALSE</span>, <span class="dt">na.strings =</span> <span class="kw">c</span>(<span class="st">&quot;NA&quot;</span>, <span class="st">&quot;&quot;</span>))</span>
+<span id="cb15-3"><a href="#cb15-3"></a></span>
+<span id="cb15-4"><a href="#cb15-4"></a><span class="kw">head</span>(sw_sus)</span></code></pre></div>
 </div>
-<div id="wrangle-1" class="section level1">
-<h1><span class="header-section-number">10</span> Wrangle</h1>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="co">## These need to be re-added (get cut when associated with region ids)</span></span>
-<span id="cb16-2"><a href="#cb16-2"></a>sus_no_rgn &lt;-<span class="st"> </span><span class="kw">filter</span>(sus, <span class="kw">is.na</span>(country))</span>
-<span id="cb16-3"><a href="#cb16-3"></a><span class="co"># seaweed species included in list (species_FAO/species_Truj): Gracilaria seaweeds/Gracilaria seaweeds, Laver (Nori)/Laver (Nori), Nori nei/Laver (Nori), Brown seaweeds/Brown seaweeds, Edible seaweeds/Edible seaweeds - v2020</span></span></code></pre></div>
-<div id="convert-country-names-to-ohi-region-names." class="section level2">
-<h2><span class="header-section-number">10.1</span> Convert country names to OHI region names.</h2>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>sus_rgn &lt;-<span class="st"> </span><span class="kw">name_2_rgn</span>(<span class="dt">df_in =</span> sus, </span>
-<span id="cb17-2"><a href="#cb17-2"></a>                       <span class="dt">fld_name=</span><span class="st">&#39;country&#39;</span>, </span>
-<span id="cb17-3"><a href="#cb17-3"></a>                       <span class="dt">flds_unique=</span><span class="kw">c</span>(<span class="st">&#39;species_fao&#39;</span>, <span class="st">&#39;fao&#39;</span>, <span class="st">&#39;environment&#39;</span>, <span class="st">&#39;species_Truj&#39;</span>))</span>
-<span id="cb17-4"><a href="#cb17-4"></a></span>
-<span id="cb17-5"><a href="#cb17-5"></a>sus_rgn &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(sus_rgn, sus_no_rgn) <span class="op">%&gt;%</span></span>
-<span id="cb17-6"><a href="#cb17-6"></a><span class="st">  </span><span class="kw">unique</span>()</span></code></pre></div>
-<p><strong>Check that the non-matches between Trujillo sustainability FAO spp (sus_rgn) and the FAO mariculture species in the wrangled FAO Aquaculture Production data table (maric) are not due to spelling errors or slightly different names. We want to include as many species that have sustainability scores as possible</strong></p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">## Make sure same species are spelled the same in the two data tables (e.g. check that there are no extra spaces)</span></span>
-<span id="cb18-2"><a href="#cb18-2"></a><span class="kw">sort</span>(<span class="kw">setdiff</span>(sus_rgn<span class="op">$</span>species_fao, maric<span class="op">$</span>species)) <span class="co"># species that no longer have mariculture industry or are not included due to being freshwater, etc.</span></span>
-<span id="cb18-3"><a href="#cb18-3"></a><span class="co"># Brown seaweeds (Pac) - this is fine, since &#39;sus_rgn&#39; also has an identical listing for &quot;Brown seaweeds&quot;</span></span>
-<span id="cb18-4"><a href="#cb18-4"></a><span class="co"># Edible seaweeds - missing completely from &#39;maric&#39;, but that&#39;s fine since edible seaweeds are excluded from NP</span></span>
+<div id="wrangle-1" class="section level2">
+<h2><span class="header-section-number">9.2</span> Wrangle</h2>
+<div id="tidy-seafood-watch-sustainability-data" class="section level3">
+<h3><span class="header-section-number">9.2.1</span> Tidy Seafood Watch sustainability data</h3>
+<p>Rename columns to match with MAR data and fill in species column</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="co">## Rename columns</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a>sw_sus &lt;-<span class="st"> </span>sw_sus <span class="op">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">report_title =</span> <span class="st">&#39;Report Title&#39;</span>,</span>
+<span id="cb16-4"><a href="#cb16-4"></a>         <span class="dt">start_year =</span> <span class="st">&#39;Start year&#39;</span>,</span>
+<span id="cb16-5"><a href="#cb16-5"></a>         <span class="dt">sw_species =</span> <span class="st">&#39;Common name&#39;</span>,</span>
+<span id="cb16-6"><a href="#cb16-6"></a>         <span class="dt">genus =</span> <span class="st">&#39;Genus&#39;</span>,</span>
+<span id="cb16-7"><a href="#cb16-7"></a>         <span class="dt">spp =</span> <span class="st">&#39;Species&#39;</span>,</span>
+<span id="cb16-8"><a href="#cb16-8"></a>         <span class="dt">fao_species =</span> <span class="st">&#39;FAO Common name&#39;</span>,</span>
+<span id="cb16-9"><a href="#cb16-9"></a>         <span class="dt">region =</span> <span class="st">&#39;Region&#39;</span>,</span>
+<span id="cb16-10"><a href="#cb16-10"></a>         <span class="dt">country =</span> <span class="st">&#39;Country&#39;</span>,</span>
+<span id="cb16-11"><a href="#cb16-11"></a>         <span class="dt">state_territory =</span> <span class="st">&#39;State/Territory&#39;</span>,</span>
+<span id="cb16-12"><a href="#cb16-12"></a>         <span class="dt">sub_region =</span> <span class="st">&#39;Sub-Region&#39;</span>,</span>
+<span id="cb16-13"><a href="#cb16-13"></a>         <span class="dt">water_body =</span> <span class="st">&#39;Body of Water&#39;</span>,</span>
+<span id="cb16-14"><a href="#cb16-14"></a>         <span class="dt">parent_method =</span> <span class="st">&#39;Parent Method&#39;</span>,</span>
+<span id="cb16-15"><a href="#cb16-15"></a>         <span class="dt">method =</span> <span class="st">&#39;Method&#39;</span>,</span>
+<span id="cb16-16"><a href="#cb16-16"></a>         <span class="dt">score =</span> <span class="st">&#39;Overall Score&#39;</span>,</span>
+<span id="cb16-17"><a href="#cb16-17"></a>         <span class="dt">escapes_score =</span> <span class="st">&#39;AqCriteria6&#39;</span>,</span>
+<span id="cb16-18"><a href="#cb16-18"></a>         <span class="dt">rec =</span> <span class="st">&#39;Overall Recommendation&#39;</span></span>
+<span id="cb16-19"><a href="#cb16-19"></a>         ) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb16-20"><a href="#cb16-20"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(report_title, start_year, sw_species, genus, spp, fao_species, region, country, state_territory, sub_region, water_body, parent_method, method, escapes_score, score, rec)</span>
+<span id="cb16-21"><a href="#cb16-21"></a></span>
+<span id="cb16-22"><a href="#cb16-22"></a><span class="co">## Change species names using FAO species name (fao_species); if NA, use common name (sw_species)</span></span>
+<span id="cb16-23"><a href="#cb16-23"></a>sw_sus<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">ifelse</span>(<span class="op">!</span><span class="kw">is.na</span>(sw_sus<span class="op">$</span>fao_species), sw_sus<span class="op">$</span>fao_species, sw_sus<span class="op">$</span>sw_species)</span></code></pre></div>
+</div>
+<div id="keep-na-countries" class="section level3">
+<h3><span class="header-section-number">9.2.2</span> Keep NA countries</h3>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="co">## These need to be re-added later (get cut when associated with region ids)</span></span>
+<span id="cb17-2"><a href="#cb17-2"></a>sw_sus_no_rgn &lt;-<span class="st"> </span><span class="kw">filter</span>(sw_sus, <span class="kw">is.na</span>(country))</span>
+<span id="cb17-3"><a href="#cb17-3"></a>  <span class="co"># 203 entries with no country</span></span></code></pre></div>
+</div>
+<div id="convert-country-names-to-ohi-region-ids." class="section level3">
+<h3><span class="header-section-number">9.2.3</span> Convert country names to OHI region IDs.</h3>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">## Change country names to match OHI region names</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a>sw_sus &lt;-<span class="st"> </span>sw_sus <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb18-3"><a href="#cb18-3"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">country =</span> <span class="kw">ifelse</span>(country<span class="op">==</span><span class="st">&quot;Korea, the Republic of&quot;</span>, <span class="st">&quot;South Korea&quot;</span>, country)) <span class="op">%&gt;%</span><span class="st"> </span><span class="co"># Data removed for not having a match; change name to match</span></span>
+<span id="cb18-4"><a href="#cb18-4"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">country =</span> <span class="kw">ifelse</span>(country<span class="op">==</span><span class="st">&quot;United Kingdom of Great Britain and Northern Ireland (the)&quot;</span>, <span class="st">&quot;United Kingdom&quot;</span>, country))  <span class="co"># Data removed for not having a match; change name to match</span></span>
 <span id="cb18-5"><a href="#cb18-5"></a></span>
-<span id="cb18-6"><a href="#cb18-6"></a><span class="kw">sort</span>(<span class="kw">setdiff</span>(maric<span class="op">$</span>species, sus_rgn<span class="op">$</span>species_fao)) <span class="co"># FAO species with no Trujillo data - there will probably be a long list</span></span>
-<span id="cb18-7"><a href="#cb18-7"></a><span class="co"># [1] &quot;[Capsosiphon fulvescens]&quot; &quot;Caulerpa seaweeds&quot;        &quot;Dark green nori&quot;          &quot;Elkhorn sea moss&quot;         &quot;Eucheuma seaweeds nei&quot;   </span></span>
-<span id="cb18-8"><a href="#cb18-8"></a><span class="co"># [6] &quot;Fragile codium&quot;           &quot;Gelidium seaweeds&quot;        &quot;Giant kelp&quot;               &quot;Green laver&quot;              &quot;Harpoon seaweeds&quot;        </span></span>
-<span id="cb18-9"><a href="#cb18-9"></a><span class="co"># [11] &quot;Japanese isinglass&quot;       &quot;Japanese kelp&quot;            &quot;Mozuku&quot;                   &quot;Red seaweeds&quot;             &quot;Sea belt&quot;                </span></span>
-<span id="cb18-10"><a href="#cb18-10"></a><span class="co"># [16] &quot;Sea lettuces nei&quot;         &quot;Seaweeds nei&quot;             &quot;Spiny eucheuma&quot;           &quot;Wakame&quot;                   &quot;Wakame nei&quot;              </span></span>
-<span id="cb18-11"><a href="#cb18-11"></a><span class="co"># [21] &quot;Warty gracilaria&quot;        </span></span>
+<span id="cb18-6"><a href="#cb18-6"></a><span class="co">## Convert country names to OHI region IDs. (ohicore/R/name_2_rgn.R)</span></span>
+<span id="cb18-7"><a href="#cb18-7"></a>sw_sus_rgn &lt;-<span class="st"> </span><span class="kw">name_2_rgn</span>(<span class="dt">df_in =</span> sw_sus, </span>
+<span id="cb18-8"><a href="#cb18-8"></a>                       <span class="dt">fld_name=</span><span class="st">&#39;country&#39;</span>, </span>
+<span id="cb18-9"><a href="#cb18-9"></a>                       <span class="dt">flds_unique=</span><span class="kw">c</span>(<span class="st">&#39;fao_species&#39;</span>, <span class="st">&#39;sw_species&#39;</span>, <span class="st">&#39;region&#39;</span>, <span class="st">&#39;score&#39;</span>),</span>
+<span id="cb18-10"><a href="#cb18-10"></a>                       <span class="dt">keep_fld_name =</span> <span class="ot">TRUE</span>) <span class="co"># &#39;country&#39; now shows the original Seafood Watch data name; &#39;rgn_name&#39; is what we want to use from now on</span></span>
+<span id="cb18-11"><a href="#cb18-11"></a>  <span class="co"># Goes from 330 obs. to 127 obs. (because 203 obs. have no country associated)</span></span>
 <span id="cb18-12"><a href="#cb18-12"></a></span>
-<span id="cb18-13"><a href="#cb18-13"></a><span class="co">## Hand check each of the species output here. I mainly check to make sure there aren&#39;t obvious cases when the species is the same, but the names are presented slightly differently in the lists. For example, some species might have an extra space in the name somewhere. If any of these obvious differences exist, we need to go in and change the names to match. </span></span>
-<span id="cb18-14"><a href="#cb18-14"></a><span class="co">## Its not too surprising (unfortunately) that the FAO list has far more species than the sustainability list. But, I like to go over them to make sure that we are getting sustainability scores for as many species as we can.</span></span></code></pre></div>
+<span id="cb18-13"><a href="#cb18-13"></a></span>
+<span id="cb18-14"><a href="#cb18-14"></a><span class="co">## Re-add NA countries</span></span>
+<span id="cb18-15"><a href="#cb18-15"></a>sw_sus_rgn &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(sw_sus_rgn, sw_sus_no_rgn) <span class="op">%&gt;%</span></span>
+<span id="cb18-16"><a href="#cb18-16"></a><span class="st">  </span><span class="kw">unique</span>()</span>
+<span id="cb18-17"><a href="#cb18-17"></a>  <span class="co"># Back to 330 obs.</span></span></code></pre></div>
+<p><strong>Check that the non-matches between Seafood Watch sustainability data species (sw_sus_rgn) and the FAO mariculture species in the wrangled FAO Aquaculture Production data table (maric) are not due to spelling errors or slightly different names. We want to include as many species that have sustainability scores as possible</strong></p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">## Make sure same species are spelled the same in the two data tables (e.g. check that there are no extra spaces)</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a><span class="kw">sort</span>(<span class="kw">setdiff</span>(sw_sus_rgn<span class="op">$</span>species, maric<span class="op">$</span>species)) <span class="co"># Seafood Watch species with no FAO data</span></span>
+<span id="cb19-3"><a href="#cb19-3"></a></span>
+<span id="cb19-4"><a href="#cb19-4"></a><span class="kw">sort</span>(<span class="kw">setdiff</span>(maric<span class="op">$</span>species, sw_sus_rgn<span class="op">$</span>species)) <span class="co"># FAO species with no Seafood Watch data - there will probably be a long list</span></span>
+<span id="cb19-5"><a href="#cb19-5"></a></span>
+<span id="cb19-6"><a href="#cb19-6"></a><span class="co">## Hand check each of the species output here. I mainly check to make sure there aren&#39;t obvious cases when the species is the same, but the names are presented slightly differently in the lists. For example, some species might have an extra space in the name somewhere. If any of these obvious differences exist, we need to go in and change the names to match. </span></span>
+<span id="cb19-7"><a href="#cb19-7"></a><span class="co">## Its not too surprising (unfortunately) that the FAO list has far more species than the sustainability list. But, I like to go over them to make sure that we are getting sustainability scores for as many species as we can.</span></span></code></pre></div>
+<p><strong>Fix the non matches</strong></p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="co">## This will likely be the same as in the MAR prep. </span></span>
+<span id="cb20-2"><a href="#cb20-2"></a></span>
+<span id="cb20-3"><a href="#cb20-3"></a><span class="co">## Rename species in Seafood Watch data to match FAO species data</span></span>
+<span id="cb20-4"><a href="#cb20-4"></a>sw_sus_rgn<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;Abalone&quot;</span>, <span class="st">&quot;Abalones nei&quot;</span>, sw_sus_rgn<span class="op">$</span>species)</span>
+<span id="cb20-5"><a href="#cb20-5"></a>sw_sus_rgn<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;Barramundi&quot;</span>, <span class="st">&quot;Barramundi(=Giant seaperch)&quot;</span>, sw_sus_rgn<span class="op">$</span>species)</span>
+<span id="cb20-6"><a href="#cb20-6"></a>sw_sus_rgn<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;Coho salmon&quot;</span>, <span class="st">&quot;Coho(=Silver) salmon&quot;</span>, sw_sus_rgn<span class="op">$</span>species)</span>
+<span id="cb20-7"><a href="#cb20-7"></a>sw_sus_rgn<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;Manila clam&quot;</span>, <span class="st">&quot;Japanese carpet shell&quot;</span>, sw_sus_rgn<span class="op">$</span>species) <span class="co"># Japanese carpet shell is another name for Manila clam (thanks animal crossing :P )</span></span>
+<span id="cb20-8"><a href="#cb20-8"></a>sw_sus_rgn<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;New Zealand Mussel&quot;</span>, <span class="st">&quot;New Zealand mussel&quot;</span>, sw_sus_rgn<span class="op">$</span>species)</span>
+<span id="cb20-9"><a href="#cb20-9"></a>sw_sus_rgn<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;Hard clam (unspecified)&quot;</span>, <span class="st">&quot;Northern quahog(=Hard clam)&quot;</span>, sw_sus_rgn<span class="op">$</span>species) <span class="co"># Hard clams are also known as quahogs, round clams, or hard-shell clams</span></span>
+<span id="cb20-10"><a href="#cb20-10"></a>sw_sus_rgn<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;Common sole&quot;</span>, <span class="st">&quot;[Solea spp]&quot;</span>, sw_sus_rgn<span class="op">$</span>species)</span></code></pre></div>
+<p><strong>Join the seaweed sustainability data with the mariculture data</strong></p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>mar_sw_sus &lt;-<span class="st"> </span>maric <span class="op">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="st">  </span><span class="kw">left_join</span>(sw_sus_rgn, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;species&quot;</span>, <span class="st">&quot;rgn_id&quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb21-3"><a href="#cb21-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, species, Taxon_code, species_code, score, tonnes, gap_<span class="dv">0</span>_fill )</span></code></pre></div>
+<p><strong>Since there are no sustainability scores for any of the species listed, we will gapfill with the seafood watch “Seaweed (Global)” score, which is 7.92.</strong></p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>mar_sw_sus &lt;-<span class="st"> </span>mar_sw_sus <span class="op">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Sust =</span> <span class="kw">round</span>(<span class="fl">7.92</span><span class="op">/</span><span class="dv">10</span>,<span class="dv">2</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb22-3"><a href="#cb22-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>score)</span></code></pre></div>
+<p>Since some regions have multiple sustainability scores for the same species due to multiple aquaculture methods, but we don’t know what proportions of which methods are used, we take the average of the sustainability scores in these instances.</p>
+<p>Average sustainability scores within regions with more than score (due to more than one aquaculture method):</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>mar_sw_sus &lt;-<span class="st"> </span>mar_sw_sus <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb23-2"><a href="#cb23-2"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">group_by</span>(rgn_id, species) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb23-3"><a href="#cb23-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">Sust_avg =</span> <span class="kw">mean</span>(Sust, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb23-4"><a href="#cb23-4"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">ungroup</span>()</span></code></pre></div>
+<p>Get rid of duplicates for region/species/year:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>mar_sw_sus &lt;-<span class="st"> </span>mar_sw_sus <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb24-2"><a href="#cb24-2"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">distinct</span>(rgn_id, species, year, <span class="dt">.keep_all =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>Sust, <span class="dt">sust_coeff =</span> Sust_avg, <span class="dt">taxon_group =</span> Taxon_code) <span class="op">%&gt;%</span></span>
+<span id="cb24-4"><a href="#cb24-4"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">taxa_code =</span> <span class="kw">paste</span>(species, species_code, <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>))</span></code></pre></div>
+<p><strong>Now look at a summary after appending all the Seafood Watch data</strong></p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">summary</span>(mar_sw_sus)</span>
+<span id="cb25-2"><a href="#cb25-2"></a><span class="co"># No NAs in Sust! </span></span></code></pre></div>
 </div>
 </div>
-<div id="fao-mariculture-and-sustainability-scores" class="section level1">
-<h1><span class="header-section-number">11</span> FAO mariculture and sustainability scores</h1>
-<p>Append sustainability score to the FAO mariculture data.</p>
-<p>The following joins the sustainability scores to regions/species that have Trujillo data.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">table</span>(sus_rgn<span class="op">$</span>match_type)</span>
-<span id="cb19-2"><a href="#cb19-2"></a></span>
-<span id="cb19-3"><a href="#cb19-3"></a><span class="co">## Join taxa specific to country/species/environment</span></span>
-<span id="cb19-4"><a href="#cb19-4"></a>c_sp_env =<span class="st"> </span>sus_rgn <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb19-5"><a href="#cb19-5"></a><span class="st">  </span><span class="kw">filter</span>(match_type <span class="op">==</span><span class="st"> &#39;c_sp_env&#39;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb19-6"><a href="#cb19-6"></a><span class="st">  </span><span class="kw">select</span>(rgn_id, <span class="dt">species=</span>species_fao, environment, <span class="dt">Sust_c_sp_env =</span> Maric_sustainability)</span>
-<span id="cb19-7"><a href="#cb19-7"></a></span>
-<span id="cb19-8"><a href="#cb19-8"></a>mar_sus &lt;-<span class="st"> </span>maric <span class="op">%&gt;%</span></span>
-<span id="cb19-9"><a href="#cb19-9"></a><span class="st">  </span><span class="kw">left_join</span>(c_sp_env, <span class="dt">by=</span> <span class="kw">c</span>(<span class="st">&quot;species&quot;</span>, <span class="st">&quot;environment&quot;</span>, <span class="st">&quot;rgn_id&quot;</span>))</span>
-<span id="cb19-10"><a href="#cb19-10"></a></span>
-<span id="cb19-11"><a href="#cb19-11"></a><span class="co">## Join taxa specific to country/species/fao region</span></span>
-<span id="cb19-12"><a href="#cb19-12"></a>c_sp_fao =<span class="st"> </span>sus_rgn <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb19-13"><a href="#cb19-13"></a><span class="st">  </span><span class="kw">filter</span>(match_type <span class="op">==</span><span class="st"> &#39;c_sp_fao&#39;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb19-14"><a href="#cb19-14"></a><span class="st">  </span><span class="kw">select</span>(rgn_id, <span class="dt">species=</span>species_fao, fao, <span class="dt">Sust_c_sp_fao =</span> Maric_sustainability)</span>
-<span id="cb19-15"><a href="#cb19-15"></a></span>
-<span id="cb19-16"><a href="#cb19-16"></a>mar_sus &lt;-<span class="st"> </span>mar_sus <span class="op">%&gt;%</span></span>
-<span id="cb19-17"><a href="#cb19-17"></a><span class="st">  </span><span class="kw">left_join</span>(c_sp_fao, <span class="dt">by=</span> <span class="kw">c</span>(<span class="st">&quot;species&quot;</span>, <span class="st">&quot;fao&quot;</span>, <span class="st">&quot;rgn_id&quot;</span>))</span></code></pre></div>
-<p><strong>Take a look at the data thus far</strong></p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="kw">head</span>(<span class="kw">data.frame</span>(<span class="kw">filter</span>(mar_sus, rgn_id<span class="op">==</span><span class="dv">14</span> <span class="op">&amp;</span><span class="st"> </span>species <span class="op">==</span><span class="st"> &quot;Laver (Nori)&quot;</span>)))</span>
-<span id="cb20-2"><a href="#cb20-2"></a><span class="kw">head</span>(<span class="kw">data.frame</span>(<span class="kw">filter</span>(mar_sus, <span class="op">!</span><span class="kw">is.na</span>(Sust_c_sp_fao))))</span></code></pre></div>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">## Join taxa specific to country/species</span></span>
-<span id="cb21-2"><a href="#cb21-2"></a>c_sp =<span class="st"> </span>sus_rgn <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb21-3"><a href="#cb21-3"></a><span class="st">  </span><span class="kw">filter</span>(match_type <span class="op">==</span><span class="st"> &#39;c_sp&#39;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb21-4"><a href="#cb21-4"></a><span class="st">  </span><span class="kw">select</span>(rgn_id, <span class="dt">species=</span>species_fao, <span class="dt">Sust_c_sp =</span> Maric_sustainability)</span>
-<span id="cb21-5"><a href="#cb21-5"></a></span>
-<span id="cb21-6"><a href="#cb21-6"></a>mar_sus &lt;-<span class="st"> </span>mar_sus <span class="op">%&gt;%</span></span>
-<span id="cb21-7"><a href="#cb21-7"></a><span class="st">  </span><span class="kw">left_join</span>(c_sp, <span class="dt">by=</span> <span class="kw">c</span>(<span class="st">&quot;species&quot;</span>, <span class="st">&quot;rgn_id&quot;</span>))</span></code></pre></div>
-<p><strong>Now look at a summary after appending all the Trujillo data</strong></p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="kw">summary</span>(mar_sus)</span>
-<span id="cb22-2"><a href="#cb22-2"></a><span class="co"># Sust_c_sp: 1902 NAs - v2020</span></span></code></pre></div>
-<p>Merge the three Trujillo type categories into a single sustainability score column in the following order:</p>
-<ol style="list-style-type: decimal">
-<li>Sust_c_sp_env: taxa specific to country/species/environment (smallest taxonomic level)</li>
-<li>Sust_c_sp_fao: taxa specific to country/species/fao region</li>
-<li>Sust_c_sp: taxa specific to country/species (highest taxonomic level)</li>
-</ol>
-<p>For example, if Sust_c_sp_env is missing, use Sust_c_sp_fao and so on.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>mar_sus =<span class="st"> </span>mar_sus <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb23-2"><a href="#cb23-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Sust =</span> <span class="kw">ifelse</span>(<span class="op">!</span><span class="kw">is.na</span>(Sust_c_sp_env), Sust_c_sp_env, Sust_c_sp_fao)) <span class="op">%&gt;%</span></span>
-<span id="cb23-3"><a href="#cb23-3"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Sust =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(Sust), Sust_c_sp, Sust)) <span class="op">%&gt;%</span></span>
-<span id="cb23-4"><a href="#cb23-4"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>Sust_c_sp_env, <span class="op">-</span>Sust_c_sp_fao, <span class="op">-</span>Sust_c_sp)</span>
-<span id="cb23-5"><a href="#cb23-5"></a></span>
-<span id="cb23-6"><a href="#cb23-6"></a><span class="kw">summary</span>(mar_sus)</span>
-<span id="cb23-7"><a href="#cb23-7"></a><span class="co"># still 1902 NAs in &#39;Sust&#39; colum - v2020</span></span></code></pre></div>
-<p>This joins the sustainability data that is gapfilled either at the species level (average of specific species/genera across regions) or at a higher course taxonomic levels and documents which data are gapfilled and how.</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="co">## Select observations gapfilled at the species/genera level:</span></span>
-<span id="cb24-2"><a href="#cb24-2"></a>gf_sp_sus &lt;-<span class="st"> </span>sus_rgn <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb24-3"><a href="#cb24-3"></a><span class="st">  </span><span class="kw">filter</span>(gapfill <span class="op">!=</span><span class="st"> &quot;actuals&quot;</span> <span class="op">&amp;</span><span class="st"> </span>match_type <span class="op">==</span><span class="st"> &quot;species&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb24-4"><a href="#cb24-4"></a><span class="st">  </span><span class="kw">select</span>(<span class="dt">species =</span> species_fao, gapfill, <span class="dt">Sust_gf_sp =</span> Maric_sustainability)</span>
-<span id="cb24-5"><a href="#cb24-5"></a><span class="co"># Laver (Nori), Nori nei, Brown seaweeds</span></span>
-<span id="cb24-6"><a href="#cb24-6"></a></span>
-<span id="cb24-7"><a href="#cb24-7"></a><span class="co">## check that there are no duplicated species_fao</span></span>
-<span id="cb24-8"><a href="#cb24-8"></a>gf_sp_sus[<span class="kw">duplicated</span>(gf_sp_sus<span class="op">$</span>species), ]</span>
-<span id="cb24-9"><a href="#cb24-9"></a></span>
-<span id="cb24-10"><a href="#cb24-10"></a><span class="co">## Match gapfilling values by species</span></span>
-<span id="cb24-11"><a href="#cb24-11"></a>mar_sus_gf =<span class="st"> </span>mar_sus <span class="op">%&gt;%</span></span>
-<span id="cb24-12"><a href="#cb24-12"></a><span class="st">  </span><span class="kw">left_join</span>(gf_sp_sus, <span class="dt">by =</span> <span class="st">&#39;species&#39;</span>)</span>
-<span id="cb24-13"><a href="#cb24-13"></a><span class="co"># only seaweed species that have values in Sust and Sust_gf_sp: Laver (Nori), Gracilaria seaweeds, Brown seaweeds - v2020</span></span>
-<span id="cb24-14"><a href="#cb24-14"></a><span class="co"># 1717 NAs in gf_sp_sus - v2020</span></span>
-<span id="cb24-15"><a href="#cb24-15"></a></span>
-<span id="cb24-16"><a href="#cb24-16"></a><span class="co">## Select observations gapfilled at the coarse taxon level:</span></span>
-<span id="cb24-17"><a href="#cb24-17"></a>gf_taxon_sus &lt;-<span class="st"> </span>sus_rgn <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb24-18"><a href="#cb24-18"></a><span class="st">  </span><span class="kw">filter</span>(gapfill <span class="op">!=</span><span class="st"> &quot;actuals&quot;</span> <span class="op">&amp;</span><span class="st"> </span>match_type <span class="op">==</span><span class="st"> &quot;taxon&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb24-19"><a href="#cb24-19"></a><span class="st">  </span><span class="kw">select</span>(<span class="dt">Taxon_code=</span>taxon, <span class="dt">Sust_gf_taxon =</span> Maric_sustainability)</span>
-<span id="cb24-20"><a href="#cb24-20"></a><span class="co"># &#39;AL&#39; Taxon_code (algae) = 0.83 Sust_gf_taxon score</span></span>
-<span id="cb24-21"><a href="#cb24-21"></a></span>
-<span id="cb24-22"><a href="#cb24-22"></a><span class="co">## Match gapfilling values by species</span></span>
-<span id="cb24-23"><a href="#cb24-23"></a>mar_sus_gf =<span class="st"> </span>mar_sus_gf <span class="op">%&gt;%</span></span>
-<span id="cb24-24"><a href="#cb24-24"></a><span class="st">  </span><span class="kw">left_join</span>(gf_taxon_sus, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&#39;Taxon_code&#39;</span>))</span></code></pre></div>
-<p><strong>Take a look at the wrangled data</strong></p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="kw">summary</span>(mar_sus_gf) <span class="co"># should be no NA&#39;s in Sust_gf_taxon column</span></span>
-<span id="cb25-2"><a href="#cb25-2"></a><span class="kw">table</span>(mar_sus_gf<span class="op">$</span>gapfill)</span></code></pre></div>
-<p>Obtain a sustainability score for each record, and a book-keeping column of whether it’s actual or gap-filled</p>
-<p>For missing sustainability scores:</p>
-<ol style="list-style-type: decimal">
-<li>Use species-level Sustainability score</li>
-<li>If no species-level scores, gapfill with taxon-level sustainability average</li>
-</ol>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>mar_sus_final =<span class="st"> </span>mar_sus_gf <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb26-2"><a href="#cb26-2"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">gapfill =</span> <span class="kw">ifelse</span>(<span class="op">!</span><span class="kw">is.na</span>(Sust), <span class="st">&quot;none&quot;</span>, gapfill)) <span class="op">%&gt;%</span></span>
-<span id="cb26-3"><a href="#cb26-3"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Sust =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(Sust), Sust_gf_sp, Sust)) <span class="op">%&gt;%</span><span class="st"> </span><span class="co"># gapfill with species level</span></span>
-<span id="cb26-4"><a href="#cb26-4"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">gapfill =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(Sust), <span class="st">&quot;taxon_average&quot;</span>, gapfill)) <span class="op">%&gt;%</span><span class="st"> </span><span class="co"># add in taxon gapfill record</span></span>
-<span id="cb26-5"><a href="#cb26-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Sust =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(Sust), Sust_gf_taxon, Sust)) <span class="op">%&gt;%</span><span class="st"> </span><span class="co"># gapfill with taxon level</span></span>
-<span id="cb26-6"><a href="#cb26-6"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">taxa_code =</span> <span class="kw">paste</span>(species, species_code, <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>)) <span class="op">%&gt;%</span></span>
-<span id="cb26-7"><a href="#cb26-7"></a><span class="st">  </span><span class="kw">select</span>(rgn_id, species, species_code, taxa_code, <span class="dt">taxa_group=</span>Taxon_code, year, <span class="dt">gapfill_sus =</span> gapfill, <span class="dt">gapfill_fao =</span> gap_<span class="dv">0</span>_fill, tonnes, <span class="dt">sust_coeff =</span> Sust)</span>
-<span id="cb26-8"><a href="#cb26-8"></a></span>
-<span id="cb26-9"><a href="#cb26-9"></a></span>
-<span id="cb26-10"><a href="#cb26-10"></a><span class="co">## save a gapfill dataset for FAO tonnes data:</span></span>
-<span id="cb26-11"><a href="#cb26-11"></a>mar_FAO_gf &lt;-<span class="st"> </span>mar_sus_final <span class="op">%&gt;%</span></span>
-<span id="cb26-12"><a href="#cb26-12"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">method =</span> <span class="kw">ifelse</span>(gapfill_fao <span class="op">==</span><span class="st"> </span><span class="dv">0</span>, <span class="st">&quot;none&quot;</span>, gapfill_fao), </span>
-<span id="cb26-13"><a href="#cb26-13"></a>         <span class="dt">gapfilled =</span> <span class="kw">ifelse</span>(gapfill_fao <span class="op">==</span><span class="st"> </span><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="op">%&gt;%</span></span>
-<span id="cb26-14"><a href="#cb26-14"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, taxa_code, year, gapfilled, method)</span>
-<span id="cb26-15"><a href="#cb26-15"></a><span class="kw">write.csv</span>(mar_FAO_gf, <span class="st">&quot;output/np_seaweed_harvest_tonnes_gf.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
-<span id="cb26-16"><a href="#cb26-16"></a></span>
-<span id="cb26-17"><a href="#cb26-17"></a><span class="co">## save a gapfill dataset for sustainability dataset</span></span>
-<span id="cb26-18"><a href="#cb26-18"></a>mar_sust_gf &lt;-<span class="st"> </span>mar_sus_final <span class="op">%&gt;%</span></span>
-<span id="cb26-19"><a href="#cb26-19"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">method =</span> <span class="kw">ifelse</span>(gapfill_sus <span class="op">==</span><span class="st"> &quot;none&quot;</span>, <span class="st">&quot;none&quot;</span>, gapfill_sus),</span>
-<span id="cb26-20"><a href="#cb26-20"></a>         <span class="dt">gapfilled =</span> <span class="kw">ifelse</span>(gapfill_sus <span class="op">==</span><span class="st"> &quot;none&quot;</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="op">%&gt;%</span></span>
-<span id="cb26-21"><a href="#cb26-21"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, taxa_code, gapfilled, method)</span>
-<span id="cb26-22"><a href="#cb26-22"></a><span class="kw">write.csv</span>(mar_sust_gf, <span class="st">&quot;output/np_seaweed_sust_gf.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
 </div>
 <div id="save-data" class="section level1">
-<h1><span class="header-section-number">12</span> Save Data:</h1>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="co">## save seaweed mariculture sustainability dataset</span></span>
-<span id="cb27-2"><a href="#cb27-2"></a>seaweed_sust &lt;-<span class="st"> </span>mar_sus_final <span class="op">%&gt;%</span></span>
-<span id="cb27-3"><a href="#cb27-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, taxa_code, year, sust_coeff)</span>
-<span id="cb27-4"><a href="#cb27-4"></a></span>
-<span id="cb27-5"><a href="#cb27-5"></a><span class="kw">write_csv</span>(seaweed_sust, <span class="st">&quot;output/np_seaweed_sust.csv&quot;</span>)</span>
-<span id="cb27-6"><a href="#cb27-6"></a></span>
-<span id="cb27-7"><a href="#cb27-7"></a></span>
-<span id="cb27-8"><a href="#cb27-8"></a><span class="co">## Save seaweed mariculture harvest tonnes data (&quot;tonnes&quot; column already incorporated include proportions)</span></span>
-<span id="cb27-9"><a href="#cb27-9"></a>seaweed_harvest_tonnes &lt;-<span class="st"> </span>mar_sus_final <span class="op">%&gt;%</span></span>
-<span id="cb27-10"><a href="#cb27-10"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, taxa_code, year, tonnes)</span>
+<h1><span class="header-section-number">10</span> Save Data:</h1>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="co">## save seaweed mariculture sustainability dataset</span></span>
+<span id="cb26-2"><a href="#cb26-2"></a>seaweed_sust &lt;-<span class="st"> </span>mar_sw_sus <span class="op">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, taxa_code, year, sust_coeff)</span>
+<span id="cb26-4"><a href="#cb26-4"></a></span>
+<span id="cb26-5"><a href="#cb26-5"></a><span class="kw">write_csv</span>(seaweed_sust, <span class="st">&quot;output/np_seaweed_sust.csv&quot;</span>)</span>
+<span id="cb26-6"><a href="#cb26-6"></a></span>
+<span id="cb26-7"><a href="#cb26-7"></a></span>
+<span id="cb26-8"><a href="#cb26-8"></a><span class="co">## Save seaweed mariculture harvest tonnes data (&quot;tonnes&quot; column already incorporated include proportions)</span></span>
+<span id="cb26-9"><a href="#cb26-9"></a>seaweed_harvest_tonnes &lt;-<span class="st"> </span>mar_sw_sus <span class="op">%&gt;%</span></span>
+<span id="cb26-10"><a href="#cb26-10"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, taxa_code, year, tonnes)</span>
+<span id="cb26-11"><a href="#cb26-11"></a></span>
+<span id="cb26-12"><a href="#cb26-12"></a><span class="kw">anyDuplicated</span>(seaweed_harvest_tonnes) <span class="co"># check for duplication</span></span>
+<span id="cb26-13"><a href="#cb26-13"></a></span>
+<span id="cb26-14"><a href="#cb26-14"></a><span class="kw">write.csv</span>(seaweed_harvest_tonnes, <span class="st">&#39;output/np_seaweed_harvest_tonnes.csv&#39;</span>, <span class="dt">row.names=</span>F)</span></code></pre></div>
+<div id="save-gapfill-datasets" class="section level2">
+<h2><span class="header-section-number">10.1</span> Save gapfill datasets</h2>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="co">## save a gapfill dataset for FAO tonnes data:</span></span>
+<span id="cb27-2"><a href="#cb27-2"></a> </span>
+<span id="cb27-3"><a href="#cb27-3"></a>mar_FAO_gf &lt;-<span class="st"> </span>mar_sw_sus <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb27-4"><a href="#cb27-4"></a><span class="st">  </span><span class="kw">rename</span>(<span class="st">&quot;gapfill_fao&quot;</span> =<span class="st"> &quot;gap_0_fill&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb27-5"><a href="#cb27-5"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">method =</span> <span class="kw">ifelse</span>(gapfill_fao <span class="op">==</span><span class="st"> </span><span class="dv">0</span>, <span class="st">&quot;none&quot;</span>, gapfill_fao), </span>
+<span id="cb27-6"><a href="#cb27-6"></a>         <span class="dt">gapfilled =</span> <span class="kw">ifelse</span>(gapfill_fao <span class="op">==</span><span class="st"> </span><span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb27-7"><a href="#cb27-7"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, taxa_code, year, gapfilled, method)</span>
+<span id="cb27-8"><a href="#cb27-8"></a> </span>
+<span id="cb27-9"><a href="#cb27-9"></a><span class="kw">write.csv</span>(mar_FAO_gf, <span class="st">&quot;output/np_seaweed_harvest_tonnes_gf.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb27-10"><a href="#cb27-10"></a></span>
 <span id="cb27-11"><a href="#cb27-11"></a></span>
-<span id="cb27-12"><a href="#cb27-12"></a><span class="kw">anyDuplicated</span>(seaweed_harvest_tonnes) <span class="co"># check for duplication</span></span>
-<span id="cb27-13"><a href="#cb27-13"></a></span>
-<span id="cb27-14"><a href="#cb27-14"></a><span class="kw">write.csv</span>(seaweed_harvest_tonnes, <span class="st">&#39;output/np_seaweed_harvest_tonnes.csv&#39;</span>, <span class="dt">row.names=</span>F)</span></code></pre></div>
+<span id="cb27-12"><a href="#cb27-12"></a> </span>
+<span id="cb27-13"><a href="#cb27-13"></a><span class="co">## save a gapfill dataset for sustainability dataset</span></span>
+<span id="cb27-14"><a href="#cb27-14"></a> </span>
+<span id="cb27-15"><a href="#cb27-15"></a>mar_sust_gf &lt;-<span class="st"> </span>mar_sw_sus <span class="op">%&gt;%</span></span>
+<span id="cb27-16"><a href="#cb27-16"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">method =</span> <span class="st">&quot;sfw_seaweed_score&quot;</span>,</span>
+<span id="cb27-17"><a href="#cb27-17"></a>         <span class="dt">gapfilled =</span> <span class="dv">1</span>) <span class="op">%&gt;%</span></span>
+<span id="cb27-18"><a href="#cb27-18"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, taxa_code, gapfilled, method)</span>
+<span id="cb27-19"><a href="#cb27-19"></a> </span>
+<span id="cb27-20"><a href="#cb27-20"></a><span class="kw">write.csv</span>(mar_sust_gf, <span class="st">&quot;output/np_seaweed_sust_gf.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+</div>
 </div>
 
 
