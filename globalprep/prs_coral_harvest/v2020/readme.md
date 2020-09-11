@@ -1,14 +1,6 @@
-## Ocean Health Index: Population data
+## Ocean Health Index Pressure: Fishing
 
-This folder describes the methods used to prepare population data used in the mariculture goal and as a proxy for the intertidal habitat destruction pressure layer. 
-
-Find more information on dataprep [here](https://ohi-science.github.io/ohiprep_v2020/globalprep/mar_prs_population/v2020/mar_prs_pop_dataprep.html)
-
-## Layers Created
-* hd_intertidal
-* mar_coastalpopn_inland25mi
-
-
+This folder describes the methods used to prepare data for the coral harvest pressure layer for OHI global. 
 
 The folders in this file include the metadata, R scripts, and data for each assessement year (i.e., the year the assessment was conducted).  The most current year represents the best available data and methods, and previous years are maintained for archival purposes.
 
