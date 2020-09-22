@@ -121,12 +121,12 @@ Update species name in the `raw/species_list.csv` file with names in the `mar` d
 
 ## Commented out 'read.csv' lines are different versions of the dataset, representing the three different seaweed exclusion methods (exclude some seaweed, all seaweed, all seaweed nei). Use at the end for data checking. The first one is the one which is saved to the "output" folder, and the main analysis to run. 
 mar_sp <- read.csv('raw/species_list.csv', stringsAsFactors=FALSE) %>%
-  select(FAO_name, exclude, alias, Taxon_code, family)
+  select(FAO_name, exclude, alias, Taxon_code, family, notes, notes_2)
 
 new.spp <- setdiff(mar$FAO_name, mar_sp$FAO_name)
 new.spp # Check: if dim has 0 rows it means all match
 ## If there is a list of species, hand check species_list.csv to see whether to keep (exclude seaweeds and species harvested for ornamental/medicinal).  
-## This is outlined in issue #8 and issue #81 for reference. You need to add the species output from this to species_list.csv and fill out the corresponding information. I.e. add FAO_name, exclude (whether to include in assessment or not. If they are only harvested for medicinal purposes, do not include), alias, Taxon_code (categories defined in the README in the /raw folder), and family (general family from google) to species_list.csv.
+## This is outlined in issue #8 and issue #81 for reference. You need to add the species output from this (new.spp) to species_list.csv and fill out the corresponding information. I.e. add FAO_name, exclude (whether to include in assessment or not. If they are only harvested for medicinal purposes, do not include, or not eaten by humans do not include), alias, Taxon_code (categories defined in the README in the /raw folder), and family (general family from google) to species_list.csv. There are also two notes columns that we have in there. Because seaweeds are generally used for both human and non-human consumption, we quantify whether to exclude or not for seaweed species as proportions. For example, if a seaweed species is 80% used for non-human consumption, we would exclude 80% of the harvest (exlude = 0.8). However, for fish species, we only classify as 0 or 1. 
 
 #### Begin 2020 only ####
 ## Lets clean the species names first to prep for taxize. Remove []s. 
@@ -210,21 +210,43 @@ new.spp # Check: if dim has 0 rows it means all match
 ## REMOVE SPECIES not relevant to mariculture goal (i.e., non-food species)
 mar <- mar %>% left_join(mar_sp, by="FAO_name") 
 
-## Filters out species that should be excluded from the MAR subgoal, depending on which of the 3 scenarios was read in. Searches for column name "exclude", "exclude_no_seaweed", or "exclude_no_nei"
+## Filters out species that should be excluded from the MAR subgoal Searches for column name "exclude"
   
- mar <- mar %>% filter(exclude==0)
+ mar <- mar %>% filter(exclude < 1)
 
+## create an "include" column (1-exclude) 
  
+ mar <- mar %>%
+   mutate(include = 1-exclude)
  
 ## Change names using species alias or FAO species name (global changes)
 mar$species <- ifelse(!is.na(mar$alias), mar$alias, mar$FAO_name) 
 
+## Multiply value by proportion of harvest to include (include column)
+mar <- mar %>%
+  mutate(value_include = value*include)
+
+## Check to see if 85% of seaweed goes to human consumption... filter for seaweeds, sum the tonnes included, divide by total tonnes seaweed
+
+# seaweed_check2 <- mar %>%
+#   filter(!is.na(value)) %>%
+#   filter(Taxon_code == "AL") %>%
+#   group_by(year) %>%
+#   summarise(include_total = sum(value_include),
+#             overall_total = sum(value)) %>%
+#   mutate(percent = include_total/overall_total) 
+# 
+# mean(seaweed_check2$percent) ## 81%.... matches pretty darn well.
+
+
+
 ## Sum production values for each group to account for duplicate rows after name change (remove NA values)
 mar <- mar %>%
-  filter(!is.na(value)) %>%
+  filter(!is.na(value_include)) %>%
   group_by(country, fao, environment, species, year, Taxon_code, family) %>% 
-    summarize(value = sum(value)) %>% 
+    summarize(value = sum(value_include)) %>% 
   ungroup()
+
 
 ## Eliminate country-species data with zero production throughout the time-series (1950-recent)
 mar <- mar %>%
@@ -312,7 +334,7 @@ See how may NA values were converted to 0
 table(mar_rgn_gf$gap_0_fill)
 ## 3790 of these out of 27810+3790 cases had NA values converted to 0 - 2018 assessment
 ## 3763 of these out of 28694+4291 cases had NA values converted to 0 - 2019 assessment
-## 5666 of these out of 28149+5662 cases had NA values converted to 0 - 2020 assessment
+## 5932  of these out of 29305 +5932  cases had NA values converted to 0 - 2020 assessment
 
 ```
 
@@ -581,14 +603,6 @@ mar_sw_sus <- mar_sw_sus %>%
 Get rid of duplicates for region/species/year:
 
 ```{r sw-sus-dup, eval = FALSE}
-# test_dups <- mar_sw_sus %>%
-#   duplicated() 
-# 
-# tests_3 <- data.frame(test_dups, mar_sw_sus) %>%
-#   filter(test_dups == TRUE)
-# 
-# test4 <- mar_sw_sus %>%
-#   filter(species == "Pacific cupped oyster")
 
 mar_sw_sus <- mar_sw_sus %>% 
   dplyr::distinct(rgn_id, species, environment, year, .keep_all = TRUE) %>%

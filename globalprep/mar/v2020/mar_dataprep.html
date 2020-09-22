@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Fri Sep 4 15:08:32 2020 by sgclawson" />
+<meta name="author" content="Compiled on Mon Sep 21 17:22:01 2020 by sgclawson" />
 
 
 <title>OHI 2020: Mariculture</title>
@@ -420,7 +420,7 @@ summary {
 
 
 <h1 class="title toc-ignore">OHI 2020: Mariculture</h1>
-<h4 class="author"><em>Compiled on Fri Sep 4 15:08:32 2020 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Mon Sep 21 17:22:01 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -569,12 +569,12 @@ summary {
 <p>Update species name in the <code>raw/species_list.csv</code> file with names in the <code>mar</code> dataset (exclude non-food species). I simplified the species_list. I cut the “species” name columns because it wasn’t clear what this was trying to accomplish and created potential error.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co">## Commented out &#39;read.csv&#39; lines are different versions of the dataset, representing the three different seaweed exclusion methods (exclude some seaweed, all seaweed, all seaweed nei). Use at the end for data checking. The first one is the one which is saved to the &quot;output&quot; folder, and the main analysis to run. </span></span>
 <span id="cb7-2"><a href="#cb7-2"></a>mar_sp &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&#39;raw/species_list.csv&#39;</span>, <span class="dt">stringsAsFactors=</span><span class="ot">FALSE</span>) <span class="op">%&gt;%</span></span>
-<span id="cb7-3"><a href="#cb7-3"></a><span class="st">  </span><span class="kw">select</span>(FAO_name, exclude, alias, Taxon_code, family)</span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="st">  </span><span class="kw">select</span>(FAO_name, exclude, alias, Taxon_code, family, notes, notes_<span class="dv">2</span>)</span>
 <span id="cb7-4"><a href="#cb7-4"></a></span>
 <span id="cb7-5"><a href="#cb7-5"></a>new.spp &lt;-<span class="st"> </span><span class="kw">setdiff</span>(mar<span class="op">$</span>FAO_name, mar_sp<span class="op">$</span>FAO_name)</span>
 <span id="cb7-6"><a href="#cb7-6"></a>new.spp <span class="co"># Check: if dim has 0 rows it means all match</span></span>
 <span id="cb7-7"><a href="#cb7-7"></a><span class="co">## If there is a list of species, hand check species_list.csv to see whether to keep (exclude seaweeds and species harvested for ornamental/medicinal).  </span></span>
-<span id="cb7-8"><a href="#cb7-8"></a><span class="co">## This is outlined in issue #8 and issue #81 for reference. You need to add the species output from this to species_list.csv and fill out the corresponding information. I.e. add FAO_name, exclude (whether to include in assessment or not. If they are only harvested for medicinal purposes, do not include), alias, Taxon_code (categories defined in the README in the /raw folder), and family (general family from google) to species_list.csv.</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a><span class="co">## This is outlined in issue #8 and issue #81 for reference. You need to add the species output from this (new.spp) to species_list.csv and fill out the corresponding information. I.e. add FAO_name, exclude (whether to include in assessment or not. If they are only harvested for medicinal purposes, do not include, or not eaten by humans do not include), alias, Taxon_code (categories defined in the README in the /raw folder), and family (general family from google) to species_list.csv. There are also two notes columns that we have in there. Because seaweeds are generally used for both human and non-human consumption, we quantify whether to exclude or not for seaweed species as proportions. For example, if a seaweed species is 80% used for non-human consumption, we would exclude 80% of the harvest (exlude = 0.8). However, for fish species, we only classify as 0 or 1. </span></span>
 <span id="cb7-9"><a href="#cb7-9"></a></span>
 <span id="cb7-10"><a href="#cb7-10"></a><span class="co">#### Begin 2020 only ####</span></span>
 <span id="cb7-11"><a href="#cb7-11"></a><span class="co">## Lets clean the species names first to prep for taxize. Remove []s. </span></span>
@@ -658,29 +658,51 @@ summary {
 <span id="cb7-89"><a href="#cb7-89"></a><span class="co">## REMOVE SPECIES not relevant to mariculture goal (i.e., non-food species)</span></span>
 <span id="cb7-90"><a href="#cb7-90"></a>mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">left_join</span>(mar_sp, <span class="dt">by=</span><span class="st">&quot;FAO_name&quot;</span>) </span>
 <span id="cb7-91"><a href="#cb7-91"></a></span>
-<span id="cb7-92"><a href="#cb7-92"></a><span class="co">## Filters out species that should be excluded from the MAR subgoal, depending on which of the 3 scenarios was read in. Searches for column name &quot;exclude&quot;, &quot;exclude_no_seaweed&quot;, or &quot;exclude_no_nei&quot;</span></span>
+<span id="cb7-92"><a href="#cb7-92"></a><span class="co">## Filters out species that should be excluded from the MAR subgoal Searches for column name &quot;exclude&quot;</span></span>
 <span id="cb7-93"><a href="#cb7-93"></a>  </span>
-<span id="cb7-94"><a href="#cb7-94"></a> mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(exclude<span class="op">==</span><span class="dv">0</span>)</span>
+<span id="cb7-94"><a href="#cb7-94"></a> mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">filter</span>(exclude <span class="op">&lt;</span><span class="st"> </span><span class="dv">1</span>)</span>
 <span id="cb7-95"><a href="#cb7-95"></a></span>
-<span id="cb7-96"><a href="#cb7-96"></a> </span>
+<span id="cb7-96"><a href="#cb7-96"></a><span class="co">## create an &quot;include&quot; column (1-exclude) </span></span>
 <span id="cb7-97"><a href="#cb7-97"></a> </span>
-<span id="cb7-98"><a href="#cb7-98"></a><span class="co">## Change names using species alias or FAO species name (global changes)</span></span>
-<span id="cb7-99"><a href="#cb7-99"></a>mar<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">ifelse</span>(<span class="op">!</span><span class="kw">is.na</span>(mar<span class="op">$</span>alias), mar<span class="op">$</span>alias, mar<span class="op">$</span>FAO_name) </span>
-<span id="cb7-100"><a href="#cb7-100"></a></span>
-<span id="cb7-101"><a href="#cb7-101"></a><span class="co">## Sum production values for each group to account for duplicate rows after name change (remove NA values)</span></span>
-<span id="cb7-102"><a href="#cb7-102"></a>mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span></span>
-<span id="cb7-103"><a href="#cb7-103"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(value)) <span class="op">%&gt;%</span></span>
-<span id="cb7-104"><a href="#cb7-104"></a><span class="st">  </span><span class="kw">group_by</span>(country, fao, environment, species, year, Taxon_code, family) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb7-105"><a href="#cb7-105"></a><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb7-106"><a href="#cb7-106"></a><span class="st">  </span><span class="kw">ungroup</span>()</span>
+<span id="cb7-98"><a href="#cb7-98"></a> mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span></span>
+<span id="cb7-99"><a href="#cb7-99"></a><span class="st">   </span><span class="kw">mutate</span>(<span class="dt">include =</span> <span class="dv">1</span><span class="op">-</span>exclude)</span>
+<span id="cb7-100"><a href="#cb7-100"></a> </span>
+<span id="cb7-101"><a href="#cb7-101"></a><span class="co">## Change names using species alias or FAO species name (global changes)</span></span>
+<span id="cb7-102"><a href="#cb7-102"></a>mar<span class="op">$</span>species &lt;-<span class="st"> </span><span class="kw">ifelse</span>(<span class="op">!</span><span class="kw">is.na</span>(mar<span class="op">$</span>alias), mar<span class="op">$</span>alias, mar<span class="op">$</span>FAO_name) </span>
+<span id="cb7-103"><a href="#cb7-103"></a></span>
+<span id="cb7-104"><a href="#cb7-104"></a><span class="co">## Multiply value by proportion of harvest to include (include column)</span></span>
+<span id="cb7-105"><a href="#cb7-105"></a>mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span></span>
+<span id="cb7-106"><a href="#cb7-106"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">value_include =</span> value<span class="op">*</span>include)</span>
 <span id="cb7-107"><a href="#cb7-107"></a></span>
-<span id="cb7-108"><a href="#cb7-108"></a><span class="co">## Eliminate country-species data with zero production throughout the time-series (1950-recent)</span></span>
-<span id="cb7-109"><a href="#cb7-109"></a>mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span></span>
-<span id="cb7-110"><a href="#cb7-110"></a><span class="st">  </span><span class="kw">group_by</span>(country, species) <span class="op">%&gt;%</span></span>
-<span id="cb7-111"><a href="#cb7-111"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">total_value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span></span>
-<span id="cb7-112"><a href="#cb7-112"></a><span class="st">  </span><span class="kw">filter</span>(total_value <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>) <span class="op">%&gt;%</span></span>
-<span id="cb7-113"><a href="#cb7-113"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>total_value) <span class="op">%&gt;%</span></span>
-<span id="cb7-114"><a href="#cb7-114"></a><span class="st">  </span><span class="kw">ungroup</span>()</span></code></pre></div>
+<span id="cb7-108"><a href="#cb7-108"></a><span class="co">## Check to see if 85% of seaweed goes to human consumption... filter for seaweeds, sum the tonnes included, divide by total tonnes seaweed</span></span>
+<span id="cb7-109"><a href="#cb7-109"></a></span>
+<span id="cb7-110"><a href="#cb7-110"></a><span class="co"># seaweed_check2 &lt;- mar %&gt;%</span></span>
+<span id="cb7-111"><a href="#cb7-111"></a><span class="co">#   filter(!is.na(value)) %&gt;%</span></span>
+<span id="cb7-112"><a href="#cb7-112"></a><span class="co">#   filter(Taxon_code == &quot;AL&quot;) %&gt;%</span></span>
+<span id="cb7-113"><a href="#cb7-113"></a><span class="co">#   group_by(year) %&gt;%</span></span>
+<span id="cb7-114"><a href="#cb7-114"></a><span class="co">#   summarise(include_total = sum(value_include),</span></span>
+<span id="cb7-115"><a href="#cb7-115"></a><span class="co">#             overall_total = sum(value)) %&gt;%</span></span>
+<span id="cb7-116"><a href="#cb7-116"></a><span class="co">#   mutate(percent = include_total/overall_total) </span></span>
+<span id="cb7-117"><a href="#cb7-117"></a><span class="co"># </span></span>
+<span id="cb7-118"><a href="#cb7-118"></a><span class="co"># mean(seaweed_check2$percent) ## 81%.... matches pretty darn well.</span></span>
+<span id="cb7-119"><a href="#cb7-119"></a></span>
+<span id="cb7-120"><a href="#cb7-120"></a></span>
+<span id="cb7-121"><a href="#cb7-121"></a></span>
+<span id="cb7-122"><a href="#cb7-122"></a><span class="co">## Sum production values for each group to account for duplicate rows after name change (remove NA values)</span></span>
+<span id="cb7-123"><a href="#cb7-123"></a>mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span></span>
+<span id="cb7-124"><a href="#cb7-124"></a><span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(value_include)) <span class="op">%&gt;%</span></span>
+<span id="cb7-125"><a href="#cb7-125"></a><span class="st">  </span><span class="kw">group_by</span>(country, fao, environment, species, year, Taxon_code, family) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-126"><a href="#cb7-126"></a><span class="st">    </span><span class="kw">summarize</span>(<span class="dt">value =</span> <span class="kw">sum</span>(value_include)) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-127"><a href="#cb7-127"></a><span class="st">  </span><span class="kw">ungroup</span>()</span>
+<span id="cb7-128"><a href="#cb7-128"></a></span>
+<span id="cb7-129"><a href="#cb7-129"></a></span>
+<span id="cb7-130"><a href="#cb7-130"></a><span class="co">## Eliminate country-species data with zero production throughout the time-series (1950-recent)</span></span>
+<span id="cb7-131"><a href="#cb7-131"></a>mar &lt;-<span class="st"> </span>mar <span class="op">%&gt;%</span></span>
+<span id="cb7-132"><a href="#cb7-132"></a><span class="st">  </span><span class="kw">group_by</span>(country, species) <span class="op">%&gt;%</span></span>
+<span id="cb7-133"><a href="#cb7-133"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">total_value =</span> <span class="kw">sum</span>(value)) <span class="op">%&gt;%</span></span>
+<span id="cb7-134"><a href="#cb7-134"></a><span class="st">  </span><span class="kw">filter</span>(total_value <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>) <span class="op">%&gt;%</span></span>
+<span id="cb7-135"><a href="#cb7-135"></a><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>total_value) <span class="op">%&gt;%</span></span>
+<span id="cb7-136"><a href="#cb7-136"></a><span class="st">  </span><span class="kw">ungroup</span>()</span></code></pre></div>
 </div>
 <div id="convert-country-names-to-ohi-regions" class="section level2">
 <h2><span class="header-section-number">6.3</span> Convert country names to OHI regions</h2>
@@ -739,7 +761,7 @@ summary {
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="kw">table</span>(mar_rgn_gf<span class="op">$</span>gap_<span class="dv">0</span>_fill)</span>
 <span id="cb11-2"><a href="#cb11-2"></a><span class="co">## 3790 of these out of 27810+3790 cases had NA values converted to 0 - 2018 assessment</span></span>
 <span id="cb11-3"><a href="#cb11-3"></a><span class="co">## 3763 of these out of 28694+4291 cases had NA values converted to 0 - 2019 assessment</span></span>
-<span id="cb11-4"><a href="#cb11-4"></a><span class="co">## 5666 of these out of 28149+5662 cases had NA values converted to 0 - 2020 assessment</span></span></code></pre></div>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="co">## 5932  of these out of 29305 +5932  cases had NA values converted to 0 - 2020 assessment</span></span></code></pre></div>
 <p>Remove species-region-environment time series with less than four years of mariculture production &gt; 0 tonnes (assume these are not established mariculture programs).</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>mar_rgn_gf =<span class="st"> </span>mar_rgn_gf <span class="op">%&gt;%</span><span class="st"> </span></span>
 <span id="cb12-2"><a href="#cb12-2"></a><span class="st">  </span><span class="kw">group_by</span>(rgn_id, species, fao, environment) <span class="op">%&gt;%</span></span>
@@ -931,18 +953,9 @@ summary {
 <span id="cb25-4"><a href="#cb25-4"></a>                <span class="dt">esc_avg =</span> <span class="kw">mean</span>(esc_score, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span><span class="st"> </span></span>
 <span id="cb25-5"><a href="#cb25-5"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">ungroup</span>()</span></code></pre></div>
 <p>Get rid of duplicates for region/species/year:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="co"># test_dups &lt;- mar_sw_sus %&gt;%</span></span>
-<span id="cb26-2"><a href="#cb26-2"></a><span class="co">#   duplicated() </span></span>
-<span id="cb26-3"><a href="#cb26-3"></a><span class="co"># </span></span>
-<span id="cb26-4"><a href="#cb26-4"></a><span class="co"># tests_3 &lt;- data.frame(test_dups, mar_sw_sus) %&gt;%</span></span>
-<span id="cb26-5"><a href="#cb26-5"></a><span class="co">#   filter(test_dups == TRUE)</span></span>
-<span id="cb26-6"><a href="#cb26-6"></a><span class="co"># </span></span>
-<span id="cb26-7"><a href="#cb26-7"></a><span class="co"># test4 &lt;- mar_sw_sus %&gt;%</span></span>
-<span id="cb26-8"><a href="#cb26-8"></a><span class="co">#   filter(species == &quot;Pacific cupped oyster&quot;)</span></span>
-<span id="cb26-9"><a href="#cb26-9"></a></span>
-<span id="cb26-10"><a href="#cb26-10"></a>mar_sw_sus &lt;-<span class="st"> </span>mar_sw_sus <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb26-11"><a href="#cb26-11"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">distinct</span>(rgn_id, species, environment, year, <span class="dt">.keep_all =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span></span>
-<span id="cb26-12"><a href="#cb26-12"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>Sust, <span class="dt">Sust =</span> Sust_avg, <span class="op">-</span>esc_score, <span class="dt">esc_score =</span> esc_avg)</span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>mar_sw_sus &lt;-<span class="st"> </span>mar_sw_sus <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb26-2"><a href="#cb26-2"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">distinct</span>(rgn_id, species, environment, year, <span class="dt">.keep_all =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>Sust, <span class="dt">Sust =</span> Sust_avg, <span class="op">-</span>esc_score, <span class="dt">esc_score =</span> esc_avg)</span></code></pre></div>
 <p><strong>Now look at a summary after appending all the Seafood Watch data</strong></p>
 <div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">summary</span>(mar_sw_sus)</span>
 <span id="cb27-2"><a href="#cb27-2"></a><span class="co"># Sust_avg still has 17202 NAs out of 28472 total obs.; ~60% without sustainability data</span></span>
