@@ -65,6 +65,8 @@ library(stringr)
 library(tidyr)
 library(tidyverse)
 library(taxize)
+library(knitr)
+library(kableExtra)
 
 ## Load FAO-specific user-defined functions
 source('mar_fxs.R') # functions specific to mariculture dealing with compound countries
@@ -72,6 +74,7 @@ source('../../../workflow/R/fao_fxn.R') # function for cleaning FAO files
 source('../../../workflow/R/common.R') # directory locations
 
 ```
+
 
 # Import Raw Data: FAO Mariculture data
 
@@ -1502,5 +1505,7 @@ pot_aq_final_gf <- pot_aq_final %>%
 
 write_csv(pot_aq_final_gf, file.path(dir_git, "output/aq_potential_gf.csv"))
 ```
+
+
 ***
 

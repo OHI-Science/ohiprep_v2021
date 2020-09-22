@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Mon Sep 21 17:22:01 2020 by sgclawson" />
+<meta name="author" content="Compiled on Tue Sep 22 10:23:31 2020 by sgclawson" />
 
 
 <title>OHI 2020: Mariculture</title>
@@ -420,7 +420,7 @@ summary {
 
 
 <h1 class="title toc-ignore">OHI 2020: Mariculture</h1>
-<h4 class="author"><em>Compiled on Mon Sep 21 17:22:01 2020 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Tue Sep 22 10:23:31 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -517,11 +517,13 @@ summary {
 <span id="cb3-7"><a href="#cb3-7"></a><span class="kw">library</span>(tidyr)</span>
 <span id="cb3-8"><a href="#cb3-8"></a><span class="kw">library</span>(tidyverse)</span>
 <span id="cb3-9"><a href="#cb3-9"></a><span class="kw">library</span>(taxize)</span>
-<span id="cb3-10"><a href="#cb3-10"></a></span>
-<span id="cb3-11"><a href="#cb3-11"></a><span class="co">## Load FAO-specific user-defined functions</span></span>
-<span id="cb3-12"><a href="#cb3-12"></a><span class="kw">source</span>(<span class="st">&#39;mar_fxs.R&#39;</span>) <span class="co"># functions specific to mariculture dealing with compound countries</span></span>
-<span id="cb3-13"><a href="#cb3-13"></a><span class="kw">source</span>(<span class="st">&#39;../../../workflow/R/fao_fxn.R&#39;</span>) <span class="co"># function for cleaning FAO files</span></span>
-<span id="cb3-14"><a href="#cb3-14"></a><span class="kw">source</span>(<span class="st">&#39;../../../workflow/R/common.R&#39;</span>) <span class="co"># directory locations</span></span></code></pre></div>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="kw">library</span>(knitr)</span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="kw">library</span>(kableExtra)</span>
+<span id="cb3-12"><a href="#cb3-12"></a></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="co">## Load FAO-specific user-defined functions</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a><span class="kw">source</span>(<span class="st">&#39;mar_fxs.R&#39;</span>) <span class="co"># functions specific to mariculture dealing with compound countries</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="kw">source</span>(<span class="st">&#39;../../../workflow/R/fao_fxn.R&#39;</span>) <span class="co"># function for cleaning FAO files</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="kw">source</span>(<span class="st">&#39;../../../workflow/R/common.R&#39;</span>) <span class="co"># directory locations</span></span></code></pre></div>
 <pre><code>## This file makes it easier to process data for the OHI global assessment
 ##  by creating the following objects:
 ## 
