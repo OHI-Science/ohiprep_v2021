@@ -107,7 +107,7 @@ mar <- mar %>%
 
 ## Update seaweed species information
 
-Filter out seaweed species from 'raw/species_list.csv' (originally from 'globalprep/mar/v2020/raw'), rename columns, and assign proportions to "include" column determined by research of non-human food vs human food seaweed species cultivated in mariculture. For NP, we are only including non-human food seaweed species. Since some species are used for both non-human food and human food purposes, a proportion is assigned based on research and best guess.
+Filter out seaweed species from 'raw/species_list.csv' (from 'globalprep/mar/v2020/raw'), rename columns, and assign proportions to "include" column determined by research of non-human food vs human food seaweed species cultivated in mariculture. For NP, we are only including non-human food seaweed species. Since some species are used for both non-human food and human food purposes, a proportion is assigned based on research and best guess.
 
 ```{r}
 #### NOTE: this is likely only necessary for the v2020 udpate. If any species are to be added, it will be done in the chunk below this one ####
