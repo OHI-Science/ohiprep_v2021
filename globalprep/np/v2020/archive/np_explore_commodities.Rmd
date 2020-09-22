@@ -169,15 +169,33 @@ h <- h_usd %>%
 ## clips out years prior to first reporting year, for each commodity per region
 h <- h %>% np_harvest_preclip()
 
+write.csv(h, "../int/h_methods_sum.csv")
 ```
 
 ```{r}
+graph_ts_df <- h %>%
+  group_by(year, product) %>%
+  summarise(sum_tonnes = sum(tonnes, na.rm = TRUE), 
+            sum_usd = sum(usd, na.rm = TRUE))
+
+ggplot(graph_ts_df, aes(x = year, y = sum_usd)) +
+  geom_line() + 
+  facet_wrap(~product)
+
+ggplot(graph_ts_df, aes(x = year, y = sum_tonnes)) +
+  geom_line() + 
+  facet_wrap(~product)
+
+
 ## graph totals of each product
 
 graph_data_1 <- h %>%
   group_by(product) %>%
   summarise(sum_usd = sum(usd, na.rm = TRUE), sum_tonnes = sum(tonnes, na.rm = TRUE)) %>%
-  ungroup()
+  ungroup() %>%
+  mutate(percent_total_usd = sum_usd/sum(sum_usd),
+         percent_total_tonnes = sum_tonnes/sum(sum_tonnes),
+         dollar_per_tonne = sum_usd/sum_tonnes)
   
 ggplot(graph_data_1, aes(x = product, y = sum_usd)) +
   geom_col() + 
