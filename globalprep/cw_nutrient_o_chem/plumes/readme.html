@@ -365,14 +365,89 @@ summary {
 </div>
 
 
-<div id="ocean-health-index-cw-nutrient-plumes" class="section level2">
-<h2>Ocean Health Index: CW Nutrient Plumes</h2>
-<p>This data layer is prepped within the pourpoints_PO4eq_prep and the /plumes folder.</p>
-<ol style="list-style-type: decimal">
-<li>Create a pourpoint file, which is done in the first half of the data prep <code>pourpoints_PO4eq_prep.Rmd</code>.</li>
-<li>Use the prepped pourpoint file to feed into the plume model. The steps to run the plume model are outlined in the README in the /plumes folder.</li>
-<li>Explore the output of the plume model in <code>plume_output_exploration.Rmd</code></li>
-</ol>
+<div id="ocean-health-index-plume-model" class="section level2">
+<h2>Ocean Health Index: Plume model</h2>
+<p>Here I will document how to run the plume model.</p>
+<ul>
+<li>You will need to download this folder (cw_nutrient_o_chem/plumes, or the plumes folder from the wastewater repo) to your local mazu drive. I.e. /home/username/</li>
+<li>Go ahead and install the anaconda installer for 68 bit linux from <a href="https://www.anaconda.com/products/individual" class="uri">https://www.anaconda.com/products/individual</a> and throw the file into your home directory on mazu (or Aurora if that is what you use). You will end up with a folder akin to /home/username/anaconda3</li>
+<li>In your terminal, ssh into mazu.. i.e. <code>ssh username@mazu.nceas.ucsb.edu</code> and enter your password</li>
+<li>Create a folder in your “anaconda3/envs” folder named “py2”, this will be your python environment. This can be done with this line <code>conda create --name py2 python=2</code></li>
+<li>Type <code>conda activate py2</code> in your terminal. This will activate this py2 environment and act as your python environment.</li>
+<li>Install gdal by typing <code>conda install -c conda-forge gdal</code> to install gdal in your python environment.</li>
+<li>Create a folder in your mazu home drive entitled “grassdata” or something of the like.</li>
+<li>I recommend using <a href="http://www.kinnetica.com/2011/05/29/using-screen-on-mac-os-x/">screens</a> in the terminal, so you can turn on the plumes model and leave it running.</li>
+<li>Follow the steps outlined below, updating file paths as needed:</li>
+</ul>
+<pre><code>## this is all done in the shell
+
+## After creating a new python env, I.e. py2: 
+conda activate py2
+
+cp /home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem/raw/ocean_mask_landnull.tif /home/username/grassdata/ 
+## copy the ocean mask to your grassdata folder. The ocean mask is a raster where the land values are set to nan and the ocean values to 1. You can find it here: /home/tuholske/wastewater/data/interim/ocean_masks/ocean_mask_landnull.tif, or here: /home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem/raw/ocean_mask_landnull.tif. Or you could just create it yourself!
+
+rm -r /home/username/grassdata/location # replace username with your home directory name
+
+grass -c ~/grassdata/ocean_mask_landnull.tif ~/grassdata/location ## start a grass session and create a location folder where grass will run 
+
+exit ## exit grass, and copy ocean_mask_landnull.tif to PERMANENT folder, located in location folder
+cp /home/username/grassdata/ocean_mask_landnull.tif /home/username/grassdata/location/PERMANENT/ 
+
+grass ## enter grass again
+
+## download the plumes folder that you are currently in (or the plumes folder from the wasterwater repo)
+## look in the plumes/ folder and edit run_plumes.sh for correct file paths if needed 
+
+# Load ocean mask null into grass session 
+r.in.gdal /home/username/grassdata/location/PERMANENT/ocean_mask_landnull.tif output=&#39;ocean&#39; ## if you used a different name or different ocean tif, change it to that here
+
+# Load pour points into grass session # This is just ten pourpoints from Australia as a test
+v.import /home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem/int/pourpoints/PO4eq_pourpoints.shp output=&#39;pours&#39; ## change PO4eq_pourpoints to your pourpoints shapefile that you want to run the plume model on. You will need columns &quot;basin_id&quot;, &quot;effluent&quot;, and &quot;geometry&quot; in this file. 
+
+# Within your grass session, cd into plumes/ dir
+cd /home/username/wastewater-master/code/plumes ## this will likely look like this for you: &quot;/home/username/plumes&quot;
+
+## Now run run_plumes.sh
+sh run_plumes.sh ## test it on a subset of pourpoints (&lt;100 pourpoints) before you run the entire thing. The entire thing will likely take 3-4 days to run, and if it is not working you don&#39;t want to waste your time without testing it first. After this is finished running, you will have a .tif file for every pourpoint leading to the ocean in your dataset.
+
+## Now we need to combine these rasters into one using the mosaic code: 
+## Split the plume output .tifs (this depends on you machine but is required on Mazu @ NCEAS) 
+## and put them together 
+
+cd output
+mkdir subsets
+for i in  1 2 3 4 5 6 
+## the number of i&#39;s depending on how many plume_effluent.tif files were created. We will  subset in batches of 10000, so for instance, I had 130000 .tif files, so i ran my for loop for i in 1:13
+
+do
+   printf &quot;Starting $i \n&quot;
+   mkdir subsets/subset$i
+  
+   # move the tif files in batches of 10000
+   mv `ls | head -10000` subsets/subset$i/
+  
+   # mosaic subset 
+   cd subsets/subset$i/
+   ../../../gdal_add.py -o global_effluent_sub$i.tif -ot Float32 plume_effluent_*.tif # ALWAYS UPDATE tif NAME to whatever you are running.. for instance, if running a test on australian plumes, make it akin to &quot;global_PO4eq_au$i.tif&quot;
+   printf &quot;subset $i tif done \n&quot;
+  
+   # move subset mosaic and go up
+   mv global_effluent_sub$i.tif ../ # ALWAYS UPDATE tif NAME
+   cd ../../
+   pwd
+   printf &quot;\n Ending $i \n&quot;
+done
+printf &quot;Done Subsets \n&quot;
+
+# final mosaic
+cd subsets
+pwd
+../../gdal_add.py -o global_effluent.tif -ot Float32 global_effluent_*.tif # ALWAYS UPDATE tif NAME
+
+printf &quot;\n Final Tif Done&quot;
+# move final tif to folder of your choice
+cp global_effluent.tif home/shares/ohi/git-annex/globalprep/cw_nutrient_o_chem/output/N_effluent_output/ # ALWAYS UPDATE tif NAME</code></pre>
 </div>
 
 

@@ -85,7 +85,7 @@ setwd(here("globalprep/tr/v2020"))
 
 # Ep: Proportion of workforce directly employed in tourism
 
-These data are from the [World Travel & Tourism Council](http://www.wttc.org/datagateway).  We use "direct" employment data (see mazu: git-annex/globalprep/_raw_data/WTTC/d2019/README.md for instructions on obtaining data). The data extend to 2029, which includes 10 years of projections. The actual data goes to 2019 (projected/real data are differentiated on the data gateway chart).
+These data are from the [World Travel & Tourism Council](http://www.wttc.org/datagateway).  We use "direct" employment data (see mazu: git-annex/globalprep/_raw_data/WTTC/d2019/README.md for instructions on obtaining data). The data extend to 2030, which includes 10 years of projections. The actual data goes to 2020 (projected/real data are differentiated on the data gateway chart).
 
 These data are cleaned and formatted using the R/process_WTTC.R script. Missing values are gapfilled using the UN georegion information.
 
