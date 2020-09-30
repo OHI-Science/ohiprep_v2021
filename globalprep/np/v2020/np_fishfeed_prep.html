@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Fri Aug 21 14:38:06 2020 by sgclawson" />
+<meta name="author" content="Compiled on Wed Sep 30 15:00:22 2020 by sgclawson" />
 
 
 <title>OHI 2020: Natural Products, Preparing catch and B/Bmsy data for forage fish species</title>
@@ -1647,7 +1647,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">OHI 2020: Natural Products, Preparing catch and B/Bmsy data for forage fish species</h1>
-<h4 class="author"><em>Compiled on Fri Aug 21 14:38:06 2020 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Wed Sep 30 15:00:22 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -1724,11 +1724,11 @@ div.tocify {
 <p>31 million tons per year of captured forage fish (since 1980).</p>
 <p>Get the list of forage fish used for FOFM:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">## Read in Froehlich list of forage fish species</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>forage &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/np/v2020_new/raw/msleckman.61.1-CatchMSY_Nis_FAOAreas.csv.csv&quot;</span>))</span>
+<span id="cb3-2"><a href="#cb3-2"></a>forage &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/np/v2020/raw/msleckman.61.1-CatchMSY_Nis_FAOAreas.csv&quot;</span>))</span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="kw">sort</span>(<span class="kw">unique</span>(forage<span class="op">$</span>Species)) <span class="co">#238 forage fish groups listed</span></span>
 <span id="cb3-4"><a href="#cb3-4"></a></span>
 <span id="cb3-5"><a href="#cb3-5"></a><span class="co">## Compare this with Watson list of species (IDed forage fish by hand). For future assessments this will just be &quot;globalprep/fis/v2020/int/watson_taxon_key_vyyyy.csv&quot;</span></span>
-<span id="cb3-6"><a href="#cb3-6"></a>watson_v3 &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/np/v2020_new/raw/Codes_taxa.csv&quot;</span>))</span>
+<span id="cb3-6"><a href="#cb3-6"></a>watson_v3 &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/np/v2020/raw/Codes_taxa.csv&quot;</span>))</span>
 <span id="cb3-7"><a href="#cb3-7"></a><span class="kw">sort</span>(<span class="kw">setdiff</span>(forage<span class="op">$</span>Species, watson_v3<span class="op">$</span>TaxonName))</span>
 <span id="cb3-8"><a href="#cb3-8"></a><span class="kw">sort</span>(<span class="kw">setdiff</span>(watson_v3<span class="op">$</span>TaxonName[watson_v3<span class="op">$</span>forage_fish <span class="op">%in%</span><span class="st"> </span><span class="dv">1</span>], forage<span class="op">$</span>Species))</span>
 <span id="cb3-9"><a href="#cb3-9"></a></span>
@@ -1748,7 +1748,7 @@ div.tocify {
 <span id="cb3-23"><a href="#cb3-23"></a><span class="kw">write.csv</span>(watson_combine, <span class="st">&quot;int/watson_new.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>) <span class="co">## now we will correct the forage fish column by hand. Just look at what species differ from v5 to v3, and look them up to see if they should be classified as forage fish. </span></span>
 <span id="cb3-24"><a href="#cb3-24"></a></span>
 <span id="cb3-25"><a href="#cb3-25"></a><span class="co">## read in the corrected dataset</span></span>
-<span id="cb3-26"><a href="#cb3-26"></a>watson_new_corr &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/np/v2020_new/int/watson_new_corr.csv&quot;</span>))</span>
+<span id="cb3-26"><a href="#cb3-26"></a>watson_new_corr &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/np/v2020/int/watson_new_corr.csv&quot;</span>))</span>
 <span id="cb3-27"><a href="#cb3-27"></a></span>
 <span id="cb3-28"><a href="#cb3-28"></a><span class="kw">sort</span>(<span class="kw">setdiff</span>(forage<span class="op">$</span>Species, watson_new_corr<span class="op">$</span>TaxonName))</span>
 <span id="cb3-29"><a href="#cb3-29"></a><span class="kw">sort</span>(<span class="kw">setdiff</span>(watson_new_corr<span class="op">$</span>TaxonName[watson_new_corr<span class="op">$</span>forage_fish <span class="op">%in%</span><span class="st"> </span><span class="dv">1</span>], forage<span class="op">$</span>Species))</span>
@@ -1760,7 +1760,7 @@ div.tocify {
 <span id="cb3-35"><a href="#cb3-35"></a>foragefish_list &lt;-<span class="st"> </span>foragefish_list <span class="op">%&gt;%</span></span>
 <span id="cb3-36"><a href="#cb3-36"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">inWatson =</span> <span class="kw">ifelse</span>(forage_fish <span class="op">%in%</span><span class="st"> </span>missing, <span class="ot">NA</span>, <span class="st">&quot;yes&quot;</span>)) <span class="co">## 281 species</span></span>
 <span id="cb3-37"><a href="#cb3-37"></a></span>
-<span id="cb3-38"><a href="#cb3-38"></a><span class="kw">write.csv</span>(foragefish_list, <span class="kw">here</span>(<span class="st">&quot;globalprep/np/v2020_new/int/master_taxa_list_v5.csv&quot;</span>), <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span></code></pre></div>
+<span id="cb3-38"><a href="#cb3-38"></a><span class="kw">write.csv</span>(foragefish_list, <span class="kw">here</span>(<span class="st">&quot;globalprep/np/v2020/int/master_taxa_list_v5.csv&quot;</span>), <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span></code></pre></div>
 </div>
 <div id="read-in-v2020-catch-data" class="section level2">
 <h2>Read in v2020 catch data</h2>
@@ -1783,7 +1783,7 @@ div.tocify {
 <h2>Subset the v2020 catch data for our forage fish species</h2>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">## need to get TaxonKey&#39;s for each species to join with catch</span></span>
 <span id="cb5-2"><a href="#cb5-2"></a></span>
-<span id="cb5-3"><a href="#cb5-3"></a>foragefish_list &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="st">&quot;globalprep/np/v2020_new/int/master_taxa_list.csv&quot;</span>))</span>
+<span id="cb5-3"><a href="#cb5-3"></a>foragefish_list &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="st">&quot;globalprep/np/v2020/int/master_taxa_list.csv&quot;</span>))</span>
 <span id="cb5-4"><a href="#cb5-4"></a></span>
 <span id="cb5-5"><a href="#cb5-5"></a>forage_fish_taxa_list &lt;-<span class="st"> </span>foragefish_list <span class="op">%&gt;%</span></span>
 <span id="cb5-6"><a href="#cb5-6"></a><span class="st">  </span><span class="kw">left_join</span>(catch, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;forage_fish&quot;</span> =<span class="st"> &quot;species&quot;</span>)) <span class="op">%&gt;%</span></span>
@@ -1794,25 +1794,25 @@ div.tocify {
 <span id="cb5-11"><a href="#cb5-11"></a>forage_fish_no_watson &lt;-<span class="st"> </span>forage_fish_taxa_list <span class="op">%&gt;%</span></span>
 <span id="cb5-12"><a href="#cb5-12"></a><span class="st">  </span><span class="kw">filter</span>(<span class="kw">is.na</span>(Taxonkey))</span>
 <span id="cb5-13"><a href="#cb5-13"></a></span>
-<span id="cb5-14"><a href="#cb5-14"></a><span class="kw">write.csv</span>(forage_fish_no_watson,<span class="st">&quot;int/forage_fish_not_in_watson.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb5-14"><a href="#cb5-14"></a><span class="kw">write.csv</span>(forage_fish_no_watson, <span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/np/v2020/int/forage_fish_not_in_watson.csv&quot;</span>), <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
 <span id="cb5-15"><a href="#cb5-15"></a></span>
 <span id="cb5-16"><a href="#cb5-16"></a><span class="co">## now join with catch data set </span></span>
 <span id="cb5-17"><a href="#cb5-17"></a>catch_fishfeed &lt;-<span class="st"> </span>catch <span class="op">%&gt;%</span></span>
 <span id="cb5-18"><a href="#cb5-18"></a><span class="st">  </span><span class="kw">left_join</span>(forage_fish_taxa_list, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;Taxonkey&quot;</span>)) <span class="op">%&gt;%</span></span>
 <span id="cb5-19"><a href="#cb5-19"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(forage_fish))</span>
 <span id="cb5-20"><a href="#cb5-20"></a></span>
-<span id="cb5-21"><a href="#cb5-21"></a><span class="kw">write.csv</span>(catch_fishfeed, <span class="st">&quot;int/watson_catch_forage_fish.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<span id="cb5-21"><a href="#cb5-21"></a><span class="kw">write.csv</span>(catch_fishfeed, <span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/np/v2020/int/watson_catch_forage_fish.csv&quot;</span>), <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
 </div>
 </div>
 <div id="step-2" class="section level1">
 <h1>Step 2</h1>
-<div id="multiply-by-0.70-to-reflect-the-amount-going-to-feedoils" class="section level2">
-<h2>Multiply by 0.70 to reflect the amount going to feed/oils</h2>
-<p>Justification from the <a href="https://www.fisheries.noaa.gov/insight/feeds-aquaculture">FAO</a>: About 70% of the fish meal and oil are produced from the harvest of small, open-ocean (pelagic) fish such as anchovies, herring, menhaden, capelin, anchovy, pilchard, sardines, and mackerel. These fish have short life cycles and are capable of rapid reproduction and stock replenishment.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>catch_fishfeed &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(),<span class="st">&quot;globalprep/np/v2020_newint/watson_catch_forage_fish.csv&quot;</span>))</span>
+<div id="multiply-by-0.90-to-reflect-the-amount-going-to-feedoils" class="section level2">
+<h2>Multiply by 0.90 to reflect the amount going to feed/oils</h2>
+<p>Justification from the <a href="https://www.nature.com/articles/s41893-018-0077-1#Sec11">Froelich et al. 2018</a>: “Currently, it is estimated about 10% of forage fish enter the human diet directly, but the notoriously tiny-boned fish are labour intensive (thus expensive) to process for human consumption, are the foundation of several industries and thus jobs (creating inertia to change) and are not the preferred fish type for most people.”</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>catch_fishfeed &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(),<span class="st">&quot;globalprep/np/v2020/int/watson_catch_forage_fish.csv&quot;</span>))</span>
 <span id="cb6-2"><a href="#cb6-2"></a></span>
 <span id="cb6-3"><a href="#cb6-3"></a>catch_non_human &lt;-<span class="st"> </span>catch_fishfeed <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb6-4"><a href="#cb6-4"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tons_non_human =</span> tons<span class="op">*</span><span class="fl">0.7</span>)</span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tons_non_human =</span> tons<span class="op">*</span><span class="fl">0.9</span>)</span>
 <span id="cb6-5"><a href="#cb6-5"></a></span>
 <span id="cb6-6"><a href="#cb6-6"></a>catch_non_human &lt;-<span class="st"> </span>catch_non_human <span class="op">%&gt;%</span></span>
 <span id="cb6-7"><a href="#cb6-7"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(year, rgn_id, fao_id, stock_id, Taxonkey, tons_non_human) <span class="op">%&gt;%</span></span>
@@ -1854,7 +1854,7 @@ div.tocify {
 <span id="cb6-43"><a href="#cb6-43"></a><span class="st">  </span><span class="kw">data.frame</span>() <span class="op">%&gt;%</span></span>
 <span id="cb6-44"><a href="#cb6-44"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">catch =</span> catch_non_human)</span>
 <span id="cb6-45"><a href="#cb6-45"></a></span>
-<span id="cb6-46"><a href="#cb6-46"></a><span class="kw">write.csv</span>(mean_catch_FOFM, <span class="st">&quot;int/mean_catch_FOFM.csv&quot;</span>, <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<span id="cb6-46"><a href="#cb6-46"></a><span class="kw">write.csv</span>(mean_catch_FOFM,  <span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/np/v2020/int/mean_catch_FOFM.csv&quot;</span>), <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
 </div>
 </div>
 <div id="steps-3456" class="section level1">
@@ -1863,7 +1863,7 @@ div.tocify {
 <h2>Join with the final B/Bmsy layer from the fis model, convert the B/Bmsy values to scores (this is done in functions.R for FIS subgoal, but we do it in the dataprep for NP), apply the underharvest penalty, and take a catch weighted average of B/Bmsy scores for each region/year.</h2>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>fis_bbmsy &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/fis/v2020/output/fis_bbmsy.csv&quot;</span>))</span>
 <span id="cb7-2"><a href="#cb7-2"></a></span>
-<span id="cb7-3"><a href="#cb7-3"></a>catch_FOFM &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/np/v2020_new/int/mean_catch_FOFM.csv&quot;</span>)) </span>
+<span id="cb7-3"><a href="#cb7-3"></a>catch_FOFM &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="kw">file.path</span>(<span class="kw">here</span>(), <span class="st">&quot;globalprep/np/v2020/int/mean_catch_FOFM.csv&quot;</span>)) </span>
 <span id="cb7-4"><a href="#cb7-4"></a></span>
 <span id="cb7-5"><a href="#cb7-5"></a></span>
 <span id="cb7-6"><a href="#cb7-6"></a>  <span class="co"># The following stocks are fished in multiple regions and often have high b/bmsy values</span></span>
@@ -1983,7 +1983,7 @@ div.tocify {
 <span id="cb7-120"><a href="#cb7-120"></a>           gapfilled,</span>
 <span id="cb7-121"><a href="#cb7-121"></a>           method) </span>
 <span id="cb7-122"><a href="#cb7-122"></a>  </span>
-<span id="cb7-123"><a href="#cb7-123"></a>  <span class="kw">write.csv</span>(gap_fill_data, <span class="kw">here</span>(<span class="st">&#39;globalprep/np/v2020_new/output/NP_bbmsy_summary_gf.csv&#39;</span>), <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb7-123"><a href="#cb7-123"></a>  <span class="kw">write.csv</span>(gap_fill_data, <span class="kw">here</span>(<span class="st">&#39;globalprep/np/v2020/output/NP_bbmsy_summary_gf.csv&#39;</span>), <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span>
 <span id="cb7-124"><a href="#cb7-124"></a>  </span>
 <span id="cb7-125"><a href="#cb7-125"></a>  score_data &lt;-<span class="st"> </span>data_fis_gf <span class="op">%&gt;%</span></span>
 <span id="cb7-126"><a href="#cb7-126"></a><span class="st">    </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, stock_id, year, catch, score)</span>
@@ -2006,7 +2006,7 @@ div.tocify {
 <span id="cb7-143"><a href="#cb7-143"></a></span>
 <span id="cb7-144"><a href="#cb7-144"></a><span class="kw">summary</span>(score_data)</span>
 <span id="cb7-145"><a href="#cb7-145"></a></span>
-<span id="cb7-146"><a href="#cb7-146"></a><span class="kw">write.csv</span>(score_data, <span class="kw">here</span>(<span class="st">&#39;globalprep/np/v2020_new/output/np_fofm_scores.csv&#39;</span>), <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<span id="cb7-146"><a href="#cb7-146"></a><span class="kw">write.csv</span>(score_data, <span class="kw">here</span>(<span class="st">&#39;globalprep/np/v2020/output/np_fofm_scores.csv&#39;</span>), <span class="dt">row.names =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
 </div>
 </div>
 

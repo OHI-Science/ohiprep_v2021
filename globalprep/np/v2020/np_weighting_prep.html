@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Thu Jul 23 09:56:02 2020 by sgclawson" />
+<meta name="author" content="Compiled on Wed Sep 30 15:00:14 2020 by sgclawson" />
 
 
 <title>OHI 2020: Natural Products: weighting data prep</title>
@@ -420,7 +420,7 @@ summary {
 
 
 <h1 class="title toc-ignore">OHI 2020: Natural Products: weighting data prep</h1>
-<h4 class="author"><em>Compiled on Thu Jul 23 09:56:02 2020 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Wed Sep 30 15:00:14 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -617,7 +617,7 @@ summary {
 <span id="cb6-4"><a href="#cb6-4"></a>prod_weights &lt;-<span class="st"> </span>orn_tonnes <span class="op">%&gt;%</span></span>
 <span id="cb6-5"><a href="#cb6-5"></a><span class="st">  </span><span class="kw">bind_rows</span>(sw_tonnes) <span class="op">%&gt;%</span></span>
 <span id="cb6-6"><a href="#cb6-6"></a><span class="st">  </span><span class="kw">bind_rows</span>(fofm_tonnes) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb6-7"><a href="#cb6-7"></a><span class="st">  </span><span class="kw">left_join</span>(harvest_tonnes_usd_values, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;rgn_id&quot;</span>, <span class="st">&quot;product&quot;</span>)) <span class="op">%&gt;%</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="st">  </span><span class="kw">left_join</span>(harvest_weighting_values, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;rgn_id&quot;</span>, <span class="st">&quot;product&quot;</span>)) <span class="op">%&gt;%</span></span>
 <span id="cb6-8"><a href="#cb6-8"></a><span class="st">  </span><span class="kw">arrange</span>(rgn_id) <span class="op">%&gt;%</span></span>
 <span id="cb6-9"><a href="#cb6-9"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">usd_product =</span> tonnes<span class="op">*</span>value_per_tonne) <span class="op">%&gt;%</span></span>
 <span id="cb6-10"><a href="#cb6-10"></a><span class="st">  </span><span class="kw">group_by</span>(rgn_id) <span class="op">%&gt;%</span></span>

@@ -240,7 +240,7 @@ harvest_weighting_values <- read_csv("int/harvest_weighting_values.csv") %>%
 prod_weights <- orn_tonnes %>%
   bind_rows(sw_tonnes) %>%
   bind_rows(fofm_tonnes) %>% 
-  left_join(harvest_tonnes_usd_values, by = c("rgn_id", "product")) %>%
+  left_join(harvest_weighting_values, by = c("rgn_id", "product")) %>%
   arrange(rgn_id) %>%
   mutate(usd_product = tonnes*value_per_tonne) %>%
   group_by(rgn_id) %>%
