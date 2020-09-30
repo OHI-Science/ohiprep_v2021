@@ -277,7 +277,7 @@ write.csv(quant_95, "int/reference_point_quant_95.csv", row.names=FALSE) # Make 
 # 
 # catch_plot
 
-## Reference point = max values across all years
+## Reference point = 95th quantile across all years
 ref_point <- read.csv("int/reference_point_quant_95.csv")
 ref_point_median <- median(ref_point$quantDensity) # v2020: 20.5649376263763
 
@@ -353,6 +353,7 @@ old <- read.csv("../v2018/output/habitat_health_softbottom.csv") %>%
 compare <- data_rescale %>%
   filter(year==2014) %>%
   dplyr::select(rgn_id, health = density_rescaled_median_capped) %>%
+  dplyr::mutate(health = 1 - health) %>%
   left_join(old)
 
 plot(health ~old_health, data=compare)
