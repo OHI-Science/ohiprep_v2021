@@ -9,7 +9,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Compiled on Thu Aug 13 14:00:14 2020 by sgclawson" />
+<meta name="author" content="Compiled on Wed Sep 30 14:15:24 2020 by sgclawson" />
 
 
 <title>OHI 2020: Food Provision, Preparing catch data for BBmsy calculations and mean catch (weights in FIS model) and FP weights</title>
@@ -1647,7 +1647,7 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">OHI 2020: Food Provision, Preparing catch data for BBmsy calculations and mean catch (weights in FIS model) and FP weights</h1>
-<h4 class="author"><em>Compiled on Thu Aug 13 14:00:14 2020 by sgclawson</em></h4>
+<h4 class="author"><em>Compiled on Wed Sep 30 14:15:24 2020 by sgclawson</em></h4>
 
 </div>
 
@@ -2056,7 +2056,7 @@ div.tocify {
 </div>
 <div id="calculate-mean-catch" class="section level2">
 <h2>Calculate Mean Catch</h2>
-<p>Calculate mean catch for ohi regions (using data from 1980 onward). These data are used to weight the RAM b/bmsy values</p>
+<p>Calculate mean catch for ohi regions (using data from 1980 onward). These data are used to weight the RAM b/bmsy values. We will also correct for the forage fish used for feed/fish oil by excluding the proportion used for non-human purposes, like animal feed (90% of forage fish catch).</p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="co">## correcting for forage fish used as feed/fish oil</span></span>
 <span id="cb20-2"><a href="#cb20-2"></a><span class="co">## We have traditionally included all fisheries catch in the Food Provision goal. However, a substantial portion of catch is used in animal feed. Our plan is to remove a portion of catch of these species from the fisheries goal.</span></span>
 <span id="cb20-3"><a href="#cb20-3"></a></span>
@@ -2072,32 +2072,33 @@ div.tocify {
 <span id="cb20-13"><a href="#cb20-13"></a><span class="st">  </span><span class="kw">unique</span>()</span>
 <span id="cb20-14"><a href="#cb20-14"></a></span>
 <span id="cb20-15"><a href="#cb20-15"></a> </span>
-<span id="cb20-16"><a href="#cb20-16"></a>prop_human_cons &lt;-<span class="st"> </span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>(<span class="dv">19</span><span class="op">/</span><span class="dv">31</span>))</span>
-<span id="cb20-17"><a href="#cb20-17"></a><span class="co">## join this with catch_zeros by species, and multiply by 1 - (19/31) =  0.3870968... this is the proportion of catch used for humans </span></span>
-<span id="cb20-18"><a href="#cb20-18"></a>catch_zero_minus_fish_feed &lt;-<span class="st"> </span>forage_fish_taxa_list <span class="op">%&gt;%</span></span>
-<span id="cb20-19"><a href="#cb20-19"></a><span class="st">  </span><span class="kw">left_join</span>(catch_zeros, <span class="dt">by =</span> <span class="st">&quot;Taxonkey&quot;</span>) <span class="op">%&gt;%</span></span>
-<span id="cb20-20"><a href="#cb20-20"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">catch_human =</span> prop_human_cons<span class="op">*</span>catch,</span>
-<span id="cb20-21"><a href="#cb20-21"></a>         <span class="dt">catch_fish_feed =</span> catch<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span>prop_human_cons))</span>
-<span id="cb20-22"><a href="#cb20-22"></a><span class="kw">write_csv</span>(catch_zero_minus_fish_feed, <span class="st">&quot;int/catch_fish_feed.csv&quot;</span>)</span>
-<span id="cb20-23"><a href="#cb20-23"></a></span>
+<span id="cb20-16"><a href="#cb20-16"></a>prop_human_cons &lt;-<span class="st"> </span><span class="fl">0.1</span> <span class="co">## source from https://www.nature.com/articles/s41893-018-0077-1#Sec11: &quot;Currently, it is estimated about 10% of forage fish enter the human diet directly, but the notoriously tiny-boned fish are labour intensive (thus expensive) to process for human consumption, are the foundation of several industries and thus jobs (creating inertia to change) and are not the preferred fish type for most people&quot;</span></span>
+<span id="cb20-17"><a href="#cb20-17"></a></span>
+<span id="cb20-18"><a href="#cb20-18"></a><span class="co">## join this with catch_zeros by species, and multiply by 0.1... this is the proportion of catch used for humans </span></span>
+<span id="cb20-19"><a href="#cb20-19"></a>catch_zero_minus_fish_feed &lt;-<span class="st"> </span>forage_fish_taxa_list <span class="op">%&gt;%</span></span>
+<span id="cb20-20"><a href="#cb20-20"></a><span class="st">  </span><span class="kw">left_join</span>(catch_zeros, <span class="dt">by =</span> <span class="st">&quot;Taxonkey&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb20-21"><a href="#cb20-21"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">catch_human =</span> prop_human_cons<span class="op">*</span>catch,</span>
+<span id="cb20-22"><a href="#cb20-22"></a>         <span class="dt">catch_fish_feed =</span> catch<span class="op">*</span>(<span class="dv">1</span><span class="op">-</span>prop_human_cons))</span>
+<span id="cb20-23"><a href="#cb20-23"></a><span class="kw">write_csv</span>(catch_zero_minus_fish_feed, <span class="st">&quot;int/catch_fish_feed.csv&quot;</span>)</span>
 <span id="cb20-24"><a href="#cb20-24"></a></span>
-<span id="cb20-25"><a href="#cb20-25"></a><span class="co">#join catch_zeros with catch_zero_minus_fish_feed</span></span>
-<span id="cb20-26"><a href="#cb20-26"></a>catch_zeros &lt;-<span class="st"> </span>catch_zeros <span class="op">%&gt;%</span></span>
-<span id="cb20-27"><a href="#cb20-27"></a><span class="st">  </span><span class="kw">left_join</span>(catch_zero_minus_fish_feed) <span class="op">%&gt;%</span></span>
-<span id="cb20-28"><a href="#cb20-28"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">catch_human =</span> <span class="kw">case_when</span>(</span>
-<span id="cb20-29"><a href="#cb20-29"></a>    <span class="kw">is.na</span>(catch_human) <span class="op">~</span><span class="st"> </span>catch,</span>
-<span id="cb20-30"><a href="#cb20-30"></a>    <span class="op">!</span><span class="kw">is.na</span>(catch_human) <span class="op">~</span><span class="st"> </span>catch_human</span>
-<span id="cb20-31"><a href="#cb20-31"></a>  )) <span class="op">%&gt;%</span></span>
-<span id="cb20-32"><a href="#cb20-32"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>forage_fish, <span class="op">-</span>inWatson)</span>
-<span id="cb20-33"><a href="#cb20-33"></a></span>
-<span id="cb20-34"><a href="#cb20-34"></a>mean_catch &lt;-<span class="st"> </span>catch_zeros <span class="op">%&gt;%</span></span>
-<span id="cb20-35"><a href="#cb20-35"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">1980</span>) <span class="op">%&gt;%</span></span>
-<span id="cb20-36"><a href="#cb20-36"></a><span class="st">  </span><span class="kw">group_by</span>(rgn_id, fao_id, Taxonkey, stock_id) <span class="op">%&gt;%</span></span>
-<span id="cb20-37"><a href="#cb20-37"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">mean_catch =</span> <span class="kw">mean</span>(catch, <span class="dt">na.rm=</span><span class="ot">TRUE</span>),</span>
-<span id="cb20-38"><a href="#cb20-38"></a>         <span class="dt">mean_catch_human =</span> <span class="kw">mean</span>(catch_human, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="co"># mean catch for each stock (in a specific ohi-fao region)</span></span>
-<span id="cb20-39"><a href="#cb20-39"></a><span class="st">  </span><span class="kw">filter</span>(mean_catch <span class="op">!=</span><span class="st"> </span><span class="dv">0</span>,</span>
-<span id="cb20-40"><a href="#cb20-40"></a>         mean_catch_human <span class="op">!=</span><span class="st"> </span><span class="dv">0</span>)  <span class="op">%&gt;%</span><span class="st">      </span><span class="co">## some stocks have no reported catch for time period</span></span>
-<span id="cb20-41"><a href="#cb20-41"></a><span class="st">  </span><span class="kw">ungroup</span>()</span></code></pre></div>
+<span id="cb20-25"><a href="#cb20-25"></a></span>
+<span id="cb20-26"><a href="#cb20-26"></a><span class="co">#join catch_zeros with catch_zero_minus_fish_feed</span></span>
+<span id="cb20-27"><a href="#cb20-27"></a>catch_zeros &lt;-<span class="st"> </span>catch_zeros <span class="op">%&gt;%</span></span>
+<span id="cb20-28"><a href="#cb20-28"></a><span class="st">  </span><span class="kw">left_join</span>(catch_zero_minus_fish_feed) <span class="op">%&gt;%</span></span>
+<span id="cb20-29"><a href="#cb20-29"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">catch_human =</span> <span class="kw">case_when</span>(</span>
+<span id="cb20-30"><a href="#cb20-30"></a>    <span class="kw">is.na</span>(catch_human) <span class="op">~</span><span class="st"> </span>catch,</span>
+<span id="cb20-31"><a href="#cb20-31"></a>    <span class="op">!</span><span class="kw">is.na</span>(catch_human) <span class="op">~</span><span class="st"> </span>catch_human</span>
+<span id="cb20-32"><a href="#cb20-32"></a>  )) <span class="op">%&gt;%</span></span>
+<span id="cb20-33"><a href="#cb20-33"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>forage_fish, <span class="op">-</span>inWatson)</span>
+<span id="cb20-34"><a href="#cb20-34"></a></span>
+<span id="cb20-35"><a href="#cb20-35"></a>mean_catch &lt;-<span class="st"> </span>catch_zeros <span class="op">%&gt;%</span></span>
+<span id="cb20-36"><a href="#cb20-36"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">1980</span>) <span class="op">%&gt;%</span></span>
+<span id="cb20-37"><a href="#cb20-37"></a><span class="st">  </span><span class="kw">group_by</span>(rgn_id, fao_id, Taxonkey, stock_id) <span class="op">%&gt;%</span></span>
+<span id="cb20-38"><a href="#cb20-38"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">mean_catch =</span> <span class="kw">mean</span>(catch, <span class="dt">na.rm=</span><span class="ot">TRUE</span>),</span>
+<span id="cb20-39"><a href="#cb20-39"></a>         <span class="dt">mean_catch_human =</span> <span class="kw">mean</span>(catch_human, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span><span class="st"> </span><span class="co"># mean catch for each stock (in a specific ohi-fao region)</span></span>
+<span id="cb20-40"><a href="#cb20-40"></a><span class="st">  </span><span class="kw">filter</span>(mean_catch <span class="op">!=</span><span class="st"> </span><span class="dv">0</span>,</span>
+<span id="cb20-41"><a href="#cb20-41"></a>         mean_catch_human <span class="op">!=</span><span class="st"> </span><span class="dv">0</span>)  <span class="op">%&gt;%</span><span class="st">      </span><span class="co">## some stocks have no reported catch for time period</span></span>
+<span id="cb20-42"><a href="#cb20-42"></a><span class="st">  </span><span class="kw">ungroup</span>()</span></code></pre></div>
 <p>Check out the data</p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">data.frame</span>(dplyr<span class="op">::</span><span class="kw">filter</span>(catch, stock_id <span class="op">==</span><span class="st"> &quot;Zygochlamys_patagonica-87&quot;</span> <span class="op">&amp;</span><span class="st"> </span>rgn_id<span class="op">==</span><span class="dv">172</span>))</span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="kw">data.frame</span>(<span class="kw">filter</span>(mean_catch, stock_id <span class="op">==</span><span class="st"> &quot;Marine_fishes_not_identified-57&quot;</span> <span class="op">&amp;</span><span class="st"> </span>rgn_id<span class="op">==</span><span class="dv">1</span>)) <span class="co"># includes finfishes (100139) and other marine fishes (100039)</span></span>
@@ -2113,7 +2114,7 @@ div.tocify {
 <span id="cb22-6"><a href="#cb22-6"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2001</span>) <span class="op">%&gt;%</span><span class="st">  </span><span class="co"># filter to include only analysis years</span></span>
 <span id="cb22-7"><a href="#cb22-7"></a><span class="st">  </span><span class="kw">data.frame</span>()</span>
 <span id="cb22-8"><a href="#cb22-8"></a></span>
-<span id="cb22-9"><a href="#cb22-9"></a><span class="kw">write.csv</span>(mean_catch_toolbox, <span class="st">&quot;output/mean_catch.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span>
+<span id="cb22-9"><a href="#cb22-9"></a><span class="kw">write.csv</span>(mean_catch_toolbox, <span class="st">&quot;int/mean_catch.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>) <span class="co">## save the total mean catch csv for reference if needed</span></span>
 <span id="cb22-10"><a href="#cb22-10"></a></span>
 <span id="cb22-11"><a href="#cb22-11"></a>mean_catch_toolbox_human &lt;-<span class="st"> </span>mean_catch <span class="op">%&gt;%</span></span>
 <span id="cb22-12"><a href="#cb22-12"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">stock_id_taxonkey =</span> <span class="kw">paste</span>(stock_id, Taxonkey, <span class="dt">sep=</span><span class="st">&quot;_&quot;</span>)) <span class="op">%&gt;%</span></span>
@@ -2131,14 +2132,14 @@ div.tocify {
 <p>Compare v2020 with last year v2019</p>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">library</span>(plotly)</span>
 <span id="cb23-2"><a href="#cb23-2"></a></span>
-<span id="cb23-3"><a href="#cb23-3"></a>new &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;output/mean_catch.csv&quot;</span>)</span>
+<span id="cb23-3"><a href="#cb23-3"></a>new &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;output/mean_catch_minus_feed.csv&quot;</span>)</span>
 <span id="cb23-4"><a href="#cb23-4"></a>new_filt &lt;-<span class="st"> </span>new <span class="op">%&gt;%</span><span class="st"> </span></span>
 <span id="cb23-5"><a href="#cb23-5"></a><span class="st">  </span><span class="co">#filter(stock_id_taxonkey == &quot;Carangidae-31_400314&quot;) %&gt;% </span></span>
 <span id="cb23-6"><a href="#cb23-6"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">new_log_catch =</span> <span class="kw">log</span>(mean_catch<span class="op">+</span><span class="dv">1</span>)) <span class="op">%&gt;%</span><span class="st"> </span></span>
 <span id="cb23-7"><a href="#cb23-7"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
 <span id="cb23-8"><a href="#cb23-8"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, stock_id_taxonkey, new_log_catch) </span>
 <span id="cb23-9"><a href="#cb23-9"></a></span>
-<span id="cb23-10"><a href="#cb23-10"></a>old &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2019/output/mean_catch.csv&quot;</span>)</span>
+<span id="cb23-10"><a href="#cb23-10"></a>old &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2019/output/mean_catch_minus_feed.csv&quot;</span>)</span>
 <span id="cb23-11"><a href="#cb23-11"></a>old_filt &lt;-<span class="st"> </span>old <span class="op">%&gt;%</span><span class="st"> </span></span>
 <span id="cb23-12"><a href="#cb23-12"></a><span class="st">  </span><span class="co">#filter(stock_id_taxonkey == &quot;Carangidae-31_400314&quot;) %&gt;% </span></span>
 <span id="cb23-13"><a href="#cb23-13"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">year =</span> year) <span class="op">%&gt;%</span><span class="st"> </span></span>
@@ -2163,98 +2164,49 @@ div.tocify {
 <span id="cb23-32"><a href="#cb23-32"></a></span>
 <span id="cb23-33"><a href="#cb23-33"></a>plot_check</span>
 <span id="cb23-34"><a href="#cb23-34"></a></span>
-<span id="cb23-35"><a href="#cb23-35"></a> <span class="kw">ggplotly</span>(plot_check) <span class="co">#might crash RStudio</span></span></code></pre></div>
-<p>Plot mean catch v2020 against mean catch v 2019</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>new &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;output/mean_catch.csv&quot;</span>)</span>
-<span id="cb24-2"><a href="#cb24-2"></a>new_filt &lt;-<span class="st"> </span>new <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb24-3"><a href="#cb24-3"></a><span class="st">  </span><span class="co">#filter(stock_id_taxonkey == &quot;Carangidae-31_400314&quot;) %&gt;% </span></span>
-<span id="cb24-4"><a href="#cb24-4"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb24-5"><a href="#cb24-5"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">new_mean_catch =</span> mean_catch) <span class="op">%&gt;%</span></span>
-<span id="cb24-6"><a href="#cb24-6"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, stock_id_taxonkey, new_mean_catch) </span>
-<span id="cb24-7"><a href="#cb24-7"></a></span>
-<span id="cb24-8"><a href="#cb24-8"></a>old &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2019/output/mean_catch.csv&quot;</span>)</span>
-<span id="cb24-9"><a href="#cb24-9"></a>old_filt &lt;-<span class="st"> </span>old <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb24-10"><a href="#cb24-10"></a><span class="st">  </span><span class="co">#filter(stock_id_taxonkey == &quot;Carangidae-31_400314&quot;) %&gt;% </span></span>
-<span id="cb24-11"><a href="#cb24-11"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">year =</span> year) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb24-12"><a href="#cb24-12"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb24-13"><a href="#cb24-13"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">old_mean_catch =</span> mean_catch) <span class="op">%&gt;%</span></span>
-<span id="cb24-14"><a href="#cb24-14"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, stock_id_taxonkey, old_mean_catch)</span>
-<span id="cb24-15"><a href="#cb24-15"></a>  </span>
-<span id="cb24-16"><a href="#cb24-16"></a>check &lt;-<span class="st"> </span>old_filt <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb24-17"><a href="#cb24-17"></a><span class="st">  </span><span class="kw">left_join</span>(new_filt, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;rgn_id&quot;</span>,<span class="st">&quot;stock_id_taxonkey&quot;</span>)) <span class="op">%&gt;%</span></span>
-<span id="cb24-18"><a href="#cb24-18"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">new_mean_catch =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(new_mean_catch), <span class="dv">0</span>, new_mean_catch)) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb24-19"><a href="#cb24-19"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">old_mean_catch =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(old_mean_catch), <span class="dv">0</span>, old_mean_catch))</span>
-<span id="cb24-20"><a href="#cb24-20"></a></span>
-<span id="cb24-21"><a href="#cb24-21"></a><span class="co">## For quick plot</span></span>
-<span id="cb24-22"><a href="#cb24-22"></a><span class="kw">plot</span>(check<span class="op">$</span>old_mean_catch,check<span class="op">$</span>new_mean_catch)</span>
-<span id="cb24-23"><a href="#cb24-23"></a><span class="kw">abline</span>(<span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dv">1</span>,<span class="dv">1</span>)</span>
-<span id="cb24-24"><a href="#cb24-24"></a></span>
-<span id="cb24-25"><a href="#cb24-25"></a><span class="co">## Plot with plotly to see region id when hovering over points (takes a while)</span></span>
-<span id="cb24-26"><a href="#cb24-26"></a>plot_check &lt;-<span class="st"> </span><span class="kw">ggplot</span>(check, <span class="kw">aes</span>(old_mean_catch, new_mean_catch, <span class="dt">col =</span> rgn_id)) <span class="op">+</span></span>
-<span id="cb24-27"><a href="#cb24-27"></a><span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> <span class="fl">0.4</span>) <span class="op">+</span></span>
-<span id="cb24-28"><a href="#cb24-28"></a><span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">col=</span><span class="st">&quot;red&quot;</span>) <span class="op">+</span></span>
-<span id="cb24-29"><a href="#cb24-29"></a><span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Catch Comparison for 2014 (v2019, v2020)&quot;</span>)</span>
-<span id="cb24-30"><a href="#cb24-30"></a></span>
-<span id="cb24-31"><a href="#cb24-31"></a>plot_check</span>
-<span id="cb24-32"><a href="#cb24-32"></a></span>
-<span id="cb24-33"><a href="#cb24-33"></a><span class="kw">ggplotly</span>(plot_check) <span class="co">#might crash RStudio</span></span>
-<span id="cb24-34"><a href="#cb24-34"></a></span>
-<span id="cb24-35"><a href="#cb24-35"></a></span>
-<span id="cb24-36"><a href="#cb24-36"></a>check_again &lt;-<span class="st"> </span>check <span class="op">%&gt;%</span></span>
-<span id="cb24-37"><a href="#cb24-37"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">diff =</span> new_mean_catch <span class="op">-</span><span class="st"> </span>old_mean_catch)</span>
-<span id="cb24-38"><a href="#cb24-38"></a></span>
-<span id="cb24-39"><a href="#cb24-39"></a>check_again_neg &lt;-<span class="st"> </span>check_again <span class="op">%&gt;%</span></span>
-<span id="cb24-40"><a href="#cb24-40"></a><span class="st">  </span><span class="kw">filter</span>(diff <span class="op">&lt;</span><span class="st"> </span><span class="dv">0</span>)</span>
-<span id="cb24-41"><a href="#cb24-41"></a></span>
-<span id="cb24-42"><a href="#cb24-42"></a>check_again_pos &lt;-<span class="st"> </span>check_again <span class="op">%&gt;%</span></span>
-<span id="cb24-43"><a href="#cb24-43"></a><span class="st">  </span><span class="kw">filter</span>(diff <span class="op">&gt;</span><span class="dv">0</span>)</span>
-<span id="cb24-44"><a href="#cb24-44"></a></span>
-<span id="cb24-45"><a href="#cb24-45"></a><span class="kw">unique</span>(check_again_pos<span class="op">$</span>rgn_id)</span>
-<span id="cb24-46"><a href="#cb24-46"></a></span>
-<span id="cb24-47"><a href="#cb24-47"></a>check_again_<span class="dv">0</span> &lt;-<span class="st"> </span>check_again <span class="op">%&gt;%</span></span>
-<span id="cb24-48"><a href="#cb24-48"></a><span class="st">  </span><span class="kw">filter</span>(diff <span class="op">==</span><span class="st"> </span><span class="dv">0</span>)</span></code></pre></div>
+<span id="cb23-35"><a href="#cb23-35"></a> <span class="co">#ggplotly(plot_check) #might crash RStudio</span></span></code></pre></div>
 </div>
 </div>
 <div id="prep-data-for-food-provision-weights" class="section level1">
 <h1>Prep data for food provision weights</h1>
 <p>These data determine the tonnes of food provided by fisheries. Ultimately, the proportion of food from fisheries relative to mariculture will be calculated to weight the contributions of fishery and mariculture scores to final food provision scores.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>total_catch_FP &lt;-<span class="st"> </span>mean_catch <span class="op">%&gt;%</span></span>
-<span id="cb25-2"><a href="#cb25-2"></a><span class="st">  </span><span class="kw">group_by</span>(rgn_id, year) <span class="op">%&gt;%</span></span>
-<span id="cb25-3"><a href="#cb25-3"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">fis_catch =</span> <span class="kw">sum</span>(catch)) <span class="op">%&gt;%</span></span>
-<span id="cb25-4"><a href="#cb25-4"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, fis_catch) <span class="op">%&gt;%</span></span>
-<span id="cb25-5"><a href="#cb25-5"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2005</span>) <span class="co"># filter to include only the relevant analysis years</span></span>
-<span id="cb25-6"><a href="#cb25-6"></a></span>
-<span id="cb25-7"><a href="#cb25-7"></a><span class="kw">write.csv</span>(total_catch_FP, <span class="st">&quot;output/FP_fis_catch.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>total_catch_FP &lt;-<span class="st"> </span>mean_catch <span class="op">%&gt;%</span></span>
+<span id="cb24-2"><a href="#cb24-2"></a><span class="st">  </span><span class="kw">group_by</span>(rgn_id, year) <span class="op">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">fis_catch =</span> <span class="kw">sum</span>(catch_human)) <span class="op">%&gt;%</span></span>
+<span id="cb24-4"><a href="#cb24-4"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, fis_catch) <span class="op">%&gt;%</span></span>
+<span id="cb24-5"><a href="#cb24-5"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">2005</span>) <span class="co"># filter to include only the relevant analysis years</span></span>
+<span id="cb24-6"><a href="#cb24-6"></a></span>
+<span id="cb24-7"><a href="#cb24-7"></a><span class="kw">write.csv</span>(total_catch_FP, <span class="st">&quot;output/FP_fis_catch.csv&quot;</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</span></code></pre></div>
 <p>Check differences in data for food provision weights</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>new &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;output/FP_fis_catch.csv&quot;</span>)</span>
-<span id="cb26-2"><a href="#cb26-2"></a>new_filt &lt;-<span class="st"> </span>new <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb26-3"><a href="#cb26-3"></a><span class="st">  </span><span class="co">#filter(stock_id_taxonkey == &quot;Carangidae-31_400314&quot;) %&gt;% </span></span>
-<span id="cb26-4"><a href="#cb26-4"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb26-5"><a href="#cb26-5"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">new_fis_catch =</span> fis_catch) <span class="op">%&gt;%</span></span>
-<span id="cb26-6"><a href="#cb26-6"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, new_fis_catch) </span>
-<span id="cb26-7"><a href="#cb26-7"></a></span>
-<span id="cb26-8"><a href="#cb26-8"></a>old &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2019/output/FP_fis_catch.csv&quot;</span>)</span>
-<span id="cb26-9"><a href="#cb26-9"></a>old_filt &lt;-<span class="st"> </span>old <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb26-10"><a href="#cb26-10"></a><span class="st">  </span><span class="co">#filter(stock_id_taxonkey == &quot;Carangidae-31_400314&quot;) %&gt;% </span></span>
-<span id="cb26-11"><a href="#cb26-11"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">year =</span> year) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb26-12"><a href="#cb26-12"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb26-13"><a href="#cb26-13"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">old_fis_catch =</span> fis_catch) <span class="op">%&gt;%</span></span>
-<span id="cb26-14"><a href="#cb26-14"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, old_fis_catch)</span>
-<span id="cb26-15"><a href="#cb26-15"></a>  </span>
-<span id="cb26-16"><a href="#cb26-16"></a>check &lt;-<span class="st"> </span>old_filt <span class="op">%&gt;%</span><span class="st"> </span></span>
-<span id="cb26-17"><a href="#cb26-17"></a><span class="st">  </span><span class="kw">left_join</span>(new_filt, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;rgn_id&quot;</span>,<span class="st">&quot;year&quot;</span>))</span>
-<span id="cb26-18"><a href="#cb26-18"></a></span>
-<span id="cb26-19"><a href="#cb26-19"></a><span class="co">## For quick plot</span></span>
-<span id="cb26-20"><a href="#cb26-20"></a><span class="kw">plot</span>(check<span class="op">$</span>old_fis_catch,check<span class="op">$</span>new_fis_catch)</span>
-<span id="cb26-21"><a href="#cb26-21"></a><span class="kw">abline</span>(<span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dv">1</span>,<span class="dv">1</span>)</span>
-<span id="cb26-22"><a href="#cb26-22"></a></span>
-<span id="cb26-23"><a href="#cb26-23"></a><span class="co">## Plot with plotly to see region id when hovering over points (takes a while)</span></span>
-<span id="cb26-24"><a href="#cb26-24"></a>plot_check &lt;-<span class="st"> </span><span class="kw">ggplot</span>(check, <span class="kw">aes</span>(old_fis_catch, new_fis_catch, <span class="dt">col =</span> rgn_id)) <span class="op">+</span></span>
-<span id="cb26-25"><a href="#cb26-25"></a><span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> <span class="fl">0.4</span>) <span class="op">+</span></span>
-<span id="cb26-26"><a href="#cb26-26"></a><span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">col=</span><span class="st">&quot;red&quot;</span>) <span class="op">+</span></span>
-<span id="cb26-27"><a href="#cb26-27"></a><span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Food Provision Comparison for 2014 (v2019, v2020)&quot;</span>)</span>
-<span id="cb26-28"><a href="#cb26-28"></a></span>
-<span id="cb26-29"><a href="#cb26-29"></a>plot_check</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>new &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;output/FP_fis_catch.csv&quot;</span>)</span>
+<span id="cb25-2"><a href="#cb25-2"></a>new_filt &lt;-<span class="st"> </span>new <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb25-3"><a href="#cb25-3"></a><span class="st">  </span><span class="co">#filter(stock_id_taxonkey == &quot;Carangidae-31_400314&quot;) %&gt;% </span></span>
+<span id="cb25-4"><a href="#cb25-4"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb25-5"><a href="#cb25-5"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">new_fis_catch =</span> fis_catch) <span class="op">%&gt;%</span></span>
+<span id="cb25-6"><a href="#cb25-6"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, new_fis_catch) </span>
+<span id="cb25-7"><a href="#cb25-7"></a></span>
+<span id="cb25-8"><a href="#cb25-8"></a>old &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;../v2019/output/FP_fis_catch.csv&quot;</span>)</span>
+<span id="cb25-9"><a href="#cb25-9"></a>old_filt &lt;-<span class="st"> </span>old <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb25-10"><a href="#cb25-10"></a><span class="st">  </span><span class="co">#filter(stock_id_taxonkey == &quot;Carangidae-31_400314&quot;) %&gt;% </span></span>
+<span id="cb25-11"><a href="#cb25-11"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">year =</span> year) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb25-12"><a href="#cb25-12"></a><span class="st">  </span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb25-13"><a href="#cb25-13"></a><span class="st">  </span><span class="kw">rename</span>(<span class="dt">old_fis_catch =</span> fis_catch) <span class="op">%&gt;%</span></span>
+<span id="cb25-14"><a href="#cb25-14"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(rgn_id, year, old_fis_catch)</span>
+<span id="cb25-15"><a href="#cb25-15"></a>  </span>
+<span id="cb25-16"><a href="#cb25-16"></a>check &lt;-<span class="st"> </span>old_filt <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb25-17"><a href="#cb25-17"></a><span class="st">  </span><span class="kw">left_join</span>(new_filt, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;rgn_id&quot;</span>,<span class="st">&quot;year&quot;</span>))</span>
+<span id="cb25-18"><a href="#cb25-18"></a></span>
+<span id="cb25-19"><a href="#cb25-19"></a><span class="co">## For quick plot</span></span>
+<span id="cb25-20"><a href="#cb25-20"></a><span class="kw">plot</span>(check<span class="op">$</span>old_fis_catch,check<span class="op">$</span>new_fis_catch)</span>
+<span id="cb25-21"><a href="#cb25-21"></a><span class="kw">abline</span>(<span class="dt">col=</span><span class="st">&quot;red&quot;</span>, <span class="dv">1</span>,<span class="dv">1</span>)</span>
+<span id="cb25-22"><a href="#cb25-22"></a></span>
+<span id="cb25-23"><a href="#cb25-23"></a><span class="co">## Plot with plotly to see region id when hovering over points (takes a while)</span></span>
+<span id="cb25-24"><a href="#cb25-24"></a>plot_check &lt;-<span class="st"> </span><span class="kw">ggplot</span>(check, <span class="kw">aes</span>(old_fis_catch, new_fis_catch, <span class="dt">col =</span> rgn_id)) <span class="op">+</span></span>
+<span id="cb25-25"><a href="#cb25-25"></a><span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> <span class="fl">0.4</span>) <span class="op">+</span></span>
+<span id="cb25-26"><a href="#cb25-26"></a><span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">col=</span><span class="st">&quot;red&quot;</span>) <span class="op">+</span></span>
+<span id="cb25-27"><a href="#cb25-27"></a><span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Food Provision Comparison for 2014 (v2019, v2020)&quot;</span>)</span>
+<span id="cb25-28"><a href="#cb25-28"></a></span>
+<span id="cb25-29"><a href="#cb25-29"></a>plot_check</span></code></pre></div>
 <hr />
 </div>
 <div id="citation-information" class="section level1">
