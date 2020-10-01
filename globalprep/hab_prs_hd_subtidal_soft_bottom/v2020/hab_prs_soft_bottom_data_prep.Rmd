@@ -251,13 +251,13 @@ data_density <- sb_catch_all %>%
   filter(rgn_id <= 250) %>%
   mutate(density = tonnes/km2)
 
-## Find 95th quantile density for each year
-quant_95 <- data_density %>%
+## Find 99th quantile density for each year
+quant_99 <- data_density %>%
   group_by(year) %>%
   summarize(quantDensity = quantile(density, c(0.99), na.rm=TRUE)) %>%
   data.frame()
 
-write.csv(quant_95, "int/reference_point_quant_99.csv", row.names=FALSE) # Make sure you are working in the correct working directory
+write.csv(quant_99, "int/reference_point_quant_99.csv", row.names=FALSE) # Make sure you are working in the correct working directory
 
 # # Scatterplot of 2014 and 2015
 # catch_2014 <- read.csv("int/sb_catch_rgn_2014.csv") %>% 
@@ -277,7 +277,7 @@ write.csv(quant_95, "int/reference_point_quant_99.csv", row.names=FALSE) # Make 
 # 
 # catch_plot
 
-## Reference point = 95th quantile across all years
+## Reference point = 99th quantile across all years
 ref_point <- read.csv("int/reference_point_quant_99.csv")
 ref_point_median <- median(ref_point$quantDensity) # v2020 95th: 20.5649376263763
                                                    # v2020 99th: 62.23165
@@ -434,13 +434,14 @@ old_health <- read.csv("../v2018/output/habitat_health_softbottom.csv") %>%
   dplyr::select(rgn_id, old_health=health)
 
 compare_health <-  read.csv("output/habitat_health_softbottom.csv")%>%
-  filter(year==2014) %>%
+  filter(year==2017) %>%
   dplyr::select(rgn_id, health) %>%
   left_join(old_health)
 
 plot(health ~old_health, data=compare_health)
 abline(0,1, col = 'red')
 
+hist(compare_health$health)
 
 ## Pressure
 old_pressure <- read.csv("../v2018/output/hd_sb_subtidal.csv") %>%
